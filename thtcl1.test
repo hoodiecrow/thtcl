@@ -1,0 +1,97 @@
+package require tcltest 2.5
+eval ::tcltest::configure $argv
+source thtcl1.tcl
+
+::tcltest::test thtcl-1.0 {calculate circle area} {
+    scheme_str [eval_exp [parse "(begin (define r 10) (* pi (* r r)))"]]
+} 314.1592653589793
+
+::tcltest::test thtcl-2.0 {conditional} {
+    scheme_str [eval_exp [parse "(if (> (* 11 11) 120) (* 7 6) oops)"]]
+} 42
+
+::tcltest::test thtcl-3.0 {append} {
+    scheme_str [eval_exp [parse "(append (list 1 2) (list 3 4))"]]
+} "(1 2 3 4)"
+
+::tcltest::test thtcl-4.0 {apply} {
+    scheme_str [eval_exp [parse "(begin (define e (list 1 2 3)) (apply car e))"]]
+} "1"
+
+::tcltest::test thtcl-5.0 {car} {
+    scheme_str [eval_exp [parse "(car (list 1 2 3))"]]
+} "1"
+
+::tcltest::test thtcl-6.0 {cdr} {
+    scheme_str [eval_exp [parse "(cdr (list 1 2 3))"]]
+} "(2 3)"
+
+::tcltest::test thtcl-7.0 {cons} {
+    scheme_str [eval_exp [parse "(cons 1 (list 2 3))"]]
+} "(1 2 3)"
+
+::tcltest::test thtcl-8.0 {eq?} {
+    scheme_str [eval_exp [parse "(eq? 1 1)"]]
+} "#t"
+
+::tcltest::test thtcl-8.1 {eq?} {
+    scheme_str [eval_exp [parse "(eq? 1 1.0)"]]
+} "#f"
+
+::tcltest::test thtcl-9.0 {equal?} {
+    scheme_str [eval_exp [parse "(equal? 1 1)"]]
+} "#t"
+
+::tcltest::test thtcl-9.1 {equal?} {
+    scheme_str [eval_exp [parse "(equal? 1 1.0)"]]
+} "#t"
+
+::tcltest::test thtcl-10.0 {length} {
+    scheme_str [eval_exp [parse "(length (list 1 2 3))"]]
+} "3"
+
+::tcltest::test thtcl-11.0 {list} {
+    scheme_str [eval_exp [parse "(list 1 2 3)"]]
+} "(1 2 3)"
+
+::tcltest::test thtcl-12.0 {map} {
+    scheme_str [eval_exp [parse "(begin (define lst (list (list 1 2) (list 3 4))) (map car lst))"]]
+} "(1 3)"
+
+::tcltest::test thtcl-13.0 {not} {
+    scheme_str [eval_exp [parse "(not #t)"]]
+} "#f"
+
+::tcltest::test thtcl-13.1 {not} {
+    scheme_str [eval_exp [parse "(not #f)"]]
+} "#t"
+
+::tcltest::test thtcl-13.2 {not} {
+    scheme_str [eval_exp [parse "(not 99)"]]
+} "#f"
+
+::tcltest::test thtcl-14.0 {null?} {
+    scheme_str [eval_exp [parse "(null? ())"]]
+} "#t"
+
+::tcltest::test thtcl-14.1 {null?} {
+    scheme_str [eval_exp [parse "(null? 99)"]]
+} "#f"
+
+::tcltest::test thtcl-15.0 {number?} {
+    scheme_str [eval_exp [parse "(number? (list 1 2))"]]
+} "#f"
+
+::tcltest::test thtcl-15.1 {number?} {
+    scheme_str [eval_exp [parse "(number? 99)"]]
+} "#t"
+
+::tcltest::test thtcl-16.0 {symbol?} {
+    scheme_str [eval_exp [parse "(symbol? (list 1 2))"]]
+} "#f"
+
+::tcltest::test thtcl-17.0 {math} {
+    scheme_str [eval_exp [parse "(list (+ 1 1) (+ 2 2) (* 2 3) (expt 2 3))"]]
+} "(2 4 6 8.0)"
+
+::tcltest::cleanupTests

@@ -32,7 +32,7 @@ oo::class create Env {
 
 # populate the global environment
 
-Env create global_env pi 3.1415926535897931
+Env create global_env {pi #t #f} {3.1415926535897931 true false}
 
 foreach op {+ - * / > < >= <= == !=} { global_env set $op ::tcl::mathop::$op }
 
@@ -46,9 +46,7 @@ namespace eval ::thtcl {
 
 proc boolexpr {val} { uplevel [list if $val then {return true} else {return false}] }
 
-proc append {args} { concat {*}$args }
-
-proc apply {proc args} { eval_lambda $proc {*}$args }
+proc apply {proc args} { $proc {*}$args }
 
 proc car {list} { lindex $list 0 }
 
@@ -56,23 +54,17 @@ proc cdr {list} { lrange $list 1 end }
 
 proc cons {a list} { linsert $list 0 $a }
 
-proc eq? {a b} { return [boolexpr {$a eq $b}] }
+proc eq? {a b} { boolexpr {$a eq $b} }
 
-proc equal? {a b} { return [boolexpr {$a == $b}] }
+proc equal? {a b} { boolexpr {$a == $b} }
 
-proc length {list} { llength $list }
+proc map {proc list} { lmap elt $list { $proc $elt } }
 
-proc list {args} { ::list {*}$args }
+proc not {val} { boolexpr {!$val} }
 
-proc map {proc list} { lmap elt $list { eval_lambda $proc $elt } }
+proc null? {val} { boolexpr {$val eq {}} }
 
-proc not {val} { return [boolexpr {!$val}] }
-
-proc null? {val} { return [boolexpr {$val eq {}}] }
-
-proc number? {val} { return [boolexpr {[string is double $val]}] }
-
-proc print {val} { puts $val }
+proc number? {val} { boolexpr {[string is double $val]} }
 
 # non-standard definition of symbol?
 proc symbol? {exp {env ::global_env}} {
@@ -82,8 +74,12 @@ proc symbol? {exp {env ::global_env}} {
 
 }
 
-foreach func {append apply car cdr cons eq? equal? length list map not null? number? print symbol?} {
+foreach func {apply car cdr cons eq? equal? map not null? number? symbol?} {
     global_env set $func ::thtcl::$func
+}
+
+foreach {func impl} {append concat length llength list list print puts} {
+    global_env set $func ::$impl
 }
 
 # create Procedure class for closures
@@ -186,6 +182,8 @@ proc eval_exp {exp {env ::global_env}} {
     }
 }
 
+# Thtcl repl: raw_input, scheme_str, and repl
+
 proc raw_input {prompt} {
     puts -nonewline $prompt
     return [gets stdin]
@@ -195,7 +193,7 @@ proc scheme_str {val} {
     if {[llength $val] > 1} {
         set val "($val)"
     }
-    return [string map {\{ ( \} )} $val]
+    return [string map {\{ ( \} ) true #t false #f} $val]
 }
 
 proc repl {{prompt "Thtcl> "}} {
@@ -212,8 +210,3 @@ proc repl {{prompt "Thtcl> "}} {
 
 ###---
 # time {eval_exp [parse "(fact 100)"]} 10
-
-eval_exp [parse "(begin (define r 10) (* pi (* r r)))"]
-eval_exp [parse "(if (> (* 11 11) 120) (* 7 6) oops)"]
-eval_exp [parse "(list (+ 1 1) (+ 2 2) (* 2 3) (expt 2 3))"]
-

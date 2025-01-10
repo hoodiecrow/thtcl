@@ -1,7 +1,9 @@
 
 # populate the standard environment
 
-set standard_env [dict create pi 3.1415926535897931]
+unset -nocomplain standard_env
+
+set standard_env [dict create pi 3.1415926535897931 #t true #f false]
 
 foreach op {+ - * / > < >= <= == !=} { dict set standard_env $op ::tcl::mathop::$op }
 
@@ -15,9 +17,7 @@ namespace eval ::thtcl {
 
 proc boolexpr {val} { uplevel [list if $val then {return true} else {return false}] }
 
-proc append {args} { concat {*}$args }
-
-proc apply {proc args} { eval_lambda $proc {*}$args }
+proc apply {proc args} { $proc {*}$args }
 
 proc car {list} { lindex $list 0 }
 
@@ -25,30 +25,28 @@ proc cdr {list} { lrange $list 1 end }
 
 proc cons {a list} { linsert $list 0 $a }
 
-proc eq? {a b} { return [boolexpr {$a eq $b}] }
+proc eq? {a b} { boolexpr {$a eq $b} }
 
-proc equal? {a b} { return [boolexpr {$a == $b}] }
+proc equal? {a b} { boolexpr {$a == $b} }
 
-proc length {list} { llength $list }
+proc map {proc list} { lmap elt $list { $proc $elt } }
 
-proc list {args} { ::list {*}$args }
+proc not {val} { boolexpr {!$val} }
 
-proc map {proc list} { lmap elt $list { eval_lambda $proc $elt } }
+proc null? {val} { boolexpr {$val eq {}} }
 
-proc not {val} { return [boolexpr {!$val}] }
-
-proc null? {val} { return [boolexpr {$val eq {}}] }
-
-proc number? {val} { return [boolexpr {[string is double $val]}] }
-
-proc print {val} { puts $val }
+proc number? {val} { boolexpr {[string is double $val]} }
 
 # non-standard definition of symbol?
-proc symbol? {exp} { return [boolexpr {$exp in [dict keys $::standard_env]}] }
+proc symbol? {exp} { boolexpr {$exp in [dict keys $::standard_env]} }
 }
 
-foreach func {append apply car cdr cons eq? equal? length list map not null? number? print symbol?} {
+foreach func {apply car cdr cons eq? equal? map not null? number? symbol?} {
     dict set standard_env $func ::thtcl::$func
+}
+
+foreach {func impl} {append concat length llength list list print puts} {
+    dict set standard_env $func ::$impl
 }
 
 # Thtcl interpreter: parse and eval_exp
@@ -91,7 +89,8 @@ proc eval_exp {exp} {
             # procedure call
             if {[::thtcl::symbol? $op]} {
                 set fn [eval_exp $op]
-                return [[eval_exp [lindex $exp 0]] {*}[lmap arg [lrange $exp 1 end] {eval_exp $arg}]]
+                set vals [lmap arg $args {eval_exp $arg}]
+                return [$fn {*}$vals]
             }
         }
     }
@@ -108,7 +107,7 @@ proc scheme_str {val} {
     if {[llength $val] > 1} {
         set val "($val)"
     }
-    return [string map {\{ ( \} )} $val]
+    return [string map {\{ ( \} ) true #t false #f} $val]
 }
 
 proc repl {{prompt "Thtcl> "}} {
@@ -122,10 +121,3 @@ proc repl {{prompt "Thtcl> "}} {
         }
     }
 }
-
-###---
-
-eval_exp [parse "(begin (define r 10) (* pi (* r r)))"]
-eval_exp [parse "(if (> (* 11 11) 120) (* 7 6) oops)"]
-eval_exp [parse "(list (+ 1 1) (+ 2 2) (* 2 3) (expt 2 3))"]
-
