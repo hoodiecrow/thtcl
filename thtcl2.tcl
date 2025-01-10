@@ -97,7 +97,8 @@ proc eval_exp {exp {env ::global_env}} {
         define {
             # definition
             lassign $args sym val
-            return [$env set $sym [eval_exp $val $env]]
+            $env set $sym [eval_exp $val $env]
+            return {}
         }
         set! {
             # assignment

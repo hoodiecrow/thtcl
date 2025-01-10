@@ -95,4 +95,8 @@ source thtcl1.tcl
     scheme_str [eval_exp [parse "(list (+ 1 1) (+ 2 2) (* 2 3) (expt 2 3))"]]
 } "(2 4 6 8.0)"
 
+::tcltest::test thtcl1-18.0 {procedure call with a list operator} {
+    scheme_str [eval_exp [parse "((if #t + *) 2 3)"]]
+} "5"
+
 ::tcltest::cleanupTests

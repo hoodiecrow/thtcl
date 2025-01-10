@@ -9,7 +9,7 @@ foreach op {+ - * / > < >= <=} { dict set standard_env $op ::tcl::mathop::$op }
 
 dict set standard_env = ::tcl::mathop::==
 
-foreach fn {abs max min round} { dict set standard_env $fn ::tcl::mathfunc::$fn }
+foreach fn {abs max min round sqrt} { dict set standard_env $fn ::tcl::mathfunc::$fn }
 
 dict set standard_env expt ::tcl::mathfunc::pow
 

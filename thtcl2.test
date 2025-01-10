@@ -68,4 +68,8 @@ source thtcl2.tcl
     scheme_str [eval_exp [parse "(map fib (range 0 20))"]]
 } "(1 1 2 3 5 8 13 21 34 55 89 144 233 377 610 987 1597 2584 4181 6765)"
 
+::tcltest::test thtcl2-6.0 {procedure call with a list operator} {
+    scheme_str [eval_exp [parse "((if #t + *) 2 3)"]]
+} "5"
+
 ::tcltest::cleanupTests

@@ -33,15 +33,14 @@ proc eval_exp {exp} {
         define {
             # definition
             lassign $args sym val
-            return [dict set standard_env $sym [eval_exp $val]]
+            dict set standard_env $sym [eval_exp $val]
+            return {}
         }
         default {
             # procedure call
-            if {[::thtcl::symbol? $op]} {
-                set fn [eval_exp $op]
-                set vals [lmap arg $args {eval_exp $arg}]
-                return [$fn {*}$vals]
-            }
+            set fn [eval_exp $op]
+            set vals [lmap arg $args {eval_exp $arg}]
+            return [$fn {*}$vals]
         }
     }
 }
