@@ -1,7 +1,11 @@
 
+# populate the standard environment
+
+source standard_env.tcl
+
 # create the Env class for environments
 
-Env destroy
+catch { Env destroy }
 
 oo::class create Env {
     variable bindings outer_env
@@ -32,59 +36,21 @@ oo::class create Env {
 
 # populate the global environment
 
-Env create global_env {pi #t #f} {3.1415926535897931 true false}
+Env create global_env {} {}
 
-foreach op {+ - * / > < >= <= == !=} { global_env set $op ::tcl::mathop::$op }
-
-foreach fn {abs max min round} { global_env set $fn ::tcl::mathfunc::$fn }
-
-global_env set expt ::tcl::mathfunc::pow
-
-namespace eval ::thtcl {
-
-# not implemented: list?, procedure?
-
-proc boolexpr {val} { uplevel [list if $val then {return true} else {return false}] }
-
-proc apply {proc args} { $proc {*}$args }
-
-proc car {list} { lindex $list 0 }
-
-proc cdr {list} { lrange $list 1 end }
-
-proc cons {a list} { linsert $list 0 $a }
-
-proc eq? {a b} { boolexpr {$a eq $b} }
-
-proc equal? {a b} { boolexpr {$a == $b} }
-
-proc map {proc list} { lmap elt $list { $proc $elt } }
-
-proc not {val} { boolexpr {!$val} }
-
-proc null? {val} { boolexpr {$val eq {}} }
-
-proc number? {val} { boolexpr {[string is double $val]} }
+foreach sym [dict keys $standard_env] {
+    global_env set $sym [dict get $standard_env $sym]
+}
 
 # non-standard definition of symbol?
-proc symbol? {exp {env ::global_env}} {
+proc ::thtcl::symbol? {exp {env ::global_env}} {
     set actual_env [$env find $exp]
     if {$actual_env ne {}} then {return $actual_env} else {return false}
 }
 
-}
-
-foreach func {apply car cdr cons eq? equal? map not null? number? symbol?} {
-    global_env set $func ::thtcl::$func
-}
-
-foreach {func impl} {append concat length llength list list print puts} {
-    global_env set $func ::$impl
-}
-
 # create Procedure class for closures
 
-Procedure destroy
+catch { Procedure destroy }
 
 oo::class create Procedure {
     variable parms body env
@@ -98,11 +64,7 @@ oo::class create Procedure {
     }
 }
 
-# Thtcl interpreter: parse and eval_exp
-
-proc parse {str} {
-    return [lindex [list [string map {( \{ ) \}} $str]] 0 0]
-}
+# Thtcl interpreter: eval_exp
 
 proc eval_exp {exp {env ::global_env}} {
     # symbol reference
@@ -130,7 +92,7 @@ proc eval_exp {exp {env ::global_env}} {
         if {
             # conditional
             lassign $args c t f
-            return [if {[eval_exp $c $env]} then {eval_exp $t $env} else {eval_exp $f $env}]
+            return [if {[eval_exp $c $env] ni {0 false {}}} then {eval_exp $t $env} else {eval_exp $f $env}]
         }
         define {
             # definition
@@ -142,6 +104,8 @@ proc eval_exp {exp {env ::global_env}} {
             lassign $args sym val
             if {[set actual_env [::thtcl::symbol? $sym $env]] ne false} {
                 return [$actual_env set $sym [eval_exp $val $env]]
+            } else {
+                error "trying to assign to an unbound symbol"
             }
         }
         and {
@@ -169,8 +133,18 @@ proc eval_exp {exp {env ::global_env}} {
         }
         default {
             # procedure call
+            # TODO should be a single case
             if {[set func_env [::thtcl::symbol? $op $env]] ne false} {
                 set fn [eval_exp $op $func_env]
+                set vals [lmap arg $args {eval_exp $arg $env}]
+                if {[info object isa typeof $fn Procedure]} {
+                    return [$fn call $vals]
+                } else {
+                    return [$fn {*}$vals]
+                }
+            } else {
+                # when the operator is an expression
+                set fn [eval_exp $op $env]
                 set vals [lmap arg $args {eval_exp $arg $env}]
                 if {[info object isa typeof $fn Procedure]} {
                     return [$fn call $vals]
@@ -182,31 +156,10 @@ proc eval_exp {exp {env ::global_env}} {
     }
 }
 
-# Thtcl repl: raw_input, scheme_str, and repl
+# Thtcl repl: raw_input, scheme_str, parse, and repl
 
-proc raw_input {prompt} {
-    puts -nonewline $prompt
-    return [gets stdin]
-}
-
-proc scheme_str {val} {
-    if {[llength $val] > 1} {
-        set val "($val)"
-    }
-    return [string map {\{ ( \} ) true #t false #f} $val]
-}
-
-proc repl {{prompt "Thtcl> "}} {
-    while true {
-        set str [raw_input $prompt]
-        if {$str eq ""} break
-        set val [eval_exp [parse $str]]
-        # should be None
-        if {$val ne {}} {
-            puts [scheme_str $val]
-        }
-    }
-}
+source repl.tcl
 
 ###---
+# eval_exp [parse "(define fact (lambda (n) (if (<= n 1) 1 (* n (fact (- n 1))))))"]
 # time {eval_exp [parse "(fact 100)"]} 10
