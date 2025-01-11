@@ -98,6 +98,8 @@ The Calculator uses a single environment for all variables (bound symbols). The 
 | sqrt | ::tcl::mathfunc::sqrt | Takes an _arg_ (any non-negative numeric value), returns a floating-point value that is the square root of _arg_ |
 | symbol? | ::thtcl::symbol? | Takes an _obj_, returns true if _obj_ is a valid symbol, otherwise returns false. |
 
+The code that sets up the standard environment is in __standard_env.tcl__.
+
 ### The REPL
 
 The REPL (read-eval-print loop) is a loop that repeatedly _reads_ a Scheme source string from the user through the command __raw_input__ (breaking the loop if given an empty line), _evaluates_ it using __parse__ and the current __eval_exp__, and _prints_ the result after filtering it through __scheme_str__.
