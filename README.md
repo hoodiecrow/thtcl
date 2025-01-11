@@ -100,6 +100,38 @@ The Calculator uses a single environment for all variables (bound symbols). The 
 
 ### The REPL
 
+The REPL (read-eval-print loop) is a loop that repeatedly takes a Scheme source string from the user through the command __raw_input__ (breaking the loop if given an empty line), evaluates it using __parse__ and the current __eval_exp__, and prints the result after filtering it through __scheme_str__.
+
+```
+proc raw_input {prompt} {
+    puts -nonewline $prompt
+    return [gets stdin]
+}
+
+proc scheme_str {val} {
+    if {[llength $val] > 1} {
+        set val "($val)"
+    }
+    return [string map {\{ ( \} ) true #t false #f} $val]
+}
+
+proc parse {str} {
+    return [lindex [list [string map {( \{ ) \}} $str]] 0 0]
+}
+
+proc repl {{prompt "Thtcl> "}} {
+    while true {
+        set str [raw_input $prompt]
+        if {$str eq ""} break
+        set val [eval_exp [parse $str]]
+        # should be None
+        if {$val ne {}} {
+            puts [scheme_str $val]
+        }
+    }
+}
+```
+
 ## Level 2 Full Thtcl
 
 The second level of the interpreter has a full set of syntactic forms and a dynamic structure of variable environments. It is defined in the source file thtcl2.tcl which defines the procedure __eval_exp__ which recognizes and processes the following syntactic forms:
