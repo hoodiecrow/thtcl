@@ -20,8 +20,8 @@ The first level of the interpreter has a reduced set of syntactic forms and a si
 
 The Calculator uses a single environment for all variables (bound symbols). The following symbols make up the standard environment:
 
-| Symbol | Definition | Description |
-|--------|------------|-------------|
+| Symbol | Tcl Definition | Description |
+|--------|----------------|-------------|
 | #f | false |  |
 | #t | true |  |
 | * | ::tcl::mathop::* |  |
