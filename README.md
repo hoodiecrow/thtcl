@@ -92,6 +92,8 @@ https://github.com/hoodiecrow/thtcl/blob/be9cd4dae695c8b119f065eeddbf10427b94ef5
 
 ### Procedure class and objects
 
+https://github.com/hoodiecrow/thtcl/blob/b9ee0327fc596b74a25a49488c0d1607111631d1/procedure.class#L5-L15
+
 ## Level 3 Advanced Thtcl
 
 I may have to leave this for the reader as an exercise.
