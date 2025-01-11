@@ -3,6 +3,8 @@ A small Lisp interpreter in Tcl inspired by Peter Norvig's [Lispy](https://norvi
 
 The name Thtcl comes from Lisp + Tcl.
 
+To use, place all the source files (.tcl and .class) in a directory. Start __tkcon__ and navigate to the directory. Source either thtcl1.tcl or thtcl2.tcl. Use the __repl__ command to run a dialog loop with the interpreter.
+
 ## Level 1 Thtcl Calculator
 
 The first level of the interpreter has a reduced set of syntactic forms and a single variable environment. It is defined in the source file thtcl1.tcl which defines the procedure __eval_exp__ which recognizes and processes the following syntactic forms:
