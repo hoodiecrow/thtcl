@@ -88,7 +88,7 @@ On creation, the Env class takes a list of parameters, a list of arguments, and 
 | get    | Given a symbol, retrieves the value the symbol is bound to in the environment |
 | set    | Given a symbol and a value, binds the symbol to the value in the environment |
 
-
+https://github.com/hoodiecrow/thtcl/blob/be9cd4dae695c8b119f065eeddbf10427b94ef58/env.class#L5-L30
 
 ### Procedure class and objects
 
