@@ -16,6 +16,48 @@ The first level of the interpreter has a reduced set of syntactic forms and a si
 | [definition](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-8.html#%_sec_5.2) | __define__ _symbol_ _expression_ | A definition binds the _symbol_ to the value of the _expression_. A definition does not evaluate to anything. Example: (define r 10) ⇒ |
 | [procedure call](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.3) | _proc_ _expression_... | If _proc_ is anything other than __begin__, __if__, or __define__, it is treated as a procedure. Evaluate _proc_ and all the _args_, and then the procedure is applied to the list of _arg_ values. Example: (sqrt (+ 4 12)) ⇒ 4.0
 
+```
+proc eval_exp {exp} {
+    global standard_env
+    # variable reference
+    if {[::thtcl::symbol? $exp]} {
+        return [dict get $standard_env $exp]
+    }
+    # constant literal
+    if {[::thtcl::number? $exp]} {
+        return $exp
+    }
+    set args [lassign $exp op]
+    switch $op {
+        begin {
+            # sequencing
+            set v [list]
+            foreach arg $args {
+                set v [eval_exp $arg]
+            }
+            return $v
+        }
+        if {
+            # conditional
+            lassign $args cond conseq alt
+            return [if {[eval_exp $cond] ni {0 false {}}} then {eval_exp $conseq} else {eval_exp $alt}]
+        }
+        define {
+            # definition
+            lassign $args sym val
+            dict set standard_env $sym [eval_exp $val]
+            return {}
+        }
+        default {
+            # procedure call
+            set fn [eval_exp $op]
+            set vals [lmap arg $args {eval_exp $arg}]
+            return [$fn {*}$vals]
+        }
+    }
+}
+```
+
 ### The standard environment
 
 The Calculator uses a single environment for all variables (bound symbols). The following symbols make up the standard environment:
