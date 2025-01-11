@@ -7,7 +7,7 @@ source standard_env.tcl
 
 proc eval_exp {exp} {
     global standard_env
-    # symbol reference
+    # variable reference
     if {[::thtcl::symbol? $exp]} {
         return [dict get $standard_env $exp]
     }
@@ -28,7 +28,7 @@ proc eval_exp {exp} {
         if {
             # conditional
             lassign $args cond conseq alt
-            return [if {[eval_exp $cond]} then {eval_exp $conseq} else {eval_exp $alt}]
+            return [if {[eval_exp $cond] ni {0 false {}}} then {eval_exp $conseq} else {eval_exp $alt}]
         }
         define {
             # definition

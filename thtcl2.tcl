@@ -20,7 +20,7 @@ source procedure.class
 # Thtcl interpreter: eval_exp
 
 proc eval_exp {exp {env ::global_env}} {
-    # symbol reference
+    # variable reference
     if {[set actual_env [$env find $exp]] ne {}} {
         return [$actual_env get $exp]
     }
@@ -46,23 +46,6 @@ proc eval_exp {exp {env ::global_env}} {
             # conditional
             lassign $args c t f
             return [if {[eval_exp $c $env] ni {0 false {}}} then {eval_exp $t $env} else {eval_exp $f $env}]
-        }
-        define {
-            # definition
-            lassign $args sym val
-            $env set $sym [eval_exp $val $env]
-            return {}
-        }
-        set! {
-            # assignment
-            lassign $args sym val
-            if {[set actual_env [$env find $sym]] ne {}} {
-                set val [eval_exp $val $env]
-                $actual_env set $sym $val
-                return $val
-            } else {
-                error "trying to assign to an unbound symbol"
-            }
         }
         and {
             # conjunction
@@ -90,6 +73,23 @@ proc eval_exp {exp {env ::global_env}} {
                 return $v
             }
         }
+        define {
+            # definition
+            lassign $args sym val
+            $env set $sym [eval_exp $val $env]
+            return {}
+        }
+        set! {
+            # assignment
+            lassign $args sym val
+            if {[set actual_env [$env find $sym]] ne {}} {
+                set val [eval_exp $val $env]
+                $actual_env set $sym $val
+                return $val
+            } else {
+                error "trying to assign to an unbound symbol"
+            }
+        }
         lambda {
             # procedure definition
             lassign $args parms body
@@ -100,7 +100,7 @@ proc eval_exp {exp {env ::global_env}} {
             set fn [eval_exp $op $env]
             set vals [lmap arg $args {eval_exp $arg $env}]
             if {[info object isa typeof $fn Procedure]} {
-                return [$fn call $vals]
+                return [$fn call {*}$vals]
             } else {
                 return [$fn {*}$vals]
             }

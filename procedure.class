@@ -9,8 +9,8 @@ oo::class create Procedure {
         set body $b
         set env $e
     }
-    method call {vals} {
-        eval_exp $body [Env new $parms $vals $env]
+    method call {args} {
+        eval_exp $body [Env new $parms $args $env]
     }
 }
 

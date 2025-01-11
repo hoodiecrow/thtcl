@@ -46,6 +46,14 @@ source thtcl1.tcl
     scheme_str [eval_exp [parse "(equal? 1 1.0)"]]
 } "#f"
 
+::tcltest::test thtcl1-9.2 {equal? : =} {
+    scheme_str [eval_exp [parse "(= 1 1)"]]
+} "#t"
+
+::tcltest::test thtcl1-9.3 {equal? : =} {
+    scheme_str [eval_exp [parse "(= 1 1.0)"]]
+} "#t"
+
 ::tcltest::test thtcl1-10.0 {length} {
     scheme_str [eval_exp [parse "(length (list 1 2 3))"]]
 } "3"

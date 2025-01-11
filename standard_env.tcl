@@ -5,7 +5,7 @@ unset -nocomplain standard_env
 
 set standard_env [dict create pi 3.1415926535897931 #t true #f false]
 
-foreach op {+ - * / > < >= <=} { dict set standard_env $op ::tcl::mathop::$op }
+foreach op {+ - * /} { dict set standard_env $op ::tcl::mathop::$op }
 
 dict set standard_env = ::tcl::mathop::==
 
@@ -18,6 +18,12 @@ namespace eval ::thtcl {
 # not implemented: list?, procedure?
 
 proc boolexpr {val} { uplevel [list if $val then {return true} else {return false}] }
+
+foreach op {> < >= <=} {
+    proc $op {args} [list boolexpr [concat \[::tcl::mathop::$op \{*\}\$args\]] ]
+}
+
+proc = {args} { boolexpr {[::tcl::mathop::== {*}$args]} }
 
 proc apply {proc args} {
     if {[info object isa typeof $proc Procedure]} {
@@ -56,7 +62,7 @@ proc number? {val} { boolexpr {[string is double $val]} }
 proc symbol? {exp} { boolexpr {![string is double $exp] && " " ni [split $exp {}]} }
 }
 
-foreach func {apply car cdr cons eq? equal? map not null? number? symbol?} {
+foreach func {> < >= <= = apply car cdr cons eq? equal? map not null? number? symbol?} {
     dict set standard_env $func ::thtcl::$func
 }
 
