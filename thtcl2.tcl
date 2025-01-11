@@ -3,36 +3,8 @@
 
 source standard_env.tcl
 
-# create the Env class for environments
-
-catch { Env destroy }
-
-oo::class create Env {
-    variable bindings outer_env
-    constructor {parms args {outer {}}} {
-        set bindings [dict create]
-        foreach p $parms a $args {
-            my set $p $a
-        }
-        set outer_env $outer
-    }
-    method find {sym} {
-        if {$sym in [dict keys $bindings]} {
-            return [self]
-        } elseif {$outer_env eq {}} {
-            return {}
-        } else {
-            return [$outer_env find $sym]
-        }
-    }
-    method get {sym} {
-        dict get $bindings $sym
-    }
-    method set {sym val} {
-        dict set bindings $sym $val
-        return {}
-    }
-}
+# load the Env class for environments
+source env.class
 
 # populate the global environment
 
@@ -40,12 +12,6 @@ Env create global_env {} {}
 
 foreach sym [dict keys $standard_env] {
     global_env set $sym [dict get $standard_env $sym]
-}
-
-# non-standard definition of symbol?
-proc ::thtcl::symbol? {exp {env ::global_env}} {
-    set actual_env [$env find $exp]
-    if {$actual_env ne {}} then {return $actual_env} else {return false}
 }
 
 # create Procedure class for closures
@@ -68,7 +34,7 @@ oo::class create Procedure {
 
 proc eval_exp {exp {env ::global_env}} {
     # symbol reference
-    if {[set actual_env [::thtcl::symbol? $exp $env]] ne false} {
+    if {[set actual_env [$env find $exp]] ne {}} {
         return [$actual_env get $exp]
     }
     # constant literal
@@ -103,8 +69,10 @@ proc eval_exp {exp {env ::global_env}} {
         set! {
             # assignment
             lassign $args sym val
-            if {[set actual_env [::thtcl::symbol? $sym $env]] ne false} {
-                return [$actual_env set $sym [eval_exp $val $env]]
+            if {[set actual_env [$env find $sym]] ne {}} {
+                set val [eval_exp $val $env]
+                $actual_env set $sym $val
+                return $val
             } else {
                 error "trying to assign to an unbound symbol"
             }
@@ -114,18 +82,26 @@ proc eval_exp {exp {env ::global_env}} {
             set v true
             foreach arg $args {
                 set v [eval_exp $arg $env]
-                if {!$v} {return false}
+                if {$v in {0 false {}}} {return false}
             }
-            return $v
+            if {$v in {1 yes true}} {
+                return true
+            } else {
+                return $v
+            }
         }
         or {
             # disjunction
             set v false
             foreach arg $args {
                 set v [eval_exp $arg $env]
-                if {$v} {return $v}
+                if {$v ni {0 false {}}} {break}
             }
-            return $v
+            if {$v in {1 yes true}} {
+                return true
+            } else {
+                return $v
+            }
         }
         lambda {
             # procedure definition
@@ -134,24 +110,12 @@ proc eval_exp {exp {env ::global_env}} {
         }
         default {
             # procedure call
-            # TODO should be a single case
-            if {[set func_env [::thtcl::symbol? $op $env]] ne false} {
-                set fn [eval_exp $op $func_env]
-                set vals [lmap arg $args {eval_exp $arg $env}]
-                if {[info object isa typeof $fn Procedure]} {
-                    return [$fn call $vals]
-                } else {
-                    return [$fn {*}$vals]
-                }
+            set fn [eval_exp $op $env]
+            set vals [lmap arg $args {eval_exp $arg $env}]
+            if {[info object isa typeof $fn Procedure]} {
+                return [$fn call $vals]
             } else {
-                # when the operator is an expression
-                set fn [eval_exp $op $env]
-                set vals [lmap arg $args {eval_exp $arg $env}]
-                if {[info object isa typeof $fn Procedure]} {
-                    return [$fn call $vals]
-                } else {
-                    return [$fn {*}$vals]
-                }
+                return [$fn {*}$vals]
             }
         }
     }

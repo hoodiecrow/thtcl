@@ -35,7 +35,7 @@ proc cons {a list} { linsert $list 0 $a }
 
 proc eq? {a b} { boolexpr {$a eq $b} }
 
-proc equal? {a b} { boolexpr {$a == $b} }
+proc equal? {a b} { boolexpr {$a eq $b} }
 
 proc map {proc list} {
     if {[info object isa typeof $proc Procedure]} {
@@ -53,7 +53,7 @@ proc null? {val} { boolexpr {$val eq {}} }
 proc number? {val} { boolexpr {[string is double $val]} }
 
 # non-standard definition of symbol?
-proc symbol? {exp} { boolexpr {$exp in [dict keys $::standard_env]} }
+proc symbol? {exp} { boolexpr {![string is double $exp] && " " ni [split $exp {}]} }
 }
 
 foreach func {apply car cdr cons eq? equal? map not null? number? symbol?} {

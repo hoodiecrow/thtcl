@@ -72,4 +72,57 @@ source thtcl2.tcl
     scheme_str [eval_exp [parse "((if #t + *) 2 3)"]]
 } "5"
 
+::tcltest::test thtcl2-7.0 {assignment} {
+    scheme_str [eval_exp [parse "(begin (define r 10) (set! r 20) r)"]]
+} "20"
+
+::tcltest::test thtcl2-7.1 {assignment returns a value} {
+    scheme_str [eval_exp [parse "(begin (define r 10) (set! r 20))"]]
+} "20"
+
+::tcltest::test thtcl2-7.2 {assignment to an unbound symbol} -body {
+    scheme_str [eval_exp [parse "(begin (set! XX 20))"]]
+} -returnCodes error -result "trying to assign to an unbound symbol"
+
+::tcltest::test thtcl2-8.0 {procedure definition} -body {
+    scheme_str [eval_exp [parse "(lambda (r) (* r r))"]]
+} -match regexp -result "::oo::Obj\\d+"
+
+::tcltest::test thtcl2-9.0 {symbol?} {
+    scheme_str [eval_exp [parse "(symbol? (quote foo99))"]]
+} "#t"
+
+::tcltest::test thtcl2-10.0 {shadowing} {
+    scheme_str [eval_exp [parse "(begin (define r 10) (define f (lambda (r) set! r 20)) r)"]]
+} "10"
+
+#-constraints knownBug 
+::tcltest::test thtcl2-11.0 {and} -body {
+    scheme_str [eval_exp [parse "(and (= 2 2) (> 2 1))"]]
+} -result "#t"
+
+::tcltest::test thtcl2-11.1 {and} {
+    scheme_str [eval_exp [parse "(and (= 2 2) (< 2 1))"]]
+} "#f"
+
+::tcltest::test thtcl2-11.2 {and} {
+    scheme_str [eval_exp [parse "(and)"]]
+} "#t"
+
+::tcltest::test thtcl2-11.3 {and} {
+    scheme_str [eval_exp [parse "(and 1 2 (quote c) (quote (f g)))"]]
+} "(f g)"
+
+::tcltest::test thtcl2-12.0 {or} {
+    scheme_str [eval_exp [parse "(or (= 2 2) (> 2 1))"]]
+} "#t"
+
+::tcltest::test thtcl2-12.1 {or} {
+    scheme_str [eval_exp [parse "(or (= 2 2) (< 2 1))"]]
+} "#t"
+
+::tcltest::test thtcl2-12.1 {or} {
+    scheme_str [eval_exp [parse "(or #f #f #f)"]]
+} "#f"
+
 ::tcltest::cleanupTests

@@ -44,7 +44,7 @@ source thtcl1.tcl
 
 ::tcltest::test thtcl1-9.1 {equal?} {
     scheme_str [eval_exp [parse "(equal? 1 1.0)"]]
-} "#t"
+} "#f"
 
 ::tcltest::test thtcl1-10.0 {length} {
     scheme_str [eval_exp [parse "(length (list 1 2 3))"]]
@@ -89,6 +89,10 @@ source thtcl1.tcl
 
 ::tcltest::test thtcl1-16.0 {symbol?} {
     scheme_str [eval_exp [parse "(symbol? (list 1 2))"]]
+} "#f"
+
+::tcltest::test thtcl1-16.1 {symbol?} {
+    scheme_str [eval_exp [parse "(symbol? 99)"]]
 } "#f"
 
 ::tcltest::test thtcl1-17.0 {math} {
