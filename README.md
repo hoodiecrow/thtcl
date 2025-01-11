@@ -116,7 +116,7 @@ proc scheme_str {val} {
 }
 
 proc parse {str} {
-    return [lindex [list [string map {( \{ ) \}} $str]] 0 0]
+    return [lindex [string map {( \{ ) \}} $str] 0]
 }
 
 proc repl {{prompt "Thtcl> "}} {
