@@ -28,11 +28,11 @@ The Calculator uses a single environment for all variables (bound symbols). The 
 | + | ::tcl::mathop::+ | Addition operator |
 | - | ::tcl::mathop::- | Subtraction operator |
 | / | ::tcl::mathop::/ | Division operator |
-| < | ::tcl::mathop::< | Less-than operator |
-| <= | ::tcl::mathop::<= | Less-than-or-equal operator |
-| = | ::tcl::mathop::== | Equality operator |
-| > | ::tcl::mathop::> | Greater-than operator |
-| >= | ::tcl::mathop::>= | Greater-than-or-equal operator |
+| < | ::thtcl::< | Less-than operator |
+| <= | ::thtcl::<= | Less-than-or-equal operator |
+| = | ::thtcl::== | Equality operator |
+| > | ::thtcl::> | Greater-than operator |
+| >= | ::thtcl::>= | Greater-than-or-equal operator |
 | abs | ::tcl::mathfunc::abs | Absolute value |
 | append | ::concat | Concatenates (one level of) sublists to a single list |
 | apply | ::thtcl::apply | Takes an operator and a list of arguments and applies the operator to them |
@@ -88,11 +88,50 @@ On creation, the Env class takes a list of parameters, a list of arguments, and 
 | get    | Given a symbol, retrieves the value the symbol is bound to in the environment |
 | set    | Given a symbol and a value, binds the symbol to the value in the environment |
 
-https://github.com/hoodiecrow/thtcl/blob/be9cd4dae695c8b119f065eeddbf10427b94ef58/env.class#L5-L30
+```
+oo::class create Env {
+    variable bindings outer_env
+    constructor {parms args {outer {}}} {
+        foreach p $parms a $args {
+            my set $p $a
+        }
+        set outer_env $outer
+    }
+    method find {sym} {
+        if {$sym in [dict keys $bindings]} {
+            return [self]
+        } else {
+            if {$outer_env eq {}} {
+                # no more environments to search
+                return {}
+            }
+            return [$outer_env find $sym]
+        }
+    }
+    method get {sym} {
+        dict get $bindings $sym
+    }
+    method set {sym val} {
+        dict set bindings $sym $val
+    }
+}
+```
 
 ### Procedure class and objects
 
-https://github.com/hoodiecrow/thtcl/blob/b9ee0327fc596b74a25a49488c0d1607111631d1/procedure.class#L5-L15
+```
+oo::class create Procedure {
+    variable parms body env
+    constructor {p b e} {
+        set parms $p
+        set body $b
+        set env $e
+    }
+    method call {args} {
+        eval_exp $body [Env new $parms $args $env]
+    }
+}
+```
 
 ## Level 3 Advanced Thtcl
 
