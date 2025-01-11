@@ -14,21 +14,8 @@ foreach sym [dict keys $standard_env] {
     global_env set $sym [dict get $standard_env $sym]
 }
 
-# create Procedure class for closures
-
-catch { Procedure destroy }
-
-oo::class create Procedure {
-    variable parms body env
-    constructor {p b e} {
-        set parms $p
-        set body $b
-        set env $e
-    }
-    method call {vals} {
-        eval_exp $body [Env new $parms $vals $env]
-    }
-}
+# load the Procedure class for closures
+source procedure.class
 
 # Thtcl interpreter: eval_exp
 
