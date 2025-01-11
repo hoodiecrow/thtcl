@@ -187,7 +187,7 @@ oo::class create Env {
 }
 ```
 
-On startup, an __Env__ object called __global_env__ is created and populated with all the definitions from __standard_env__. Thereafter, each time a user-defined procedure is called a new __Env__ object is created to hold the bindings that the call closes over, and also a link to the outer environment (the one the call was evaluated in).
+On startup, an __Env__ object called __global_env__ is created and populated with all the definitions from __standard_env__. Thereafter, each time a user-defined procedure is called a new __Env__ object is created to hold the bindings introduced by the call, and also a link to the outer environment (the one closed over when the procedure was created).
 
 
 ### Procedure class and objects
