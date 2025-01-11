@@ -5,7 +5,7 @@ The name Thtcl comes from Lisp + Tcl.
 
 ## Level 1 Thtcl Calculator
 
-The first level of the interpreter has a reduced set of syntactic forms and a single variable environment. It is defined in the source file thtcl1.tcl. 
+The first level of the interpreter has a reduced set of syntactic forms and a single variable environment. It is defined in the source file thtcl1.tcl which defines the procedure __eval_exp__ which recognizes and processes the following syntactic forms:
 
 | Syntactic form | Syntax | Semantics |
 |----------------|--------|-----------|
@@ -22,39 +22,39 @@ The Calculator uses a single environment for all variables (bound symbols). The 
 
 | Symbol | Tcl Definition | Description |
 |--------|----------------|-------------|
-| #f | false |  |
-| #t | true |  |
-| * | ::tcl::mathop::* |  |
-| + | ::tcl::mathop::+ |  |
-| - | ::tcl::mathop::- |  |
-| / | ::tcl::mathop::/ |  |
-| < | ::tcl::mathop::< |  |
-| <= | ::tcl::mathop::<= |  |
-| = | ::tcl::mathop::== |  |
-| > | ::tcl::mathop::> |  |
-| >= | ::tcl::mathop::>= |  |
-| abs | ::tcl::mathfunc::abs |  |
-| append | ::concat |  |
-| apply | ::thtcl::apply |  |
-| car | ::thtcl::car |  |
-| cdr | ::thtcl::cdr |  |
-| cons | ::thtcl::cons |  |
-| eq? | ::thtcl::eq? |  |
-| equal? | ::thtcl::equal? |  |
-| expt | ::tcl::mathfunc::pow |  |
-| length | ::llength |  |
-| list | ::list |  |
-| map | ::thtcl::map |  |
-| max | ::tcl::mathfunc::max |  |
-| min | ::tcl::mathfunc::min |  |
-| not | ::thtcl::not |  |
-| null? | ::thtcl::null? |  |
-| number? | ::thtcl::number? |  |
+| #f | false | In this interpreter, #f is a symbol bound to Tcl falsehood |
+| #t | true | Likewise with truth |
+| * | ::tcl::mathop::* | Multiplication operator |
+| + | ::tcl::mathop::+ | Addition operator |
+| - | ::tcl::mathop::- | Subtraction operator |
+| / | ::tcl::mathop::/ | Integer division operator |
+| < | ::tcl::mathop::< | Less-than operator |
+| <= | ::tcl::mathop::<= | Less-than-or-equal operator |
+| = | ::tcl::mathop::== | Equality operator |
+| > | ::tcl::mathop::> | Greater-than operator |
+| >= | ::tcl::mathop::>= | Greater-than-or-equal operator |
+| abs | ::tcl::mathfunc::abs | Absolute value |
+| append | ::concat | Concatenates (one level of) sublists to a single list |
+| apply | ::thtcl::apply | Takes an operator and a list of arguments and applies the operator to them |
+| car | ::thtcl::car | Takes a list and returns the first item |
+| cdr | ::thtcl::cdr | Takes a list and returns it with the first item removed |
+| cons | ::thtcl::cons | Takes an item and a list and constructs a list where the item is the first item in the list |
+| eq? | ::thtcl::eq? | Takes two objects and returns true if their string form is the same, false otherwise |
+| equal? | ::thtcl::equal? | In this interpreter, the same as __eq?__ |
+| expt | ::tcl::mathfunc::pow | Takes two objects _a_ and _b_ and returns _a<sup>b</sup>_ |
+| length | ::llength | Takes a list, returns the number of items in it |
+| list | ::list | Takes a number of objects and returns them inside a list |
+| map | ::thtcl::map | Takes an operator and a list, returns a list of results of applying the operator to each item in the list |
+| max | ::tcl::mathfunc::max | Takes one or more numbers, returns the number with the greatest value |
+| min | ::tcl::mathfunc::min | Takes one or more numbers, returns the number with the smallest value |
+| not | ::thtcl::not | Takes an _obj_, returns true if _obj_ is false, and returns false otherwise. |
+| null? | ::thtcl::null? | Takes an _obj_, returns true if _obj_ is the empty list, otherwise returns false. |
+| number? | ::thtcl::number? | Takes an _obj_, returns true if _obj_ is a valid number, otherwise returns false. |
 | pi | 3.1415926535897931 |  |
-| print | ::puts |  |
-| round | ::tcl::mathfunc::round |  |
-| sqrt | ::tcl::mathfunc::sqrt |  |
-| symbol? | ::thtcl::symbol? |  |
+| print | ::puts | Takes an object and outputs it |
+| round | ::tcl::mathfunc::round | Takes an _arg_: if arg is an integer value, returns _arg_, otherwise converts _arg_ to integer by rounding and returns the converted value |
+| sqrt | ::tcl::mathfunc::sqrt | Takes an _arg_ (any non-negative numeric value), returns a floating-point value that is the square root of _arg_ |
+| symbol? | ::thtcl::symbol? | Takes an _obj_, returns true if _obj_ is a valid symbol, otherwise returns false. |
 
 ### The REPL
 
