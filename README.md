@@ -100,7 +100,7 @@ The Calculator uses a single environment for all variables (bound symbols). The 
 
 ### The REPL
 
-The REPL (read-eval-print loop) is a loop that repeatedly takes a Scheme source string from the user through the command __raw_input__ (breaking the loop if given an empty line), evaluates it using __parse__ and the current __eval_exp__, and prints the result after filtering it through __scheme_str__.
+The REPL (read-eval-print loop) is a loop that repeatedly _reads_ a Scheme source string from the user through the command __raw_input__ (breaking the loop if given an empty line), _evaluates_ it using __parse__ and the current __eval_exp__, and _prints_ the result after filtering it through __scheme_str__.
 
 ```
 proc raw_input {prompt} {
