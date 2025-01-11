@@ -156,22 +156,14 @@ The second level of the interpreter has a full set of syntactic forms and a dyna
 
 ### Environment class and objects
 
-On startup the interpreter has a global environment that corresponds to the standard environment for the Calculator.
-
-On creation, the Env class takes a list of parameters, a list of arguments, and optionally an outer environment reference (every environment except the global one has such a reference). The parameters and arguments are zipped into a bindings dictionary.
-
-| Method | Description |
-|--------|-------------|
-| find   | Given a symbol, searches for a binding for the symbol in the environment and recursively in outer environments: returns the Env object that has such a binding, or the empty list |
-| get    | Given a symbol, retrieves the value the symbol is bound to in the environment |
-| set    | Given a symbol and a value, binds the symbol to the value in the environment |
+The class for environments is called __Env__.
 
 ```
 oo::class create Env {
     variable bindings outer_env
     constructor {parms args {outer {}}} {
-        foreach p $parms a $args {
-            my set $p $a
+        foreach parm $parms arg $args {
+            my set $parm $arg
         }
         set outer_env $outer
     }
@@ -194,6 +186,9 @@ oo::class create Env {
     }
 }
 ```
+
+On startup, an __Env__ object called __global_env__ is created and populated with all the definitions from __standard_env__. Thereafter, each time a user-defined procedure is called a new __Env__ object is created to hold the bindings that the call closes over, and also a link to the outer environment (the one the call was evaluated in).
+
 
 ### Procedure class and objects
 
