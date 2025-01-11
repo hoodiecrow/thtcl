@@ -54,6 +54,7 @@ The Calculator uses a single environment for all variables (bound symbols). The 
 | print | ::puts |  |
 | round | ::tcl::mathfunc::round |  |
 | sqrt | ::tcl::mathfunc::sqrt |  |
+| symbol? | ::thtcl::symbol? |  |
 
 ### The REPL
 
