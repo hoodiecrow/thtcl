@@ -18,7 +18,42 @@ The first level of the interpreter has a reduced set of syntactic forms and a si
 
 ### The standard environment
 
-The Calculator uses a single environment for all variables (bound symbols).
+The Calculator uses a single environment for all variables (bound symbols). The following symbols make up the standard environment:
+
+| Symbol | Definition | Description |
+|--------|------------|-------------|
+| #f | false |  |
+| #t | true |  |
+| * | ::tcl::mathop::* |  |
+| + | ::tcl::mathop::+ |  |
+| - | ::tcl::mathop::- |  |
+| / | ::tcl::mathop::/ |  |
+| < | ::tcl::mathop::< |  |
+| <= | ::tcl::mathop::<= |  |
+| = | ::tcl::mathop::== |  |
+| > | ::tcl::mathop::> |  |
+| >= | ::tcl::mathop::>= |  |
+| abs | ::tcl::mathfunc::abs |  |
+| append | ::concat |  |
+| apply | ::thtcl::apply |  |
+| car | ::thtcl::car |  |
+| cdr | ::thtcl::cdr |  |
+| cons | ::thtcl::cons |  |
+| eq? | ::thtcl::eq? |  |
+| equal? | ::thtcl::equal? |  |
+| expt | ::tcl::mathfunc::pow |  |
+| length | ::llength |  |
+| list | ::list |  |
+| map | ::thtcl::map |  |
+| max | ::tcl::mathfunc::max |  |
+| min | ::tcl::mathfunc::min |  |
+| not | ::thtcl::not |  |
+| null? | ::thtcl::null? |  |
+| number? | ::thtcl::number? |  |
+| pi | 3.1415926535897931 |  |
+| print | ::puts |  |
+| round | ::tcl::mathfunc::round |  |
+| sqrt | ::tcl::mathfunc::sqrt |  |
 
 ### The REPL
 
