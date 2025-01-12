@@ -145,6 +145,56 @@ The second level of the interpreter has a full set of syntactic forms and a dyna
 | [procedure definition](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.4) | __lambda__ (_symbol_...) _expression_ | A __lambda__ expression evaluates to a procedure. The environment in effect when the lambda expression was evaluated is remembered as part of the procedure. When the procedure is later called with some actual arguments, the environment in which the lambda expression was evaluated will be extended by binding the symbols in the formal argument list to fresh locations, the corresponding actual argument values will be stored in those locations, and the _expression_ in the body of the __lambda__ expression will be evaluated in the extended environment. Use __begin__ to have a body with more than one expression. The result of the _expression_ will be returned as the result of the procedure call. Example: (lambda (r) (* r r)) ⇒ ::oo::Obj36010 |
 | [procedure call](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.3) | _proc_ _expression_... | If _proc_ is anything other than __quote__, __begin__, __if__, __and__, __or__, __define__, __set!__, or __lambda__, it is treated as a procedure. Evaluate _proc_ and all the _args_, and then the procedure is applied to the list of _arg_ values. Example: (sqrt (+ 4 12)) ⇒ 4.0
 
+```
+proc eval_exp {exp {env ::global_env}} {
+    if {[::thtcl::atom? $exp]} {
+        if {[::thtcl::symbol? $exp]} { # variable reference
+            return [lookup $exp [$env find $exp]]
+        } elseif {[::thtcl::number? $exp]} { # constant literal
+            return $exp
+        } else {
+            error [format "cannot evaluate %s" $exp]
+        }
+    }
+    set args [lassign $exp op]
+    # kludge to get around Tcl's list literal handling
+    if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
+    switch $op {
+        quote { # quotation
+            return [lindex $args 0]
+        }
+        begin { # sequencing
+            return [eprogn $args $env]
+        }
+        if { # conditional
+            lassign $args cond conseq alt
+            return [_if {eval_exp $cond $env} {eval_exp $conseq $env} {eval_exp $alt $env}]
+        }
+        and { # conjunction
+            return [conjunction $args $env]
+        }
+        or { # disjunction
+            return [disjunction $args $env]
+        }
+        define { # definition
+            lassign $args sym val
+            return [define $sym [eval_exp $val $env] $env]
+        }
+        set! { # assignment
+            lassign $args sym val
+            return [update! $sym [eval_exp $val $env] $env]
+        }
+        lambda { # procedure definition
+            lassign $args parms body
+            return [Procedure new $parms $body $env]
+        }
+        default { # procedure call
+            return [invoke [eval_exp $op $env] [lmap arg $args {eval_exp $arg $env}]]
+        }
+    }
+}
+```
+
 ### Environment class and objects
 
 The class for environments is called __Env__.
@@ -196,6 +246,8 @@ oo::class create Procedure {
     }
 }
 ```
+
+A __Procedure__ object is basically a closure, storing the parameter list, the body, and the current environment when the object is created. When a __Procedure__ object is called, it evaluates the body in a new environment where the parameters are given values and the outer link goes to the closure environment.
 
 ## Level 3 Advanced Thtcl
 
