@@ -23,7 +23,11 @@ proc eval_exp {exp} {
     global standard_env
     # variable reference
     if {[::thtcl::symbol? $exp]} {
-        return [dict get $standard_env $exp]
+        if {$exp in [dict keys $standard_env]} {
+            return [dict get $standard_env $exp]
+        } else {
+            error "trying to dereference an unbound symbol"
+        }
     }
     # constant literal
     if {[::thtcl::number? $exp]} {
