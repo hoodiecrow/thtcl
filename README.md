@@ -19,46 +19,33 @@ The first level of the interpreter has a reduced set of syntactic forms and a si
 | [procedure call](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.3) | _proc_ _expression_... | If _proc_ is anything other than __begin__, __if__, or __define__, it is treated as a procedure. Evaluate _proc_ and all the _args_, and then the procedure is applied to the list of _arg_ values. Example: (sqrt (+ 4 12)) ⇒ 4.0
 
 ```
-proc eval_exp {exp} {
-    global standard_env
-    # variable reference
-    if {[::thtcl::symbol? $exp]} {
-        if {$exp in [dict keys $standard_env]} {
-            return [dict get $standard_env $exp]
+proc eval_exp {exp {env ::standard_env}} {
+    if {[::thtcl::atom? $exp]} {
+        if {[::thtcl::symbol? $exp]} { # variable reference
+            return [lookup $exp $env]
+        } elseif {[::thtcl::number? $exp]} { # constant literal
+            return $exp
         } else {
-            error "trying to dereference an unbound symbol"
+            error [format "cannot evaluate %s" $exp]
         }
-    }
-    # constant literal
-    if {[::thtcl::number? $exp]} {
-        return $exp
     }
     set args [lassign $exp op]
+    # kludge to get around Tcl's list literal handling
+    if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
     switch $op {
-        begin {
-            # sequencing
-            set v [list]
-            foreach arg $args {
-                set v [eval_exp $arg]
-            }
-            return $v
+        begin { # sequencing
+            return [eprogn $args $env]
         }
-        if {
-            # conditional
+        if { # conditional
             lassign $args cond conseq alt
-            return [if {[eval_exp $cond] ni {0 false {}}} then {eval_exp $conseq} else {eval_exp $alt}]
+            return [_if {eval_exp $cond $env} {eval_exp $conseq $env} {eval_exp $alt $env}]
         }
-        define {
-            # definition
+        define { # definition
             lassign $args sym val
-            dict set standard_env $sym [eval_exp $val]
-            return {}
+            return [define $sym [eval_exp $val $env] $env]
         }
-        default {
-            # procedure call
-            set fn [eval_exp $op]
-            set vals [lmap arg $args {eval_exp $arg}]
-            return [$fn {*}$vals]
+        default { # procedure call
+            return [invoke [eval_exp $op $env] [lmap arg $args {eval_exp $arg $env}]]
         }
     }
 }
@@ -124,7 +111,7 @@ proc scheme_str {val} {
 }
 
 proc parse {str} {
-    return [lindex [string map {( \{ ) \}} $str] 0]
+    return [string map {( \{ ) \}} $str]
 }
 
 proc repl {{prompt "Thtcl> "}} {
