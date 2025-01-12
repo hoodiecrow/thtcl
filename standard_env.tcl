@@ -7,8 +7,6 @@ set standard_env [dict create pi 3.1415926535897931 #t true #f false]
 
 foreach op {+ - * /} { dict set standard_env $op ::tcl::mathop::$op }
 
-dict set standard_env = ::tcl::mathop::==
-
 foreach fn {abs max min round sqrt} { dict set standard_env $fn ::tcl::mathfunc::$fn }
 
 dict set standard_env expt ::tcl::mathfunc::pow

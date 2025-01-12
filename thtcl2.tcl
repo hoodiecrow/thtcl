@@ -21,8 +21,12 @@ source procedure.class
 
 proc eval_exp {exp {env ::global_env}} {
     # variable reference
-    if {[set actual_env [$env find $exp]] ne {}} {
-        return [$actual_env get $exp]
+    if {[::thtcl::symbol? $exp]} {
+        if {[set actual_env [$env find $exp]] ne {}} {
+            return [$actual_env get $exp]
+        } else {
+            error "trying to dereference an unbound symbol"
+        }
     }
     # constant literal
     if {[::thtcl::number? $exp]} {

@@ -105,9 +105,9 @@ source thtcl2.tcl
     scheme_str [eval_exp [parse "(and (= 2 2) (< 2 1))"]]
 } "#f"
 
-::tcltest::test thtcl2-11.2 {and} {
+::tcltest::test thtcl2-11.2 {and :( } -body {
     scheme_str [eval_exp [parse "(and)"]]
-} "#t"
+} -returnCodes error -result "trying to dereference an unbound symbol"
 
 ::tcltest::test thtcl2-11.3 {and} {
     scheme_str [eval_exp [parse "(and 1 2 (quote c) (quote (f g)))"]]
@@ -124,5 +124,9 @@ source thtcl2.tcl
 ::tcltest::test thtcl2-12.1 {or} {
     scheme_str [eval_exp [parse "(or #f #f #f)"]]
 } "#f"
+
+::tcltest::test thtcl2-13.0 {dereference an unbound symbol} -body {
+    scheme_str [eval_exp [parse "foo"]]
+} -returnCodes error -result "trying to dereference an unbound symbol"
 
 ::tcltest::cleanupTests
