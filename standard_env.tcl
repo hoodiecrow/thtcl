@@ -56,8 +56,11 @@ proc null? {val} { boolexpr {$val eq {}} }
 
 proc number? {val} { boolexpr {[string is double $val]} }
 
+proc atom? {exp} { boolexpr {[string index [string trim $exp] 0] ne "\{" && " " ni [split $exp {}]} }
+
 # non-standard definition of symbol?
-proc symbol? {exp} { boolexpr {![string is double $exp] && " " ni [split $exp {}]} }
+proc symbol? {exp} { boolexpr {[atom? $exp] && ![string is double $exp]} }
+
 }
 
 foreach func {> < >= <= = apply car cdr cons eq? equal? map not null? number? symbol?} {

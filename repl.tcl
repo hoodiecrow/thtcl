@@ -14,7 +14,7 @@ proc scheme_str {val} {
 }
 
 proc parse {str} {
-    return [lindex [string map {( \{ ) \}} $str] 0]
+    return [string map {( \{ ) \}} $str]
 }
 
 proc repl {{prompt "Thtcl> "}} {

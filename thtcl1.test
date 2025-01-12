@@ -113,6 +113,6 @@ source thtcl1.tcl
 
 ::tcltest::test thtcl1-19.0 {dereference an unbound symbol} -body {
     scheme_str [eval_exp [parse "foo"]]
-} -returnCodes error -result "trying to dereference an unbound symbol"
+} -returnCodes error -result "key \"foo\" not known in dictionary"
 
 ::tcltest::cleanupTests

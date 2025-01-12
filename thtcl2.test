@@ -20,17 +20,20 @@ source thtcl2.tcl
     scheme_str [eval_exp [parse "(circle-area (fact 10))"]]
 } 41369087205782.695
 
-::tcltest::test thtcl2-3.0 {count} {
+::tcltest::test thtcl2-3.0 {count} -body {
     scheme_str [eval_exp [parse "(define first car)"]]
     scheme_str [eval_exp [parse "(define rest cdr)"]]
     scheme_str [eval_exp [parse "(define truthtoint (lambda (val) (if val 1 0)))"]]
     scheme_str [eval_exp [parse "(define count (lambda (item L) (if L (+ (truthtoint (equal? item (first L))) (count item (rest L))) 0)))"]]
-    scheme_str [eval_exp [parse "(count 9 (list 9 1 2 3 9 9))"]]
-} 3
+} -result ""
 
-::tcltest::test thtcl2-3.1 {count} {
+::tcltest::test thtcl2-3.0 {count} -body {
+    scheme_str [eval_exp [parse "(count 9 (list 9 1 2 3 9 9))"]]
+} -result 3
+
+::tcltest::test thtcl2-3.1 {count} -body {
     scheme_str [eval_exp [parse "(count (quote the) (quote (the more the merrier the bigger the better)))"]]
-} 4
+} -result 4
 
 ::tcltest::test thtcl2-4.0 {twice} {
     scheme_str [eval_exp [parse "(define twice (lambda (x) (* 2 x)))"]]
@@ -107,7 +110,7 @@ source thtcl2.tcl
 
 ::tcltest::test thtcl2-11.2 {and :( } -body {
     scheme_str [eval_exp [parse "(and)"]]
-} -returnCodes error -result "trying to dereference an unbound symbol"
+} -result "#t"
 
 ::tcltest::test thtcl2-11.3 {and} {
     scheme_str [eval_exp [parse "(and 1 2 (quote c) (quote (f g)))"]]
@@ -121,12 +124,22 @@ source thtcl2.tcl
     scheme_str [eval_exp [parse "(or (= 2 2) (< 2 1))"]]
 } "#t"
 
-::tcltest::test thtcl2-12.1 {or} {
+::tcltest::test thtcl2-12.2 {or} {
     scheme_str [eval_exp [parse "(or #f #f #f)"]]
+} "#f"
+
+::tcltest::test thtcl2-12.3 {or} {
+    scheme_str [eval_exp [parse "(or)"]]
 } "#f"
 
 ::tcltest::test thtcl2-13.0 {dereference an unbound symbol} -body {
     scheme_str [eval_exp [parse "foo"]]
-} -returnCodes error -result "trying to dereference an unbound symbol"
+    # searches for sym in env {}
+} -returnCodes error -result "invalid command name \"\""
+
+::tcltest::test thtcl2-13.1 {dereference an unbound symbol: procedure} -body {
+    scheme_str [eval_exp [parse "(foo)"]]
+    # searches for sym in env {}
+} -returnCodes error -result "invalid command name \"\""
 
 ::tcltest::cleanupTests

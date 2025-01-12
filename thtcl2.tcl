@@ -17,22 +17,88 @@ foreach sym [dict keys $standard_env] {
 # load the Procedure class for closures
 source procedure.class
 
+proc lookup {sym env} {
+    return [$env get $sym]
+}
+
+proc eprogn {exps env} {
+    set v [list]
+    foreach exp $exps {
+        set v [eval_exp $exp $env]
+    }
+    return $v
+}
+
+proc conjunction {exps env} {
+    set v true
+    foreach exp $exps {
+        set v [eval_exp $exp $env]
+        if {$v in {0 false {}}} {return false}
+    }
+    if {$v in {1 yes true}} {
+        return true
+    } else {
+        return $v
+    }
+}
+
+proc disjunction {exps env} {
+    # disjunction
+    set v false
+    foreach exp $exps {
+        set v [eval_exp $exp $env]
+        if {$v ni {0 false {}}} {break}
+    }
+    if {$v in {1 yes true}} {
+        return true
+    } else {
+        return $v
+    }
+}
+        
+proc _if {c t f} {
+    if {[uplevel $c] ni {0 no false {}}} then {uplevel $t} else {uplevel $f}
+}
+
+proc define {sym val env} {
+    $env set $sym $val
+    return {}
+}
+
+proc update! {sym val env} {
+    if {[set actual_env [$env find $sym]] ne {}} {
+        $actual_env set $sym $val
+        return $val
+    } else {
+        error "trying to assign to an unbound symbol"
+    }
+}
+            
+proc invoke {fn vals} {
+    if {[info object isa typeof $fn Procedure]} {
+        return [$fn call {*}$vals]
+    } else {
+        return [$fn {*}$vals]
+    }
+}
+
 # Thtcl interpreter: eval_exp
 
 proc eval_exp {exp {env ::global_env}} {
-    # variable reference
-    if {[::thtcl::symbol? $exp]} {
-        if {[set actual_env [$env find $exp]] ne {}} {
-            return [$actual_env get $exp]
+    if {[::thtcl::atom? $exp]} {
+        if {[::thtcl::symbol? $exp]} {
+            # variable reference
+            return [lookup $exp [$env find $exp]]
+        } elseif {[::thtcl::number? $exp]} {
+            # constant literal
+            return $exp
         } else {
-            error "trying to dereference an unbound symbol"
+            error [format "Cannot evaluate %s" $exp]
         }
     }
-    # constant literal
-    if {[::thtcl::number? $exp]} {
-        return $exp
-    }
     set args [lassign $exp op]
+    # kludge to get around Tcl's list literal handling
+    if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
     switch $op {
         quote {
             # quotation
@@ -40,59 +106,30 @@ proc eval_exp {exp {env ::global_env}} {
         }
         begin {
             # sequencing
-            set v [list]
-            foreach arg $args {
-                set v [eval_exp $arg $env]
-            }
-            return $v
+            return [eprogn $args $env]
         }
         if {
             # conditional
-            lassign $args c t f
-            return [if {[eval_exp $c $env] ni {0 false {}}} then {eval_exp $t $env} else {eval_exp $f $env}]
+            lassign $args cond conseq alt
+            return [_if {eval_exp $cond $env} {eval_exp $conseq $env} {eval_exp $alt $env}]
         }
         and {
             # conjunction
-            set v true
-            foreach arg $args {
-                set v [eval_exp $arg $env]
-                if {$v in {0 false {}}} {return false}
-            }
-            if {$v in {1 yes true}} {
-                return true
-            } else {
-                return $v
-            }
+            return [conjunction $args $env]
         }
         or {
             # disjunction
-            set v false
-            foreach arg $args {
-                set v [eval_exp $arg $env]
-                if {$v ni {0 false {}}} {break}
-            }
-            if {$v in {1 yes true}} {
-                return true
-            } else {
-                return $v
-            }
+            return [disjunction $args $env]
         }
         define {
             # definition
             lassign $args sym val
-            $env set $sym [eval_exp $val $env]
-            return {}
+            return [define $sym [eval_exp $val $env] $env]
         }
         set! {
             # assignment
             lassign $args sym val
-            if {[set actual_env [$env find $sym]] ne {}} {
-                set val [eval_exp $val $env]
-                $actual_env set $sym $val
-                return $val
-            } else {
-                error "trying to assign to an unbound symbol"
-            }
+            return [update! $sym [eval_exp $val $env] $env]
         }
         lambda {
             # procedure definition
@@ -101,13 +138,7 @@ proc eval_exp {exp {env ::global_env}} {
         }
         default {
             # procedure call
-            set fn [eval_exp $op $env]
-            set vals [lmap arg $args {eval_exp $arg $env}]
-            if {[info object isa typeof $fn Procedure]} {
-                return [$fn call {*}$vals]
-            } else {
-                return [$fn {*}$vals]
-            }
+            return [invoke [eval_exp $op $env] [lmap arg $args {eval_exp $arg $env}]]
         }
     }
 }

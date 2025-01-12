@@ -3,48 +3,66 @@
 
 source standard_env.tcl
 
+proc lookup {sym env} {
+    return [dict get [set $env] $sym]
+}
+
+proc eprogn {exps env} {
+    set v [list]
+    foreach exp $exps {
+        set v [eval_exp $exp $env]
+    }
+    return $v
+}
+
+proc _if {c t f} {
+    if {[uplevel $c] ni {0 no false {}}} then {uplevel $t} else {uplevel $f}
+}
+
+proc define {sym val env} {
+    dict set $env $sym $val
+    return {}
+}
+
+proc invoke {fn vals} {
+    return [$fn {*}$vals]
+}
+
 # Thtcl interpreter: eval_exp
 
-proc eval_exp {exp} {
-    global standard_env
-    # variable reference
-    if {[::thtcl::symbol? $exp]} {
-        if {$exp in [dict keys $standard_env]} {
-            return [dict get $standard_env $exp]
+proc eval_exp {exp {env ::standard_env}} {
+    if {[::thtcl::atom? $exp]} {
+        if {[::thtcl::symbol? $exp]} {
+            # variable reference
+            return [lookup $exp $env]
+        } elseif {[::thtcl::number? $exp]} {
+            # constant literal
+            return $exp
         } else {
-            error "trying to dereference an unbound symbol"
+            error [format "Cannot evaluate %s" $exp]
         }
     }
-    # constant literal
-    if {[::thtcl::number? $exp]} {
-        return $exp
-    }
     set args [lassign $exp op]
+    # kludge to get around Tcl's list literal handling
+    if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
     switch $op {
         begin {
             # sequencing
-            set v [list]
-            foreach arg $args {
-                set v [eval_exp $arg]
-            }
-            return $v
+            return [eprogn $args $env]
         }
         if {
             # conditional
             lassign $args cond conseq alt
-            return [if {[eval_exp $cond] ni {0 false {}}} then {eval_exp $conseq} else {eval_exp $alt}]
+            return [_if {eval_exp $cond $env} {eval_exp $conseq $env} {eval_exp $alt $env}]
         }
         define {
             # definition
             lassign $args sym val
-            dict set standard_env $sym [eval_exp $val]
-            return {}
+            return [define $sym [eval_exp $val $env] $env]
         }
         default {
             # procedure call
-            set fn [eval_exp $op]
-            set vals [lmap arg $args {eval_exp $arg}]
-            return [$fn {*}$vals]
+            return [invoke [eval_exp $op $env] [lmap arg $args {eval_exp $arg $env}]]
         }
     }
 }
