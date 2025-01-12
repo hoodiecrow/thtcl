@@ -32,36 +32,30 @@ proc invoke {fn vals} {
 
 proc eval_exp {exp {env ::standard_env}} {
     if {[::thtcl::atom? $exp]} {
-        if {[::thtcl::symbol? $exp]} {
-            # variable reference
+        if {[::thtcl::symbol? $exp]} { # variable reference
             return [lookup $exp $env]
-        } elseif {[::thtcl::number? $exp]} {
-            # constant literal
+        } elseif {[::thtcl::number? $exp]} { # constant literal
             return $exp
         } else {
-            error [format "Cannot evaluate %s" $exp]
+            error [format "cannot evaluate %s" $exp]
         }
     }
     set args [lassign $exp op]
     # kludge to get around Tcl's list literal handling
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
     switch $op {
-        begin {
-            # sequencing
+        begin { # sequencing
             return [eprogn $args $env]
         }
-        if {
-            # conditional
+        if { # conditional
             lassign $args cond conseq alt
             return [_if {eval_exp $cond $env} {eval_exp $conseq $env} {eval_exp $alt $env}]
         }
-        define {
-            # definition
+        define { # definition
             lassign $args sym val
             return [define $sym [eval_exp $val $env] $env]
         }
-        default {
-            # procedure call
+        default { # procedure call
             return [invoke [eval_exp $op $env] [lmap arg $args {eval_exp $arg $env}]]
         }
     }

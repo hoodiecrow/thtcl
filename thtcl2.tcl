@@ -86,58 +86,47 @@ proc invoke {fn vals} {
 
 proc eval_exp {exp {env ::global_env}} {
     if {[::thtcl::atom? $exp]} {
-        if {[::thtcl::symbol? $exp]} {
-            # variable reference
+        if {[::thtcl::symbol? $exp]} { # variable reference
             return [lookup $exp [$env find $exp]]
-        } elseif {[::thtcl::number? $exp]} {
-            # constant literal
+        } elseif {[::thtcl::number? $exp]} { # constant literal
             return $exp
         } else {
-            error [format "Cannot evaluate %s" $exp]
+            error [format "cannot evaluate %s" $exp]
         }
     }
     set args [lassign $exp op]
     # kludge to get around Tcl's list literal handling
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
     switch $op {
-        quote {
-            # quotation
+        quote { # quotation
             return [lindex $args 0]
         }
-        begin {
-            # sequencing
+        begin { # sequencing
             return [eprogn $args $env]
         }
-        if {
-            # conditional
+        if { # conditional
             lassign $args cond conseq alt
             return [_if {eval_exp $cond $env} {eval_exp $conseq $env} {eval_exp $alt $env}]
         }
-        and {
-            # conjunction
+        and { # conjunction
             return [conjunction $args $env]
         }
-        or {
-            # disjunction
+        or { # disjunction
             return [disjunction $args $env]
         }
-        define {
-            # definition
+        define { # definition
             lassign $args sym val
             return [define $sym [eval_exp $val $env] $env]
         }
-        set! {
-            # assignment
+        set! { # assignment
             lassign $args sym val
             return [update! $sym [eval_exp $val $env] $env]
         }
-        lambda {
-            # procedure definition
+        lambda { # procedure definition
             lassign $args parms body
             return [Procedure new $parms $body $env]
         }
-        default {
-            # procedure call
+        default { # procedure call
             return [invoke [eval_exp $op $env] [lmap arg $args {eval_exp $arg $env}]]
         }
     }
