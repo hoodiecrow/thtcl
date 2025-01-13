@@ -1,0 +1,31 @@
+# create the Environment class for environments
+
+catch { Environment destroy }
+
+oo::class create Environment {
+    variable bindings outer_env
+    constructor {parms args {outer {}}} {
+        foreach parm $parms arg $args {
+            my set $parm $arg
+        }
+        set outer_env $outer
+    }
+    method find {sym} {
+        if {$sym in [dict keys $bindings]} {
+            return [self]
+        } else {
+            if {$outer_env eq {}} {
+                # no more environments to search
+                return {}
+            }
+            return [$outer_env find $sym]
+        }
+    }
+    method get {sym} {
+        dict get $bindings $sym
+    }
+    method set {sym val} {
+        dict set bindings $sym $val
+    }
+}
+

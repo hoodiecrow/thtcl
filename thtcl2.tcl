@@ -1,14 +1,13 @@
 
 # populate the standard environment
-
 source standard_env.tcl
 
-# load the Env class for environments
-source env.class
+# load the Environment class for environments
+source environment.class
 
 # populate the global environment
 
-Env create global_env {} {}
+Environment create global_env {} {}
 
 foreach sym [dict keys $standard_env] {
     global_env set $sym [dict get $standard_env $sym]
@@ -33,7 +32,7 @@ proc conjunction {exps env} {
     set v true
     foreach exp $exps {
         set v [eval_exp $exp $env]
-        if {$v in {0 false {}}} {return false}
+        if {$v in {0 no false {}}} {return false}
     }
     if {$v in {1 yes true}} {
         return true
@@ -47,7 +46,7 @@ proc disjunction {exps env} {
     set v false
     foreach exp $exps {
         set v [eval_exp $exp $env]
-        if {$v ni {0 false {}}} {break}
+        if {$v ni {0 no false {}}} {break}
     }
     if {$v in {1 yes true}} {
         return true
@@ -126,7 +125,7 @@ proc eval_exp {exp {env ::global_env}} {
             lassign $args parms body
             return [Procedure new $parms $body $env]
         }
-        default { # procedure call
+        default { # procedure invocation
             return [invoke [eval_exp $op $env] [lmap arg $args {eval_exp $arg $env}]]
         }
     }
@@ -137,5 +136,5 @@ proc eval_exp {exp {env ::global_env}} {
 source repl.tcl
 
 ###---
-# eval_exp [parse "(define fact (lambda (n) (if (<= n 1) 1 (* n (fact (- n 1))))))"]
-# time {eval_exp [parse "(fact 100)"]} 10
+ eval_exp [parse "(define fact (lambda (n) (if (<= n 1) 1 (* n (fact (- n 1))))))"]
+ time {eval_exp [parse "(fact 100)"]} 10

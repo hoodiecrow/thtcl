@@ -1,6 +1,5 @@
 
 # populate the standard environment
-
 source standard_env.tcl
 
 proc lookup {sym env} {
@@ -55,7 +54,7 @@ proc eval_exp {exp {env ::standard_env}} {
             lassign $args sym val
             return [define $sym [eval_exp $val $env] $env]
         }
-        default { # procedure call
+        default { # procedure invocation
             return [invoke [eval_exp $op $env] [lmap arg $args {eval_exp $arg $env}]]
         }
     }
