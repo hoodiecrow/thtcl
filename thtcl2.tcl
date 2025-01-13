@@ -17,7 +17,7 @@ foreach sym [dict keys $standard_env] {
 source procedure.class
 
 proc lookup {sym env} {
-    return [$env get $sym]
+    return [[$env find $sym] get $sym]
 }
 
 proc eprogn {exps env} {
@@ -86,7 +86,7 @@ proc invoke {fn vals} {
 proc eval_exp {exp {env ::global_env}} {
     if {[::thtcl::atom? $exp]} {
         if {[::thtcl::symbol? $exp]} { # variable reference
-            return [lookup $exp [$env find $exp]]
+            return [lookup $exp $env]
         } elseif {[::thtcl::number? $exp]} { # constant literal
             return $exp
         } else {
