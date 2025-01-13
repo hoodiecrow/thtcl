@@ -2,15 +2,15 @@
 
 
 
-A small Lisp interpreter in Tcl inspired by Peter Norvig's [Lispy](https://norvig.com/lispy.html). I've also drawn some inspiration from 'Lisp in Small Pieces' by Christian Queinnec.
+A small Lisp interpreter in Tcl inspired by Peter Norvig's [Lispy](https://norvig.com/lispy.html). I've also drawn some inspiration from '[Lisp in Small Pieces](http://books.google.com/books?id=81mFK8pqh5EC&lpg=PP1&dq=scheme%20programming%20book&pg=PP1#v=onepage&q&f=false)' by Christian Queinnec.
 
 
 
-The name Thtcl comes from Lisp + Tcl. Pronunciation '_thtickel_'.
+The name Thtcl comes from Lisp + Tcl. Pronunciation '_thtickel_'. Or whatever.
 
 
 
-To use, place all the source files (.tcl and .class) in a directory. Start __tkcon__ and navigate to the directory. Source either thtcl1.tcl or thtcl2.tcl. Use the __repl__ command to run a dialog loop with the interpreter.
+To use, place the compound source files (__thtcl-level-1.tcl__ and __thtcl-level-2.tcl__) in a directory. Start __tkcon__ and navigate to the directory. Source either __thtcl-level-1.tcl__ or __thtcl-level-2.tcl__. Use the __repl__ command to run a dialog loop with the interpreter.
 
 
 
@@ -432,6 +432,7 @@ proc invoke {fn vals} {
 
 evaluate [parse "(define fact (lambda (n) (if (<= n 1) 1 (* n (fact (- n 1))))))"]
 time {evaluate [parse "(fact 100)"]} 10
+
 ### Environment class and objects
 
 The class for environments is called __Environment__.
@@ -502,6 +503,3 @@ A __Procedure__ object is basically a closure, storing the parameter list, the b
 
 
 I may have to leave this for the reader as an exercise.
-
-
-
