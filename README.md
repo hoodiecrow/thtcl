@@ -1,19 +1,10 @@
 # Thtcl
 
-
-
 A small Lisp interpreter in Tcl inspired by Peter Norvig's [Lispy](https://norvig.com/lispy.html). I've also drawn some inspiration from '[Lisp in Small Pieces](http://books.google.com/books?id=81mFK8pqh5EC&lpg=PP1&dq=scheme%20programming%20book&pg=PP1#v=onepage&q&f=false)' by Christian Queinnec.
 
-
-
-The name Thtcl comes from Lisp + Tcl. Pronunciation '_thtickel_'. Or whatever.
-
-
+The name Thtcl comes from Lisp + Tcl. Pronunciation '_thtickel_'. Or whatever...
 
 To use, place the compound source files (__thtcl-level-1.tcl__ and __thtcl-level-2.tcl__) in a directory. Start __tkcon__ and navigate to the directory. Source either __thtcl-level-1.tcl__ or __thtcl-level-2.tcl__. Use the __repl__ command to run a dialog loop with the interpreter.
-
-
-
 
 
 
@@ -238,7 +229,7 @@ foreach {func impl} {append concat length llength list list print puts} {
 
 ### The REPL
 
-The REPL (read-eval-print loop) is a loop that repeatedly _reads_ a Scheme source string from the user through the command __raw_input__ (breaking the loop if given an empty line), _evaluates_ it using __parse__ and the current __eval_exp__, and _prints_ the result after filtering it through __scheme_str__.
+The REPL (read-eval-print loop) is a loop that repeatedly _reads_ a Scheme source string from the user through the command __raw_input__ (breaking the loop if given an empty line), _evaluates_ it using __parse__ and the current __evaluate__, and _prints_ the result after filtering it through __scheme_str__.
 
 
 ```
@@ -502,9 +493,5 @@ oo::class create Procedure {
 A __Procedure__ object is basically a closure, storing the parameter list, the body, and the current environment when the object is created. When a __Procedure__ object is called, it evaluates the body in a new environment where the parameters are given values from the argument list and the outer link goes to the closure environment.
 ## Level 3 Advanced Thtcl
 
-
-
 I may have to leave this for the reader as an exercise.
-
-
 
