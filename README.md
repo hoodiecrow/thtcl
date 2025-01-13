@@ -197,10 +197,10 @@ proc eval_exp {exp {env ::global_env}} {
 
 ### Environment class and objects
 
-The class for environments is called __Env__.
+The class for environments is called __Environment__.
 
 ```
-oo::class create Env {
+oo::class create Environment {
     variable bindings outer_env
     constructor {parms args {outer {}}} {
         foreach parm $parms arg $args {
@@ -228,7 +228,7 @@ oo::class create Env {
 }
 ```
 
-On startup, an __Env__ object called __global_env__ is created and populated with all the definitions from __standard_env__. Thereafter, each time a user-defined procedure is called a new __Env__ object is created to hold the bindings introduced by the call, and also a link to the outer environment (the one closed over when the procedure was created).
+On startup, an __Environment__ object called __global_env__ is created and populated with all the definitions from __standard_env__. Thereafter, each time a user-defined procedure is called a new __Environment__ object is created to hold the bindings introduced by the call, and also a link to the outer environment (the one closed over when the procedure was created).
 
 
 ### Procedure class and objects
@@ -242,12 +242,12 @@ oo::class create Procedure {
         set env $e
     }
     method call {args} {
-        eval_exp $body [Env new $parms $args $env]
+        eval_exp $body [Environment new $parms $args $env]
     }
 }
 ```
 
-A __Procedure__ object is basically a closure, storing the parameter list, the body, and the current environment when the object is created. When a __Procedure__ object is called, it evaluates the body in a new environment where the parameters are given values and the outer link goes to the closure environment.
+A __Procedure__ object is basically a closure, storing the parameter list, the body, and the current environment when the object is created. When a __Procedure__ object is called, it evaluates the body in a new environment where the parameters are given values from the argument list and the outer link goes to the closure environment.
 
 ## Level 3 Advanced Thtcl
 
