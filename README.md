@@ -149,7 +149,7 @@ The second level of the interpreter has a full set of syntactic forms and a dyna
 proc eval_exp {exp {env ::global_env}} {
     if {[::thtcl::atom? $exp]} {
         if {[::thtcl::symbol? $exp]} { # variable reference
-            return [lookup $exp [$env find $exp]]
+            return [lookup $exp $env]
         } elseif {[::thtcl::number? $exp]} { # constant literal
             return $exp
         } else {
