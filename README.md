@@ -116,6 +116,8 @@ proc invoke {fn vals} {
 
 The Calculator uses a single environment for all variables (bound symbols). The following symbols make up the standard environment:
 
+|Symbol|Definition|Description|
+|------|----------|-----------|
 | #f | false | In this interpreter, #f is a symbol bound to Tcl falsehood |
 | #t | true | Likewise with truth |
 | * | ::tcl::mathop::* | Multiplication operator |
@@ -503,3 +505,6 @@ A __Procedure__ object is basically a closure, storing the parameter list, the b
 
 
 I may have to leave this for the reader as an exercise.
+
+
+
