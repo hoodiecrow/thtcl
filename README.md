@@ -1,7 +1,7 @@
 # Thtcl
-A small Lisp interpreter in Tcl inspired by Peter Norvig's [Lispy](https://norvig.com/lispy.html).
+A small Lisp interpreter in Tcl inspired by Peter Norvig's [Lispy](https://norvig.com/lispy.html). I've also drawn some inspiration from 'Lisp in Small Pieces' by Christian Queinnec.
 
-The name Thtcl comes from Lisp + Tcl.
+The name Thtcl comes from Lisp + Tcl. Pronunciation '_thtickel_'.
 
 To use, place all the source files (.tcl and .class) in a directory. Start __tkcon__ and navigate to the directory. Source either thtcl1.tcl or thtcl2.tcl. Use the __repl__ command to run a dialog loop with the interpreter.
 
@@ -50,6 +50,53 @@ proc eval_exp {exp {env ::standard_env}} {
     }
 }
 ```
+
+The __eval_exp__ procedure relies on some sub-procedures:
+
+```
+proc lookup {sym env} {
+    return [dict get [set $env] $sym]
+}
+```
+
+__lookup__ dereferences a symbol, returning the value bound to it in the standard environment.
+
+```
+proc eprogn {exps env} {
+    set v [list]
+    foreach exp $exps {
+        set v [eval_exp $exp $env]
+    }
+    return $v
+}
+```
+
+__eprogn__ evaluates expressions in a list in sequence, returning the value of the last one.
+
+```
+proc _if {c t f} {
+    if {[uplevel $c] ni {0 no false {}}} then {uplevel $t} else {uplevel $f}
+}
+```
+
+___if__ evaluates the first expression passed to it, and then conditionally evaluates either the second or third expression, returning that value.
+
+```
+proc define {sym val env} {
+    dict set $env $sym $val
+    return {}
+}
+```
+
+__define__ adds a symbol binding to the standard environment.
+
+```
+proc invoke {fn vals} {
+    return [$fn {*}$vals]
+}
+```
+
+__invoke__ calls a function, passing some arguments to it. The expression in the function body is returned.
 
 ### The standard environment
 
