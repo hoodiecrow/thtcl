@@ -1,5 +1,8 @@
-# create Procedure class for closures
+if no { #MD
+### Procedure class and objects
+} #MD
 
+#CB
 catch { Procedure destroy }
 
 oo::class create Procedure {
@@ -10,7 +13,11 @@ oo::class create Procedure {
         set env $e
     }
     method call {args} {
-        eval_exp $body [Environment new $parms $args $env]
+        evaluate $body [Environment new $parms $args $env]
     }
 }
+#CB
 
+if no { #MD
+A __Procedure__ object is basically a closure, storing the parameter list, the body, and the current environment when the object is created. When a __Procedure__ object is called, it evaluates the body in a new environment where the parameters are given values from the argument list and the outer link goes to the closure environment.
+} #MD

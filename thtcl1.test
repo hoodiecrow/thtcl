@@ -1,118 +1,118 @@
 package require tcltest 2.5
 eval ::tcltest::configure $argv
-source thtcl1.tcl
+source thtcl-level-1.tcl
 
 ::tcltest::test thtcl1-1.0 {calculate circle area} {
-    scheme_str [eval_exp [parse "(begin (define r 10) (* pi (* r r)))"]]
+    scheme_str [evaluate [parse "(begin (define r 10) (* pi (* r r)))"]]
 } 314.1592653589793
 
 ::tcltest::test thtcl1-2.0 {conditional} {
-    scheme_str [eval_exp [parse "(if (> (* 11 11) 120) (* 7 6) oops)"]]
+    scheme_str [evaluate [parse "(if (> (* 11 11) 120) (* 7 6) oops)"]]
 } 42
 
 ::tcltest::test thtcl1-3.0 {append} {
-    scheme_str [eval_exp [parse "(append (list 1 2) (list 3 4))"]]
+    scheme_str [evaluate [parse "(append (list 1 2) (list 3 4))"]]
 } "(1 2 3 4)"
 
 ::tcltest::test thtcl1-4.0 {apply} {
-    scheme_str [eval_exp [parse "(begin (define e (list 1 2 3)) (apply car e))"]]
+    scheme_str [evaluate [parse "(begin (define e (list 1 2 3)) (apply car e))"]]
 } "1"
 
 ::tcltest::test thtcl1-5.0 {car} {
-    scheme_str [eval_exp [parse "(car (list 1 2 3))"]]
+    scheme_str [evaluate [parse "(car (list 1 2 3))"]]
 } "1"
 
 ::tcltest::test thtcl1-6.0 {cdr} {
-    scheme_str [eval_exp [parse "(cdr (list 1 2 3))"]]
+    scheme_str [evaluate [parse "(cdr (list 1 2 3))"]]
 } "(2 3)"
 
 ::tcltest::test thtcl1-7.0 {cons} {
-    scheme_str [eval_exp [parse "(cons 1 (list 2 3))"]]
+    scheme_str [evaluate [parse "(cons 1 (list 2 3))"]]
 } "(1 2 3)"
 
 ::tcltest::test thtcl1-8.0 {eq?} {
-    scheme_str [eval_exp [parse "(eq? 1 1)"]]
+    scheme_str [evaluate [parse "(eq? 1 1)"]]
 } "#t"
 
 ::tcltest::test thtcl1-8.1 {eq?} {
-    scheme_str [eval_exp [parse "(eq? 1 1.0)"]]
+    scheme_str [evaluate [parse "(eq? 1 1.0)"]]
 } "#f"
 
 ::tcltest::test thtcl1-9.0 {equal?} {
-    scheme_str [eval_exp [parse "(equal? 1 1)"]]
+    scheme_str [evaluate [parse "(equal? 1 1)"]]
 } "#t"
 
 ::tcltest::test thtcl1-9.1 {equal?} {
-    scheme_str [eval_exp [parse "(equal? 1 1.0)"]]
+    scheme_str [evaluate [parse "(equal? 1 1.0)"]]
 } "#f"
 
 ::tcltest::test thtcl1-9.2 {equal? : =} {
-    scheme_str [eval_exp [parse "(= 1 1)"]]
+    scheme_str [evaluate [parse "(= 1 1)"]]
 } "#t"
 
 ::tcltest::test thtcl1-9.3 {equal? : =} {
-    scheme_str [eval_exp [parse "(= 1 1.0)"]]
+    scheme_str [evaluate [parse "(= 1 1.0)"]]
 } "#t"
 
 ::tcltest::test thtcl1-10.0 {length} {
-    scheme_str [eval_exp [parse "(length (list 1 2 3))"]]
+    scheme_str [evaluate [parse "(length (list 1 2 3))"]]
 } "3"
 
 ::tcltest::test thtcl1-11.0 {list} {
-    scheme_str [eval_exp [parse "(list 1 2 3)"]]
+    scheme_str [evaluate [parse "(list 1 2 3)"]]
 } "(1 2 3)"
 
 ::tcltest::test thtcl1-12.0 {map} {
     # verified in Scheme
-    scheme_str [eval_exp [parse "(begin (define lst (list (list 1 2) (list 3 4))) (map car lst))"]]
+    scheme_str [evaluate [parse "(begin (define lst (list (list 1 2) (list 3 4))) (map car lst))"]]
 } "(1 3)"
 
 ::tcltest::test thtcl1-13.0 {not} {
-    scheme_str [eval_exp [parse "(not #t)"]]
+    scheme_str [evaluate [parse "(not #t)"]]
 } "#f"
 
 ::tcltest::test thtcl1-13.1 {not} {
-    scheme_str [eval_exp [parse "(not #f)"]]
+    scheme_str [evaluate [parse "(not #f)"]]
 } "#t"
 
 ::tcltest::test thtcl1-13.2 {not} {
-    scheme_str [eval_exp [parse "(not 99)"]]
+    scheme_str [evaluate [parse "(not 99)"]]
 } "#f"
 
 ::tcltest::test thtcl1-14.0 {null?} {
-    scheme_str [eval_exp [parse "(null? ())"]]
+    scheme_str [evaluate [parse "(null? ())"]]
 } "#t"
 
 ::tcltest::test thtcl1-14.1 {null?} {
-    scheme_str [eval_exp [parse "(null? 99)"]]
+    scheme_str [evaluate [parse "(null? 99)"]]
 } "#f"
 
 ::tcltest::test thtcl1-15.0 {number?} {
-    scheme_str [eval_exp [parse "(number? (list 1 2))"]]
+    scheme_str [evaluate [parse "(number? (list 1 2))"]]
 } "#f"
 
 ::tcltest::test thtcl1-15.1 {number?} {
-    scheme_str [eval_exp [parse "(number? 99)"]]
+    scheme_str [evaluate [parse "(number? 99)"]]
 } "#t"
 
 ::tcltest::test thtcl1-16.0 {symbol?} {
-    scheme_str [eval_exp [parse "(symbol? (list 1 2))"]]
+    scheme_str [evaluate [parse "(symbol? (list 1 2))"]]
 } "#f"
 
 ::tcltest::test thtcl1-16.1 {symbol?} {
-    scheme_str [eval_exp [parse "(symbol? 99)"]]
+    scheme_str [evaluate [parse "(symbol? 99)"]]
 } "#f"
 
 ::tcltest::test thtcl1-17.0 {math} {
-    scheme_str [eval_exp [parse "(list (+ 1 1) (+ 2 2) (* 2 3) (expt 2 3))"]]
+    scheme_str [evaluate [parse "(list (+ 1 1) (+ 2 2) (* 2 3) (expt 2 3))"]]
 } "(2 4 6 8.0)"
 
 ::tcltest::test thtcl1-18.0 {procedure call with a list operator} {
-    scheme_str [eval_exp [parse "((if #t + *) 2 3)"]]
+    scheme_str [evaluate [parse "((if #t + *) 2 3)"]]
 } "5"
 
 ::tcltest::test thtcl1-19.0 {dereference an unbound symbol} -body {
-    scheme_str [eval_exp [parse "foo"]]
+    scheme_str [evaluate [parse "foo"]]
 } -returnCodes error -result "key \"foo\" not known in dictionary"
 
 ::tcltest::cleanupTests

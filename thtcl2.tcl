@@ -1,91 +1,30 @@
 
-# populate the standard environment
-source standard_env.tcl
+if no { #MD
+## Level 2 Full Thtcl
 
-# load the Environment class for environments
-source environment.class
+The second level of the interpreter has a full set of syntactic forms and a dynamic structure of variable environments. It is defined in the source file thtcl2.tcl which defines the procedure __evaluate__ which recognizes and processes the following syntactic forms:
 
-# populate the global environment
+| Syntactic form | Syntax | Semantics |
+|----------------|--------|-----------|
+| [reference](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.1) | _symbol_ | An expression consisting of a symbol is a variable reference. It evaluates to the value the symbol is bound to. An unbound symbol can't be evaluated. Example: r ⇒ 10 if _r_ is bound to 10 |
+| [literal](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.2) | _number_ | Numerical constants evaluate to themselves. Example: 99 ⇒ 99 |
+| [quotation](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.2) | __quote__ _datum_ | (__quote__ _datum_) evaluates to _datum_, making it a constant. Example: (quote r) ⇒ r
+| [sequence](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.2.3) | __begin__ _expression_... | The _expression_ s are evaluated sequentially, and the value of the last <expression> is returned. Example: (begin (define r 10) (* r r)) ⇒ the square of 10 |
+| [conditional](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.5) | __if__ _test_ _conseq_ _alt_ | An __if__ expression is evaluated like this: first, _test_ is evaluated. If it yields a true value, then _conseq_ is evaluated and its value is returned. Otherwise _alt_ is evaluated and its value is returned. Example: (if (> 99 100) (* 2 2) (+ 2 4)) ⇒ 6 |
+| conditional | __and__ _expression_... | The _expressions_ are evaluated in order, and the value of the first _expression_ that evaluates to a false value is returned: any remaining expressions are not evaluated. Example (and (= 99 99) (> 99 100) foo) ⇒ #f
+| conditional | __or__ _expression_... | The _expressions_ are evaluated in order, and the value of the first _expression_ that evaluates to a true value is returned: any remaining expressions are not evaluated. Example (or (= 99 100) (< 99 100) foo) ⇒ #t
+| [definition](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-8.html#%_sec_5.2) | __define__ _symbol_ _expression_ | A definition binds the _symbol_ to the value of the _expression_. A definition does not evaluate to anything. Example: (define r 10) ⇒ |
+| [assignment](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.6) | __set!__ _symbol_ _expression_ | _Expression_ is evaluated, and the resulting value is stored in the location to which _symbol_ is bound. It is an error to assign to an unbound _symbol_. Example: (set! r 20) ⇒ 20 |
+| [procedure definition](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.4) | __lambda__ (_symbol_...) _expression_ | A __lambda__ expression evaluates to a procedure. The environment in effect when the lambda expression was evaluated is remembered as part of the procedure. When the procedure is later called with some actual arguments, the environment in which the lambda expression was evaluated will be extended by binding the symbols in the formal argument list to fresh locations, the corresponding actual argument values will be stored in those locations, and the _expression_ in the body of the __lambda__ expression will be evaluated in the extended environment. Use __begin__ to have a body with more than one expression. The result of the _expression_ will be returned as the result of the procedure call. Example: (lambda (r) (* r r)) ⇒ ::oo::Obj36010 |
+| [procedure call](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.3) | _proc_ _expression_... | If _proc_ is anything other than __quote__, __begin__, __if__, __and__, __or__, __define__, __set!__, or __lambda__, it is treated as a procedure. Evaluate _proc_ and all the _args_, and then the procedure is applied to the list of _arg_ values. Example: (sqrt (+ 4 12)) ⇒ 4.0
 
-Environment create global_env {} {}
+} #MD
 
-foreach sym [dict keys $standard_env] {
-    global_env set $sym [dict get $standard_env $sym]
-}
-
-# load the Procedure class for closures
-source procedure.class
-
-proc lookup {sym env} {
-    return [[$env find $sym] get $sym]
-}
-
-proc eprogn {exps env} {
-    set v [list]
-    foreach exp $exps {
-        set v [eval_exp $exp $env]
-    }
-    return $v
-}
-
-proc conjunction {exps env} {
-    set v true
-    foreach exp $exps {
-        set v [eval_exp $exp $env]
-        if {$v in {0 no false {}}} {return false}
-    }
-    if {$v in {1 yes true}} {
-        return true
-    } else {
-        return $v
-    }
-}
-
-proc disjunction {exps env} {
-    # disjunction
-    set v false
-    foreach exp $exps {
-        set v [eval_exp $exp $env]
-        if {$v ni {0 no false {}}} {break}
-    }
-    if {$v in {1 yes true}} {
-        return true
-    } else {
-        return $v
-    }
-}
-        
-proc _if {c t f} {
-    if {[uplevel $c] ni {0 no false {}}} then {uplevel $t} else {uplevel $f}
-}
-
-proc define {sym val env} {
-    $env set $sym $val
-    return {}
-}
-
-proc update! {sym val env} {
-    if {[set actual_env [$env find $sym]] ne {}} {
-        $actual_env set $sym $val
-        return $val
-    } else {
-        error "trying to assign to an unbound symbol"
-    }
-}
-            
-proc invoke {fn vals} {
-    if {[info object isa typeof $fn Procedure]} {
-        return [$fn call {*}$vals]
-    } else {
-        return [$fn {*}$vals]
-    }
-}
-
-# Thtcl interpreter: eval_exp
-
-proc eval_exp {exp {env ::global_env}} {
+#CB
+proc evaluate {exp {env ::global_env}} {
     if {[::thtcl::atom? $exp]} {
         if {[::thtcl::symbol? $exp]} { # variable reference
+
             return [lookup $exp $env]
         } elseif {[::thtcl::number? $exp]} { # constant literal
             return $exp
@@ -105,7 +44,7 @@ proc eval_exp {exp {env ::global_env}} {
         }
         if { # conditional
             lassign $args cond conseq alt
-            return [_if {eval_exp $cond $env} {eval_exp $conseq $env} {eval_exp $alt $env}]
+            return [_if {evaluate $cond $env} {evaluate $conseq $env} {evaluate $alt $env}]
         }
         and { # conjunction
             return [conjunction $args $env]
@@ -115,26 +54,106 @@ proc eval_exp {exp {env ::global_env}} {
         }
         define { # definition
             lassign $args sym val
-            return [define $sym [eval_exp $val $env] $env]
+            return [define $sym [evaluate $val $env] $env]
         }
         set! { # assignment
             lassign $args sym val
-            return [update! $sym [eval_exp $val $env] $env]
+            return [update! $sym [evaluate $val $env] $env]
         }
         lambda { # procedure definition
             lassign $args parms body
             return [Procedure new $parms $body $env]
         }
         default { # procedure invocation
-            return [invoke [eval_exp $op $env] [lmap arg $args {eval_exp $arg $env}]]
+            return [invoke [evaluate $op $env] [lmap arg $args {evaluate $arg $env}]]
         }
     }
 }
+#CB
 
-# Thtcl repl: raw_input, scheme_str, parse, and repl
+#CB
+proc lookup {sym env} {
+    return [[$env find $sym] get $sym]
+}
+#CB
 
-source repl.tcl
+#CB
+proc eprogn {exps env} {
+    set v [list]
+    foreach exp $exps {
+        set v [evaluate $exp $env]
+    }
+    return $v
+}
+#CB
 
-###---
- eval_exp [parse "(define fact (lambda (n) (if (<= n 1) 1 (* n (fact (- n 1))))))"]
- time {eval_exp [parse "(fact 100)"]} 10
+#CB
+proc conjunction {exps env} {
+    set v true
+    foreach exp $exps {
+        set v [evaluate $exp $env]
+        if {$v in {0 no false {}}} {return false}
+    }
+    if {$v in {1 yes true}} {
+        return true
+    } else {
+        return $v
+    }
+}
+#CB
+
+#CB
+proc disjunction {exps env} {
+    # disjunction
+    set v false
+    foreach exp $exps {
+        set v [evaluate $exp $env]
+        if {$v ni {0 no false {}}} {break}
+    }
+    if {$v in {1 yes true}} {
+        return true
+    } else {
+        return $v
+    }
+}
+#CB
+        
+#CB
+proc _if {c t f} {
+    if {[uplevel $c] ni {0 no false {}}} then {uplevel $t} else {uplevel $f}
+}
+#CB
+
+#CB
+proc define {sym val env} {
+    $env set $sym $val
+    return {}
+}
+#CB
+
+#CB
+proc update! {sym val env} {
+    if {[set actual_env [$env find $sym]] ne {}} {
+        $actual_env set $sym $val
+        return $val
+    } else {
+        error "trying to assign to an unbound symbol"
+    }
+}
+#CB
+            
+#CB
+proc invoke {fn vals} {
+    if {[info object isa typeof $fn Procedure]} {
+        return [$fn call {*}$vals]
+    } else {
+        return [$fn {*}$vals]
+    }
+}
+#CB
+
+if no { #MD
+evaluate [parse "(define fact (lambda (n) (if (<= n 1) 1 (* n (fact (- n 1))))))"]
+time {evaluate [parse "(fact 100)"]} 10
+} #MD
+
