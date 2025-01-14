@@ -18,20 +18,21 @@ The following symbols make up the standard environment:
 | = | ::thtcl::= | Equality operator |
 | > | ::thtcl::> | Greater-than operator |
 | >= | ::thtcl::>= | Greater-than-or-equal operator |
-| abs | ::tcl::mathfunc::abs | Absolute value |
+| abs | ::tcl::mathfunc::abs | Absolute value of _arg_ |
 | acos | ::tcl::mathfunc::acos | Returns the arc cosine of _arg_, in the range [0,pi] radians. _Arg_ should be in the range [-1,1]. |
 | append | ::concat | Concatenates (one level of) sublists to a single list. |
 | apply | ::thtcl::apply | Takes an operator and a list of arguments and applies the operator to them |
-| asin | ::tcl::mathfunc::asin | Returns the arc sine of arg, in the range [-pi/2,pi/2] radians. Arg should be in the range [-1,1]. |
-| atan | ::tcl::mathfunc::atan | Returns the arc tangent of arg, in the range [-pi/2,pi/2] radians. |
-| atan2 | ::tcl::mathfunc::atan2 | Returns the arc tangent of y/x, in the range [-pi,pi] radians. x and y cannot both be 0. If x is greater than 0, this is equivalent to “atan [expr {y/x}]”. |
+| asin | ::tcl::mathfunc::asin | Returns the arc sine of _arg_, in the range [-pi/2,pi/2] radians. _Arg_ should be in the range [-1,1]. |
+| atan | ::tcl::mathfunc::atan | Returns the arc tangent of _arg_, in the range [-pi/2,pi/2] radians. |
+| atan2 | ::tcl::mathfunc::atan2 | Returns the arc tangent of _y_ / _x_, in the range [-pi,pi] radians. _x_ and _y_ cannot both be 0. If _x_ is greater than 0, this is equivalent to “atan (/ _y_ _x_)”. |
 | atom? | ::thtcl::atom? | Takes an _obj_, returns true if _obj_ is not a list, otherwise returns false. |
 | car | ::thtcl::car | Takes a list and returns the first item |
 | cdr | ::thtcl::cdr | Takes a list and returns it with the first item removed |
 | ceil | ::tcl::mathfunc::ceil | Returns the smallest integral floating-point value (i.e. with a zero fractional part) not less than _arg_. The argument may be any numeric value. |
 | cons | ::thtcl::cons | Takes an item and a list and constructs a list where the item is the first item in the list. |
-| cos | ::tcl::mathfunc::cos | Returns the cosine of arg, measured in radians. |
-| cosh | ::tcl::mathfunc::cosh | Returns the hyperbolic cosine of arg. If the result would cause an overflow, an error is returned. |
+| cos | ::tcl::mathfunc::cos | Returns the cosine of _arg_, measured in radians. |
+| cosh | ::tcl::mathfunc::cosh | Returns the hyperbolic cosine of _arg_. If the result would cause an overflow, an error is returned. |
+| deg->rad | ::thtcl::deg->rad | For a degree _arg_, returns the same angle in radians. |
 | eq? | ::thtcl::eq? | Takes two objects and returns true if their string form is the same, false otherwise |
 | equal? | ::thtcl::equal? | In this interpreter, the same as __eq?__ |
 | exp | ::tcl::mathfunc::exp | Returns the exponential of _arg_, defined as _e<sup>arg</sup>_. If the result would cause an overflow, an error is returned. |
@@ -53,8 +54,9 @@ The following symbols make up the standard environment:
 | number? | ::thtcl::number? | Takes an _obj_, returns true if _obj_ is a valid number, otherwise returns false. |
 | pi | 3.1415926535897931 |  |
 | print | ::puts | Takes an object and outputs it |
+| rad->deg | ::thtcl::rad->deg | For a radian _arg_, returns the same angle in degrees. |
 | rand | ::tcl::mathfunc::rand | Returns a pseudo-random floating-point value in the range (0,1). |
-| round | ::tcl::mathfunc::round | Takes an _arg_: if arg is an integer value, returns _arg_, otherwise converts _arg_ to integer by rounding and returns the converted value. |
+| round | ::tcl::mathfunc::round | Takes an _arg_: if _arg_ is an integer value, returns _arg_, otherwise converts _arg_ to integer by rounding and returns the converted value. |
 | sin | ::tcl::mathfunc::sin | Returns the sine of _arg_, measured in radians. |
 | sinh | ::tcl::mathfunc::sinh | Returns the hyperbolic sine of _arg_. If the result would cause an overflow, an error is returned. |
 | sqrt | ::tcl::mathfunc::sqrt | Takes an _arg_ (any non-negative numeric value), returns a floating-point value that is the square root of _arg_ |
@@ -98,6 +100,8 @@ proc cdr {list} { lrange $list 1 end }
 
 proc cons {a list} { linsert $list 0 $a }
 
+proc deg->rad {arg} { expr {$arg * 3.1415926535897931 / 180} }
+
 proc eq? {a b} { boolexpr {$a eq $b} }
 
 proc equal? {a b} { boolexpr {$a eq $b} }
@@ -110,12 +114,14 @@ proc null? {val} { boolexpr {$val eq {}} }
 
 proc number? {val} { boolexpr {[string is double $val]} }
 
+proc rad->deg {arg} { expr {$arg * 180 / 3.1415926535897931} }
+
 # non-standard definition of symbol?
 proc symbol? {exp} { boolexpr {[atom? $exp] && ![string is double $exp]} }
 
 }
 
-foreach func {> < >= <= = apply atom? car cdr cons eq? equal? map not null? number? symbol?} {
+foreach func {> < >= <= = apply atom? car cdr cons deg->rad eq? equal? map not null? number? rad->deg symbol?} {
     dict set standard_env $func ::thtcl::$func
 }
 
@@ -234,3 +240,16 @@ TT(
     scheme_str [evaluate [parse "(list (+ 1 1) (+ 2 2) (* 2 3) (expt 2 3))"]]
 } "(2 4 6 8.0)"
 TT)
+
+TT(
+::tcltest::test standard_env-16.0 {math: degrees and radians} {
+    scheme_str [evaluate [parse "(deg->rad 90)"]]
+} "1.5707963267948966"
+TT)
+
+TT(
+::tcltest::test standard_env-16.1 {math: degrees and radians} {
+    scheme_str [evaluate [parse "(rad->deg (/ pi 2))"]]
+} "90.0"
+TT)
+

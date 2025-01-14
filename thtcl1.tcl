@@ -102,6 +102,15 @@ TT(
 ::tcltest::test thtcl1-2.0 {conditional} {
     scheme_str [evaluate [parse "(if (> (* 11 11) 120) (* 7 6) oops)"]]
 } 42
+
+::tcltest::test thtcl1-2.1 {conditional} -body {
+    scheme_str [evaluate [parse "(if)"]]
+} -result {}
+
+::tcltest::test thtcl1-2.2 {conditional} -body {
+    scheme_str [evaluate [parse "(if 1 2 3 4 5)"]]
+} -result 2
+
 TT)
 
 MD(

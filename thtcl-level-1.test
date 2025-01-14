@@ -1,4 +1,7 @@
 package require tcltest 2.5
+source thtcl-level-1.tcl
+
+package require tcltest 2.5
 eval ::tcltest::configure $argv
 source thtcl-level-1.tcl
 
@@ -9,6 +12,15 @@ source thtcl-level-1.tcl
 ::tcltest::test thtcl1-2.0 {conditional} {
     scheme_str [evaluate [parse "(if (> (* 11 11) 120) (* 7 6) oops)"]]
 } 42
+
+::tcltest::test thtcl1-2.1 {conditional} -body {
+    scheme_str [evaluate [parse "(if)"]]
+} -result {}
+
+::tcltest::test thtcl1-2.2 {conditional} -body {
+    scheme_str [evaluate [parse "(if 1 2 3 4 5)"]]
+} -result 2
+
 
 ::tcltest::test thtcl1-3.0 {procedure call with a list operator} {
     scheme_str [evaluate [parse "((if #t + *) 2 3)"]]
@@ -114,5 +126,13 @@ source thtcl-level-1.tcl
 ::tcltest::test standard_env-15.0 {math} {
     scheme_str [evaluate [parse "(list (+ 1 1) (+ 2 2) (* 2 3) (expt 2 3))"]]
 } "(2 4 6 8.0)"
+
+::tcltest::test standard_env-16.0 {math: degrees and radians} {
+    scheme_str [evaluate [parse "(deg->rad 90)"]]
+} "1.5707963267948966"
+
+::tcltest::test standard_env-16.1 {math: degrees and radians} {
+    scheme_str [evaluate [parse "(rad->deg (/ pi 2))"]]
+} "90.0"
 
 ::tcltest::cleanupTests

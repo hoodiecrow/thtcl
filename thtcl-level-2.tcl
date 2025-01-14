@@ -158,6 +158,8 @@ proc cdr {list} { lrange $list 1 end }
 
 proc cons {a list} { linsert $list 0 $a }
 
+proc deg->rad {arg} { expr {$arg * 3.1415926535897931 / 180} }
+
 proc eq? {a b} { boolexpr {$a eq $b} }
 
 proc equal? {a b} { boolexpr {$a eq $b} }
@@ -170,18 +172,23 @@ proc null? {val} { boolexpr {$val eq {}} }
 
 proc number? {val} { boolexpr {[string is double $val]} }
 
+proc rad->deg {arg} { expr {$arg * 180 / 3.1415926535897931} }
+
 # non-standard definition of symbol?
 proc symbol? {exp} { boolexpr {[atom? $exp] && ![string is double $exp]} }
 
 }
 
-foreach func {> < >= <= = apply atom? car cdr cons eq? equal? map not null? number? symbol?} {
+foreach func {> < >= <= = apply atom? car cdr cons deg->rad eq? equal? map not null? number? rad->deg symbol?} {
     dict set standard_env $func ::thtcl::$func
 }
 
 foreach {func impl} {append concat length llength list list print puts} {
     dict set standard_env $func ::$impl
 }
+
+
+
 
 
 
