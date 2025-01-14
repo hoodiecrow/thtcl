@@ -1,5 +1,5 @@
 
-if no { #MD
+#MD(
 ## Level 2 Full Thtcl
 
 The second level of the interpreter has a full set of syntactic forms and a dynamic structure of variable environments. It is defined in the source file thtcl2.tcl which defines the procedure __evaluate__ which recognizes and processes the following syntactic forms:
@@ -18,7 +18,7 @@ The second level of the interpreter has a full set of syntactic forms and a dyna
 | [procedure definition](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.4) | __lambda__ (_symbol_...) _expression_ | A __lambda__ expression evaluates to a procedure. The environment in effect when the lambda expression was evaluated is remembered as part of the procedure. When the procedure is later called with some actual arguments, the environment in which the lambda expression was evaluated will be extended by binding the symbols in the formal argument list to fresh locations, the corresponding actual argument values will be stored in those locations, and the _expression_ in the body of the __lambda__ expression will be evaluated in the extended environment. Use __begin__ to have a body with more than one expression. The result of the _expression_ will be returned as the result of the procedure call. Example: (lambda (r) (* r r)) ⇒ ::oo::Obj36010 |
 | [procedure call](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.3) | _proc_ _expression_... | If _proc_ is anything other than __quote__, __begin__, __if__, __and__, __or__, __define__, __set!__, or __lambda__, it is treated as a procedure. Evaluate _proc_ and all the _args_, and then the procedure is applied to the list of _arg_ values. Example: (sqrt (+ 4 12)) ⇒ 4.0
 
-} #MD
+#MD)
 
 #CB
 proc evaluate {exp {env ::global_env}} {
@@ -71,12 +71,12 @@ proc evaluate {exp {env ::global_env}} {
 }
 #CB
 
-if no { #MD
+#MD(
 The __evaluate__ procedure relies on some sub-procedures for processing forms:
 
 __lookup__ dereferences a symbol, returning the value bound to it in the given environment
 or one of its outer environments.
-} #MD
+#MD)
 
 #CB
 proc lookup {sym env} {
@@ -84,10 +84,10 @@ proc lookup {sym env} {
 }
 #CB
 
-if no { #MD
+#MD(
 __eprogn__ evaluates _expressions_ in a list in sequence, returning the value of the last
 one.
-} #MD
+#MD)
 
 #CB
 proc eprogn {exps env} {
@@ -99,10 +99,10 @@ proc eprogn {exps env} {
 }
 #CB
 
-if no { #MD
+#MD(
 __conjunction__ evaluates _expressions_ in order, and the value of the first _expression_
 that evaluates to a false value is returned: any remaining _expressions_ are not evaluated.
-} #MD
+#MD)
 
 #CB
 proc conjunction {exps env} {
@@ -119,10 +119,10 @@ proc conjunction {exps env} {
 }
 #CB
 
-if no { #MD
+#MD(
 __disjunction__ evaluates _expressions_ in order, and the value of the first _expression_
 that evaluates to a true value is returned: any remaining _expressions_ are not evaluated.
-} #MD
+#MD)
 
 #CB
 proc disjunction {exps env} {
@@ -140,10 +140,10 @@ proc disjunction {exps env} {
 }
 #CB
         
-if no { #MD
+#MD(
 ___if__ evaluates the first expression passed to it, and then conditionally evaluates
 either the second or third expression, returning that value.
-} #MD
+#MD)
 
 #CB
 proc _if {c t f} {
@@ -151,9 +151,9 @@ proc _if {c t f} {
 }
 #CB
 
-if no { #MD
+#MD(
 __edefine__ adds a symbol binding to the given environment, creating a variable.
-} #MD
+#MD)
 
 #CB
 proc edefine {sym val env} {
@@ -162,11 +162,11 @@ proc edefine {sym val env} {
 }
 #CB
 
-if no { #MD
+#MD(
 __update!__ updates a variable by changing the value at the location of a symbol binding
 in the given environment or one of its outer environments. It is an error to attempt to
 update an unbound symbol.
-} #MD
+#MD)
 
 #CB
 proc update! {sym val env} {
@@ -179,11 +179,11 @@ proc update! {sym val env} {
 }
 #CB
             
-if no { #MD
+#MD(
 __invoke__ calls a function, passing some arguments to it. The value of evaluating the
 expression in the function body is returned. Handles the difference in calling convention
 between a Procedure object and a regular proc command.
-} #MD
+#MD)
 
 #CB
 proc invoke {fn vals} {
@@ -195,7 +195,7 @@ proc invoke {fn vals} {
 }
 #CB
 
-if no { #MD
+#MD(
 #### Benchmark
 
 On my slow computer, the following takes 0.012 seconds to run. Lispy does it in 0.003
@@ -206,5 +206,5 @@ compare this version with the Python one I'm all ears (plewerin x gmail com).
 evaluate [parse "(define fact (lambda (n) (if (<= n 1) 1 (* n (fact (- n 1))))))"]
 time {evaluate [parse "(fact 100)"]} 10
 ```
-} #MD
+#MD)
 

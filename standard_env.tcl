@@ -1,5 +1,5 @@
 
-if no { #MD
+#MD(
 ### The standard environment
 
 The Calculator uses a single environment for all variables (bound symbols).
@@ -63,7 +63,7 @@ The following symbols make up the standard environment:
 | tan | ::tcl::mathfunc::tan | Returns the tangent of _arg_, measured in radians. |
 | tanh | ::tcl::mathfunc::tanh | Returns the hyperbolic tangent of _arg_. |
 
-} #MD
+#MD)
 
 #CB
 unset -nocomplain standard_env

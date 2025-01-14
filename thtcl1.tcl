@@ -1,5 +1,5 @@
 
-if no { #MD
+#MD(
 ## Level 1 Thtcl Calculator
 
 The first level of the interpreter has a reduced set of syntactic forms and a single variable environment. It is defined in the source file __thtcl1.tcl__ which defines the procedure __evaluate__ which recognizes and processes the following syntactic forms:
@@ -13,7 +13,7 @@ The first level of the interpreter has a reduced set of syntactic forms and a si
 | [definition](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-8.html#%_sec_5.2) | __define__ _symbol_ _expression_ | A definition binds the _symbol_ to the value of the _expression_. A definition does not evaluate to anything. Example: (define r 10) ⇒ |
 | [procedure call](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.3) | _proc_ _expression_... | If _proc_ is anything other than __begin__, __if__, or __define__, it is treated as a procedure. Evaluate _proc_ and all the _args_, and then the procedure is applied to the list of _arg_ values. Example: (sqrt (+ 4 12)) ⇒ 4.0 |
 
-} #MD
+#MD)
 
 #CB
 proc evaluate {exp {env ::standard_env}} {
@@ -48,11 +48,11 @@ proc evaluate {exp {env ::standard_env}} {
 }
 #CB
 
-if no { #MD
+#MD(
 The __evaluate__ procedure relies on some sub-procedures for processing forms:
 
 __lookup__ dereferences a symbol, returning the value bound to it in the given environment.
-} #MD
+#MD)
 
 #CB
 proc lookup {sym env} {
@@ -60,10 +60,10 @@ proc lookup {sym env} {
 }
 #CB
 
-if no { #MD
+#MD(
 __eprogn__ evaluates expressions in a list in sequence, returning the value of the last
 one.
-} #MD
+#MD)
 
 #CB
 proc eprogn {exps env} {
@@ -75,10 +75,10 @@ proc eprogn {exps env} {
 }
 #CB
 
-if no { #MD
+#MD(
 ___if__ evaluates the first expression passed to it, and then conditionally evaluates
 either the second or third expression, returning that value.
-} #MD
+#MD)
 
 #CB
 proc _if {c t f} {
@@ -86,9 +86,9 @@ proc _if {c t f} {
 }
 #CB
 
-if no { #MD
+#MD(
 __edefine__ adds a symbol binding to the given environment, creating a variable.
-} #MD
+#MD)
 
 #CB
 proc edefine {sym val env} {
@@ -97,10 +97,10 @@ proc edefine {sym val env} {
 }
 #CB
 
-if no { #MD
+#MD(
 __invoke__ calls a function, passing some arguments to it. The value of evaluating the
 expression in the function body is returned.
-} #MD
+#MD)
 
 #CB
 proc invoke {fn vals} {
@@ -108,5 +108,5 @@ proc invoke {fn vals} {
 }
 #CB
 
-if no { #MD
-} #MD
+#MD(
+#MD)

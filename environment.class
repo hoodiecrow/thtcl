@@ -1,8 +1,8 @@
-if no { #MD
+#MD(
 ### Environment class and objects
 
 The class for environments is called __Environment__.
-} #MD
+#MD)
 
 #CB
 catch { Environment destroy }
