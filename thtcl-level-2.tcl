@@ -52,11 +52,15 @@ proc evaluate {exp {env ::global_env}} {
 }
 #CB
 
+
+
 #CB
 proc lookup {sym env} {
     return [[$env find $sym] get $sym]
 }
 #CB
+
+
 
 #CB
 proc eprogn {exps env} {
@@ -67,6 +71,8 @@ proc eprogn {exps env} {
     return $v
 }
 #CB
+
+
 
 #CB
 proc conjunction {exps env} {
@@ -82,6 +88,8 @@ proc conjunction {exps env} {
     }
 }
 #CB
+
+
 
 #CB
 proc disjunction {exps env} {
@@ -99,11 +107,15 @@ proc disjunction {exps env} {
 }
 #CB
         
+
+
 #CB
 proc _if {c t f} {
     if {[uplevel $c] ni {0 no false {}}} then {uplevel $t} else {uplevel $f}
 }
 #CB
+
+
 
 #CB
 proc define {sym val env} {
@@ -111,6 +123,8 @@ proc define {sym val env} {
     return {}
 }
 #CB
+
+
 
 #CB
 proc update! {sym val env} {
@@ -123,6 +137,8 @@ proc update! {sym val env} {
 }
 #CB
             
+
+
 #CB
 proc invoke {fn vals} {
     if {[info object isa typeof $fn Procedure]} {

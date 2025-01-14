@@ -71,11 +71,23 @@ proc evaluate {exp {env ::global_env}} {
 }
 #CB
 
+if no { #MD
+The __evaluate__ procedure relies on some sub-procedures for processing forms:
+
+__lookup__ dereferences a symbol, returning the value bound to it in the given environment
+or one of its outer environments.
+} #MD
+
 #CB
 proc lookup {sym env} {
     return [[$env find $sym] get $sym]
 }
 #CB
+
+if no { #MD
+__eprogn__ evaluates _expressions_ in a list in sequence, returning the value of the last
+one.
+} #MD
 
 #CB
 proc eprogn {exps env} {
@@ -86,6 +98,11 @@ proc eprogn {exps env} {
     return $v
 }
 #CB
+
+if no { #MD
+Evaluates _expressions_ in order, and the value of the first _expression_ that
+evaluates to a false value is returned: any remaining _expressions_ are not evaluated.
+} #MD
 
 #CB
 proc conjunction {exps env} {
@@ -101,6 +118,11 @@ proc conjunction {exps env} {
     }
 }
 #CB
+
+if no { #MD
+Evaluates _expressions_ in order, and the value of the first _expression_ that
+evaluates to a true value is returned: any remaining _expressions_ are not evaluated.
+} #MD
 
 #CB
 proc disjunction {exps env} {
@@ -118,11 +140,20 @@ proc disjunction {exps env} {
 }
 #CB
         
+if no { #MD
+___if__ evaluates the first expression passed to it, and then conditionally evaluates
+either the second or third expression, returning that value.
+} #MD
+
 #CB
 proc _if {c t f} {
     if {[uplevel $c] ni {0 no false {}}} then {uplevel $t} else {uplevel $f}
 }
 #CB
+
+if no { #MD
+__define__ adds a symbol binding to the standard environment.
+} #MD
 
 #CB
 proc define {sym val env} {
@@ -130,6 +161,12 @@ proc define {sym val env} {
     return {}
 }
 #CB
+
+if no { #MD
+__update!__ changes the value at the location of a symbol binding in the given
+environment or one of its outer environments. It is an error to attempt to update
+an unbound symbol.
+} #MD
 
 #CB
 proc update! {sym val env} {
@@ -142,6 +179,11 @@ proc update! {sym val env} {
 }
 #CB
             
+if no { #MD
+__invoke__ calls a function, passing some arguments to it. The value of evaluating the
+expression in the function body is returned.
+} #MD
+
 #CB
 proc invoke {fn vals} {
     if {[info object isa typeof $fn Procedure]} {
@@ -154,6 +196,7 @@ proc invoke {fn vals} {
 
 if no { #MD
 evaluate [parse "(define fact (lambda (n) (if (<= n 1) 1 (* n (fact (- n 1))))))"]
+
 time {evaluate [parse "(fact 100)"]} 10
 } #MD
 
