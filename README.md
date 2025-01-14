@@ -46,7 +46,7 @@ proc evaluate {exp {env ::standard_env}} {
         }
         define { # definition
             lassign $args sym val
-            return [define $sym [evaluate $val $env] $env]
+            return [edefine $sym [evaluate $val $env] $env]
         }
         default { # procedure invocation
             return [invoke [evaluate $op $env] [lmap arg $args {evaluate $arg $env}]]
@@ -87,10 +87,10 @@ proc _if {c t f} {
 }
 ```
 
-__define__ adds a symbol binding to the given environment, creating a variable.
+__edefine__ adds a symbol binding to the given environment, creating a variable.
 
 ```
-proc define {sym val env} {
+proc edefine {sym val env} {
     dict set $env $sym $val
     return {}
 }
@@ -108,7 +108,8 @@ proc invoke {fn vals} {
 
 ### The standard environment
 
-The Calculator uses a single environment for all variables (bound symbols). The following symbols make up the standard environment:
+The Calculator uses a single environment for all variables (bound symbols).
+The following symbols make up the standard environment:
 
 |Symbol|Definition|Description|
 |------|----------|-----------|
@@ -328,7 +329,7 @@ proc evaluate {exp {env ::global_env}} {
         }
         define { # definition
             lassign $args sym val
-            return [define $sym [evaluate $val $env] $env]
+            return [edefine $sym [evaluate $val $env] $env]
         }
         set! { # assignment
             lassign $args sym val
@@ -415,10 +416,10 @@ proc _if {c t f} {
 }
 ```
 
-__define__ adds a symbol binding to the given environment, creating a variable.
+__edefine__ adds a symbol binding to the given environment, creating a variable.
 
 ```
-proc define {sym val env} {
+proc edefine {sym val env} {
     $env set $sym $val
     return {}
 }

@@ -2,8 +2,11 @@
 if no { #MD
 ### The standard environment
 
-The Calculator uses a single environment for all variables (bound symbols). The following symbols make up the standard environment:
+The Calculator uses a single environment for all variables (bound symbols).
+The following symbols make up the standard environment:
 
+|Symbol|Definition|Description|
+|------|----------|-----------|
 | #f | false | In this interpreter, #f is a symbol bound to Tcl falsehood |
 | #t | true | Likewise with truth |
 | * | ::tcl::mathop::* | Multiplication operator |

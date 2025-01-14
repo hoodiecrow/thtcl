@@ -35,7 +35,7 @@ proc evaluate {exp {env ::global_env}} {
         }
         define { # definition
             lassign $args sym val
-            return [define $sym [evaluate $val $env] $env]
+            return [edefine $sym [evaluate $val $env] $env]
         }
         set! { # assignment
             lassign $args sym val
@@ -118,7 +118,7 @@ proc _if {c t f} {
 
 
 #CB
-proc define {sym val env} {
+proc edefine {sym val env} {
     $env set $sym $val
     return {}
 }

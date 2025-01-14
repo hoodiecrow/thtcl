@@ -39,7 +39,7 @@ proc evaluate {exp {env ::standard_env}} {
         }
         define { # definition
             lassign $args sym val
-            return [define $sym [evaluate $val $env] $env]
+            return [edefine $sym [evaluate $val $env] $env]
         }
         default { # procedure invocation
             return [invoke [evaluate $op $env] [lmap arg $args {evaluate $arg $env}]]
@@ -87,11 +87,11 @@ proc _if {c t f} {
 #CB
 
 if no { #MD
-__define__ adds a symbol binding to the given environment, creating a variable.
+__edefine__ adds a symbol binding to the given environment, creating a variable.
 } #MD
 
 #CB
-proc define {sym val env} {
+proc edefine {sym val env} {
     dict set $env $sym $val
     return {}
 }
