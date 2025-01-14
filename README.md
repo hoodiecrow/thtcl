@@ -8,6 +8,7 @@ To use, place the compound source files (__thtcl-level-1.tcl__ and __thtcl-level
 
 
 
+
 ## Level 1 Thtcl Calculator
 
 The first level of the interpreter has a reduced set of syntactic forms and a single variable environment. It is defined in the source file __thtcl1.tcl__ which defines the procedure __evaluate__ which recognizes and processes the following syntactic forms:
@@ -55,6 +56,7 @@ proc evaluate {exp {env ::standard_env}} {
 }
 ```
 
+
 The __evaluate__ procedure relies on some sub-procedures for processing forms:
 
 __lookup__ dereferences a symbol, returning the value bound to it in the given environment.
@@ -87,6 +89,7 @@ proc _if {c t f} {
 }
 ```
 
+
 __edefine__ adds a symbol binding to the given environment, creating a variable.
 
 ```
@@ -104,6 +107,7 @@ proc invoke {fn vals} {
     return [$fn {*}$vals]
 }
 ```
+
 
 
 ### The standard environment
@@ -228,6 +232,12 @@ foreach {func impl} {append concat length llength list list print puts} {
     dict set standard_env $func ::$impl
 }
 ```
+
+
+
+
+
+
 
 
 
@@ -454,6 +464,7 @@ proc invoke {fn vals} {
 }
 ```
 
+
 #### Benchmark
 
 On my slow computer, the following takes 0.012 seconds to run. Lispy does it in 0.003
@@ -510,6 +521,7 @@ foreach sym [dict keys $standard_env] {
     global_env set $sym [dict get $standard_env $sym]
 }
 ```
+
 
 ### Procedure class and objects
 

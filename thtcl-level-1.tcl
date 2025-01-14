@@ -1,7 +1,6 @@
 
 
 
-#CB
 proc evaluate {exp {env ::standard_env}} {
     if {[::thtcl::atom? $exp]} {
         if {[::thtcl::symbol? $exp]} { # variable reference
@@ -32,19 +31,14 @@ proc evaluate {exp {env ::standard_env}} {
         }
     }
 }
-#CB
 
 
 
-#CB
 proc lookup {sym env} {
     return [dict get [set $env] $sym]
 }
-#CB
 
 
-
-#CB
 proc eprogn {exps env} {
     set v [list]
     foreach exp $exps {
@@ -52,38 +46,27 @@ proc eprogn {exps env} {
     }
     return $v
 }
-#CB
 
 
-
-#CB
 proc _if {c t f} {
     if {[uplevel $c] ni {0 no false {}}} then {uplevel $t} else {uplevel $f}
 }
-#CB
 
 
 
-#CB
 proc edefine {sym val env} {
     dict set $env $sym $val
     return {}
 }
-#CB
 
 
-
-#CB
 proc invoke {fn vals} {
     return [$fn {*}$vals]
 }
-#CB
 
 
 
 
-
-#CB
 unset -nocomplain standard_env
 
 set standard_env [dict create pi 3.1415926535897931 #t true #f false]
@@ -140,7 +123,6 @@ foreach func {> < >= <= = apply atom? car cdr cons eq? equal? map not null? numb
 foreach {func impl} {append concat length llength list list print puts} {
     dict set standard_env $func ::$impl
 }
-#CB
 
 
 
@@ -148,35 +130,29 @@ foreach {func impl} {append concat length llength list list print puts} {
 
 
 
-#CB
+
+
+
+
 proc raw_input {prompt} {
     puts -nonewline $prompt
     return [gets stdin]
 }
-#CB
 
 
-
-#CB
 proc scheme_str {val} {
     if {[llength $val] > 1} {
         set val "($val)"
     }
     return [string map {\{ ( \} ) true #t false #f} $val]
 }
-#CB
 
 
-
-#CB
 proc parse {str} {
     return [string map {( \{ ) \}} $str]
 }
-#CB
 
 
-
-#CB
 proc repl {{prompt "Thtcl> "}} {
     while true {
         set str [raw_input $prompt]
@@ -188,5 +164,4 @@ proc repl {{prompt "Thtcl> "}} {
         }
     }
 }
-#CB
 

@@ -1,7 +1,5 @@
 
 
-
-#CB
 proc evaluate {exp {env ::global_env}} {
     if {[::thtcl::atom? $exp]} {
         if {[::thtcl::symbol? $exp]} { # variable reference
@@ -50,19 +48,13 @@ proc evaluate {exp {env ::global_env}} {
         }
     }
 }
-#CB
 
 
-
-#CB
 proc lookup {sym env} {
     return [[$env find $sym] get $sym]
 }
-#CB
 
 
-
-#CB
 proc eprogn {exps env} {
     set v [list]
     foreach exp $exps {
@@ -70,11 +62,8 @@ proc eprogn {exps env} {
     }
     return $v
 }
-#CB
 
 
-
-#CB
 proc conjunction {exps env} {
     set v true
     foreach exp $exps {
@@ -87,11 +76,8 @@ proc conjunction {exps env} {
         return $v
     }
 }
-#CB
 
 
-
-#CB
 proc disjunction {exps env} {
     # disjunction
     set v false
@@ -105,28 +91,19 @@ proc disjunction {exps env} {
         return $v
     }
 }
-#CB
         
 
-
-#CB
 proc _if {c t f} {
     if {[uplevel $c] ni {0 no false {}}} then {uplevel $t} else {uplevel $f}
 }
-#CB
 
 
-
-#CB
 proc edefine {sym val env} {
     $env set $sym $val
     return {}
 }
-#CB
 
 
-
-#CB
 proc update! {sym val env} {
     if {[set actual_env [$env find $sym]] ne {}} {
         $actual_env set $sym $val
@@ -135,11 +112,8 @@ proc update! {sym val env} {
         error "trying to assign to an unbound symbol"
     }
 }
-#CB
             
 
-
-#CB
 proc invoke {fn vals} {
     if {[info object isa typeof $fn Procedure]} {
         return [$fn call {*}$vals]
@@ -147,14 +121,11 @@ proc invoke {fn vals} {
         return [$fn {*}$vals]
     }
 }
-#CB
 
 
 
 
 
-
-#CB
 unset -nocomplain standard_env
 
 set standard_env [dict create pi 3.1415926535897931 #t true #f false]
@@ -211,11 +182,14 @@ foreach func {> < >= <= = apply atom? car cdr cons eq? equal? map not null? numb
 foreach {func impl} {append concat length llength list list print puts} {
     dict set standard_env $func ::$impl
 }
-#CB
 
 
 
-#CB
+
+
+
+
+
 catch { Environment destroy }
 
 oo::class create Environment {
@@ -244,22 +218,17 @@ oo::class create Environment {
         dict set bindings $sym $val
     }
 }
-#CB
 
 
 
-
-#CB
 Environment create global_env {} {}
 
 foreach sym [dict keys $standard_env] {
     global_env set $sym [dict get $standard_env $sym]
 }
-#CB
 
 
 
-#CB
 catch { Procedure destroy }
 
 oo::class create Procedure {
@@ -273,44 +242,30 @@ oo::class create Procedure {
         evaluate $body [Environment new $parms $args $env]
     }
 }
-#CB
 
 
 
 
 
-
-
-
-#CB
 proc raw_input {prompt} {
     puts -nonewline $prompt
     return [gets stdin]
 }
-#CB
 
 
-
-#CB
 proc scheme_str {val} {
     if {[llength $val] > 1} {
         set val "($val)"
     }
     return [string map {\{ ( \} ) true #t false #f} $val]
 }
-#CB
 
 
-
-#CB
 proc parse {str} {
     return [string map {( \{ ) \}} $str]
 }
-#CB
 
 
-
-#CB
 proc repl {{prompt "Thtcl> "}} {
     while true {
         set str [raw_input $prompt]
@@ -322,5 +277,4 @@ proc repl {{prompt "Thtcl> "}} {
         }
     }
 }
-#CB
 

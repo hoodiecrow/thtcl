@@ -1,10 +1,10 @@
-#MD(
+MD(
 ### Environment class and objects
 
 The class for environments is called __Environment__.
-#MD)
+MD)
 
-#CB
+CB
 catch { Environment destroy }
 
 oo::class create Environment {
@@ -33,5 +33,5 @@ oo::class create Environment {
         dict set bindings $sym $val
     }
 }
-#CB
+CB
 

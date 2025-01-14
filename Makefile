@@ -1,22 +1,34 @@
 
 .PHONY: all
-all: README.md thtcl-level-1.tcl thtcl-level-2.tcl
+all: README.md thtcl-level-1.tcl thtcl-level-2.tcl thtcl-level-1.test thtcl-level-2.test
 
 
 README.md: top.md thtcl-level-1.md thtcl-level-2.md thtcl-level-3.md
-	cat $^ >$@
+	cat $^ |sed -e s/\\r//g >$@
 
 thtcl-level-1.md: thtcl1.tcl standard_env.tcl repl.tcl
-	cat $^ |sed -e s/^#CB/\`\`\`/g -e /#MD/d -e s/\\r//g >$@
+	cat $^ |sed -e s/^CB/\`\`\`/g -e /MD/d -e /TT/,/TT/d >$@
 
 thtcl-level-2.md: thtcl2.tcl environment.class global_env.tcl procedure.class
-	cat $^ |sed -e s/^#CB/\`\`\`/g -e /#MD/d -e s/\\r//g >$@
+	cat $^ |sed -e s/^CB/\`\`\`/g -e /MD/d -e /TT/,/TT/d >$@
 
 thtcl-level-1.tcl: thtcl1.tcl standard_env.tcl repl.tcl
-	cat $^ |perl -0777 -pe 's/\#MD\(.*?\#MD\)//gs' >$@
+	cat $^ |sed -e /CB/d -e /MD/,/MD/d -e /TT/,/TT/d >$@
 
 thtcl-level-2.tcl: thtcl2.tcl standard_env.tcl environment.class global_env.tcl procedure.class repl.tcl
-	cat $^ |perl -0777 -pe 's/\#MD\(.*?\#MD\)//gs' >$@
+	cat $^ |sed -e /CB/d -e /MD/,/MD/d -e /TT/,/TT/d >$@
+
+thtcl-level-1.test: thtcl1.tcl standard_env.tcl repl.tcl
+	echo 'package require tcltest 2.5' >$@
+	echo 'source thtcl-level-1.tcl\n' >>$@
+	cat $^ |sed -n '/TT/,// { //n ; p }' >>$@
+	echo ::tcltest::cleanupTests >>$@
+
+thtcl-level-2.test: thtcl2.tcl environment.class global_env.tcl procedure.class
+	echo 'package require tcltest 2.5' >$@
+	echo 'source thtcl-level-2.tcl\n' >>$@
+	cat $^ |sed -n '/TT/,// { //n ; p }' >>$@
+	echo ::tcltest::cleanupTests >>$@
 
 
 .PHONY: clean
