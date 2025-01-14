@@ -61,7 +61,8 @@ proc lookup {sym env} {
 #CB
 
 if no { #MD
-__eprogn__ evaluates expressions in a list in sequence, returning the value of the last one.
+__eprogn__ evaluates expressions in a list in sequence, returning the value of the last
+one.
 } #MD
 
 #CB
@@ -75,7 +76,8 @@ proc eprogn {exps env} {
 #CB
 
 if no { #MD
-___if__ evaluates the first expression passed to it, and then conditionally evaluates either the second or third expression, returning that value.
+___if__ evaluates the first expression passed to it, and then conditionally evaluates
+either the second or third expression, returning that value.
 } #MD
 
 #CB
@@ -85,7 +87,7 @@ proc _if {c t f} {
 #CB
 
 if no { #MD
-__define__ adds a symbol binding to the standard environment.
+__define__ adds a symbol binding to the given environment, creating a variable.
 } #MD
 
 #CB
@@ -96,7 +98,8 @@ proc define {sym val env} {
 #CB
 
 if no { #MD
-__invoke__ calls a function, passing some arguments to it. The value of evaluating the expression in the function body is returned.
+__invoke__ calls a function, passing some arguments to it. The value of evaluating the
+expression in the function body is returned.
 } #MD
 
 #CB

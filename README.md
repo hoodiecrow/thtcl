@@ -65,7 +65,8 @@ proc lookup {sym env} {
 }
 ```
 
-__eprogn__ evaluates expressions in a list in sequence, returning the value of the last one.
+__eprogn__ evaluates expressions in a list in sequence, returning the value of the last
+one.
 
 ```
 proc eprogn {exps env} {
@@ -77,7 +78,8 @@ proc eprogn {exps env} {
 }
 ```
 
-___if__ evaluates the first expression passed to it, and then conditionally evaluates either the second or third expression, returning that value.
+___if__ evaluates the first expression passed to it, and then conditionally evaluates
+either the second or third expression, returning that value.
 
 ```
 proc _if {c t f} {
@@ -85,7 +87,7 @@ proc _if {c t f} {
 }
 ```
 
-__define__ adds a symbol binding to the standard environment.
+__define__ adds a symbol binding to the given environment, creating a variable.
 
 ```
 proc define {sym val env} {
@@ -94,7 +96,8 @@ proc define {sym val env} {
 }
 ```
 
-__invoke__ calls a function, passing some arguments to it. The value of evaluating the expression in the function body is returned.
+__invoke__ calls a function, passing some arguments to it. The value of evaluating the
+expression in the function body is returned.
 
 ```
 proc invoke {fn vals} {
@@ -366,8 +369,8 @@ proc eprogn {exps env} {
 }
 ```
 
-Evaluates _expressions_ in order, and the value of the first _expression_ that
-evaluates to a false value is returned: any remaining _expressions_ are not evaluated.
+__conjunction__ evaluates _expressions_ in order, and the value of the first _expression_
+that evaluates to a false value is returned: any remaining _expressions_ are not evaluated.
 
 ```
 proc conjunction {exps env} {
@@ -384,8 +387,8 @@ proc conjunction {exps env} {
 }
 ```
 
-Evaluates _expressions_ in order, and the value of the first _expression_ that
-evaluates to a true value is returned: any remaining _expressions_ are not evaluated.
+__disjunction__ evaluates _expressions_ in order, and the value of the first _expression_
+that evaluates to a true value is returned: any remaining _expressions_ are not evaluated.
 
 ```
 proc disjunction {exps env} {
@@ -412,7 +415,7 @@ proc _if {c t f} {
 }
 ```
 
-__define__ adds a symbol binding to the standard environment.
+__define__ adds a symbol binding to the given environment, creating a variable.
 
 ```
 proc define {sym val env} {
@@ -421,9 +424,9 @@ proc define {sym val env} {
 }
 ```
 
-__update!__ changes the value at the location of a symbol binding in the given
-environment or one of its outer environments. It is an error to attempt to update
-an unbound symbol.
+__update!__ updates a variable by changing the value at the location of a symbol binding
+in the given environment or one of its outer environments. It is an error to attempt to
+update an unbound symbol.
 
 ```
 proc update! {sym val env} {
@@ -437,7 +440,8 @@ proc update! {sym val env} {
 ```
             
 __invoke__ calls a function, passing some arguments to it. The value of evaluating the
-expression in the function body is returned.
+expression in the function body is returned. Handles the difference in calling convention
+between a Procedure object and a regular proc command.
 
 ```
 proc invoke {fn vals} {
@@ -449,9 +453,16 @@ proc invoke {fn vals} {
 }
 ```
 
-evaluate [parse "(define fact (lambda (n) (if (<= n 1) 1 (* n (fact (- n 1))))))"]
+#### Benchmark
 
+On my slow computer, the following takes 0.012 seconds to run. Lispy does it in 0.003
+seconds on Norvig's probably significantly faster machine. If anyone would care to
+compare this version with the Python one I'm all ears (plewerin x gmail com).
+
+```
+evaluate [parse "(define fact (lambda (n) (if (<= n 1) 1 (* n (fact (- n 1))))))"]
 time {evaluate [parse "(fact 100)"]} 10
+```
 
 ### Environment class and objects
 
