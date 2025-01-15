@@ -60,8 +60,8 @@ proc edefine {sym val env} {
 }
 
 
-proc invoke {fn vals} {
-    return [$fn {*}$vals]
+proc invoke {proc vals} {
+    return [$proc {*}$vals]
 }
 
 
@@ -141,13 +141,13 @@ foreach {func impl} {append concat length llength list list print puts} {
 
 
 
-proc raw_input {prompt} {
+proc input {prompt} {
     puts -nonewline $prompt
     return [gets stdin]
 }
 
 
-proc scheme_str {val} {
+proc printable {val} {
     if {[llength $val] > 1} {
         set val "($val)"
     }
@@ -162,12 +162,12 @@ proc parse {str} {
 
 proc repl {{prompt "Thtcl> "}} {
     while true {
-        set str [raw_input $prompt]
+        set str [input $prompt]
         if {$str eq ""} break
         set val [evaluate [parse $str]]
         # should be None
         if {$val ne {}} {
-            puts [scheme_str $val]
+            puts [printable $val]
         }
     }
 }

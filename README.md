@@ -16,17 +16,18 @@ or __thtcl-level-2.tcl__. Use the __repl__ command to run a dialog loop with the
 ## Level 1 Thtcl Calculator
 
 The first level of the interpreter has a reduced set of syntactic forms and a single
-variable environment. It is defined by the procedure __evaluate__ in __thtcl-level-1.tcl__
-which recognizes and processes the following syntactic forms:
+[variable](https://en.wikipedia.org/wiki/Variable_(computer_science)) environment. It is
+defined by the procedure __evaluate__ in __thtcl-level-1.tcl__ which recognizes and
+processes the following syntactic forms:
 
 | Syntactic form | Syntax | Semantics |
 |----------------|--------|-----------|
-| [reference](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.1) | _symbol_ | An expression consisting of a symbol is a variable reference. It evaluates to the value the symbol is bound to. An unbound symbol can't be evaluated. Example: r ⇒ 10 if _r_ is bound to 10 |
-| [literal](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.2) | _number_ | Numerical constants evaluate to themselves. Example: 99 ⇒ 99 |
+| [variable reference](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.1) | _symbol_ | An expression consisting of a symbol is a variable reference. It evaluates to the value the symbol is bound to. An unbound symbol can't be evaluated. Example: r ⇒ 10 if _r_ is bound to 10 |
+| [constant literal](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.2) | _number_ | Numerical constants evaluate to themselves. Example: 99 ⇒ 99 |
 | [sequence](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.2.3) | __begin__ _expression_... | The _expressions_ are evaluated sequentially, and the value of the last <expression> is returned. Example: (begin (define r 10) (* r r)) ⇒ the square of 10 |
 | [conditional](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.5) | __if__ _test_ _conseq_ _alt_ | An __if__ expression is evaluated like this: first, _test_ is evaluated. If it yields a true value, then _conseq_ is evaluated and its value is returned. Otherwise _alt_ is evaluated and its value is returned. Example: (if (> 99 100) (* 2 2) (+ 2 4)) ⇒ 6 |
 | [definition](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-8.html#%_sec_5.2) | __define__ _symbol_ _expression_ | A definition binds the _symbol_ to the value of the _expression_. A definition does not evaluate to anything. Example: (define r 10) ⇒ |
-| [procedure call](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.3) | _proc_ _expression_... | If _proc_ is anything other than __begin__, __if__, or __define__, it is treated as a procedure. Evaluate _proc_ and all the _args_, and then the procedure is applied to the list of _arg_ values. Example: (sqrt (+ 4 12)) ⇒ 4.0 |
+| [procedure call](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.3) | _proc_ _expression_... | If _proc_ is anything other than __begin__, __if__, or __define__, it is treated as a procedure. Evaluate _proc_ and all the _expressions_, and then the procedure is applied to the list of _expression_ values. Example: (sqrt (+ 4 12)) ⇒ 4.0 |
 
 To evaluate an [expression](https://en.wikipedia.org/wiki/Expression_(computer_science)),
 the evaluator first needs to classify the expression. It can be an atomic (indivisible)
@@ -129,8 +130,7 @@ proc _if {c t f} {
 ```
 
 
-__edefine__ adds a symbol binding to the given environment, creating a
-[variable](https://en.wikipedia.org/wiki/Variable_(computer_science)).
+__edefine__ adds a symbol binding to the given environment, creating a variable.
 
 ```
 proc edefine {sym val env} {
@@ -143,8 +143,8 @@ __invoke__ calls a procedure, passing some arguments to it. The procedure
 typically returns a value.
 
 ```
-proc invoke {fn vals} {
-    return [$fn {*}$vals]
+proc invoke {proc vals} {
+    return [$proc {*}$vals]
 }
 ```
 
@@ -153,7 +153,8 @@ proc invoke {fn vals} {
 ### The standard environment
 
 An environment is like a dictionary where you can look up terms (symbols) and
-find definitions for them. In Lisp, procedures are [first class](https://en.wikipedia.org/w/index.php?title=First-class_object), i.e. they are
+find definitions for them. In Lisp, procedures are
+[first class](https://en.wikipedia.org/wiki/First-class_function), i.e. they are
 values just like any other data type, and can be passed to function calls or
 returned as values. This also means that just like the standard environment
 contains number values like __pi__, it also contains procedures like __cos__ 
@@ -176,7 +177,7 @@ The following symbols make up the standard environment:
 | = | ::thtcl::= | Equality operator |
 | > | ::thtcl::> | Greater-than operator |
 | >= | ::thtcl::>= | Greater-than-or-equal operator |
-| abs | ::tcl::mathfunc::abs | Absolute value of _arg_ |
+| abs | ::tcl::mathfunc::abs | Absolute value of _arg_. |
 | acos | ::tcl::mathfunc::acos | Returns the arc cosine of _arg_, in the range [0,pi] radians. _Arg_ should be in the range [-1,1]. |
 | append | ::concat | Concatenates (one level of) sublists to a single list. |
 | apply | ::thtcl::apply | Takes an operator and a list of arguments and applies the operator to them |
@@ -300,22 +301,24 @@ foreach {func impl} {append concat length llength list list print puts} {
 
 ### The REPL
 
-The REPL (read-eval-print loop) is a loop that repeatedly _reads_ a Scheme source string from the user through the command __raw_input__ (breaking the loop if given an empty line),
-_evaluates_ it using __parse__ and this level's __evaluate__, and _prints_ the result after filtering it through __scheme_str__.
+The REPL ([read-eval-print loop](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop))
+is a loop that repeatedly _reads_ a Scheme source string from the user through the command
+__input__ (breaking the loop if given an empty line), _evaluates_ it using __parse__ and the current
+level's __evaluate__, and _prints_ the result after filtering it through __printable__.
 
-__raw_input__ is modeled after the Python function. It displays a prompt and reads a string.
+__input__ is modeled after the Python 3 function. It displays a prompt and reads a string.
 
 ```
-proc raw_input {prompt} {
+proc input {prompt} {
     puts -nonewline $prompt
     return [gets stdin]
 }
 ```
 
-__scheme_str__ dresses up the value as a Scheme expression, using a weak rule of thumb to detect lists and exchanging braces for parentheses.
+__printable__ dresses up the value as a Scheme expression, using a weak rule of thumb to detect lists and exchanging braces for parentheses.
 
 ```
-proc scheme_str {val} {
+proc printable {val} {
     if {[llength $val] > 1} {
         set val "($val)"
     }
@@ -337,12 +340,12 @@ resulting value.
 ```
 proc repl {{prompt "Thtcl> "}} {
     while true {
-        set str [raw_input $prompt]
+        set str [input $prompt]
         if {$str eq ""} break
         set val [evaluate [parse $str]]
         # should be None
         if {$val ne {}} {
-            puts [scheme_str $val]
+            puts [printable $val]
         }
     }
 }
@@ -352,14 +355,14 @@ proc repl {{prompt "Thtcl> "}} {
 ## Level 2 Full Thtcl
 
 The second level of the interpreter has a full set of syntactic forms and a dynamic
-structure of variable environments. It is defined by the procedure __evaluate__ as
-found in the source file __thtcl-level-2.tcl__, and recognizes and processes the
-following syntactic forms:
+structure of variable environments for [lexical scoping](https://en.wikipedia.org/wiki/Scope_(computer_science)#Lexical_scope).
+It is defined by the procedure __evaluate__ as found in the source file
+__thtcl-level-2.tcl__, and recognizes and processes the following syntactic forms:
 
 | Syntactic form | Syntax | Semantics |
 |----------------|--------|-----------|
-| [reference](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.1) | _symbol_ | An expression consisting of a symbol is a variable reference. It evaluates to the value the symbol is bound to. An unbound symbol can't be evaluated. Example: r ⇒ 10 if _r_ is bound to 10 |
-| [literal](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.2) | _number_ | Numerical constants evaluate to themselves. Example: 99 ⇒ 99 |
+| [variable reference](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.1) | _symbol_ | An expression consisting of a symbol is a variable reference. It evaluates to the value the symbol is bound to. An unbound symbol can't be evaluated. Example: r ⇒ 10 if _r_ is bound to 10 |
+| [constant literal](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.2) | _number_ | Numerical constants evaluate to themselves. Example: 99 ⇒ 99 |
 | [quotation](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.2) | __quote__ _datum_ | (__quote__ _datum_) evaluates to _datum_, making it a constant. Example: (quote r) ⇒ r
 | [sequence](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.2.3) | __begin__ _expression_... | The _expression_ s are evaluated sequentially, and the value of the last <expression> is returned. Example: (begin (define r 10) (* r r)) ⇒ the square of 10 |
 | [conditional](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.5) | __if__ _test_ _conseq_ _alt_ | An __if__ expression is evaluated like this: first, _test_ is evaluated. If it yields a true value, then _conseq_ is evaluated and its value is returned. Otherwise _alt_ is evaluated and its value is returned. Example: (if (> 99 100) (* 2 2) (+ 2 4)) ⇒ 6 |
@@ -368,7 +371,7 @@ following syntactic forms:
 | [definition](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-8.html#%_sec_5.2) | __define__ _symbol_ _expression_ | A definition binds the _symbol_ to the value of the _expression_. A definition does not evaluate to anything. Example: (define r 10) ⇒ |
 | [assignment](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.6) | __set!__ _symbol_ _expression_ | _Expression_ is evaluated, and the resulting value is stored in the location to which _symbol_ is bound. It is an error to assign to an unbound _symbol_. Example: (set! r 20) ⇒ 20 |
 | [procedure definition](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.4) | __lambda__ (_symbol_...) _expression_ | A __lambda__ expression evaluates to a procedure. The environment in effect when the lambda expression was evaluated is remembered as part of the procedure. When the procedure is later called with some actual arguments, the environment in which the lambda expression was evaluated will be extended by binding the symbols in the formal argument list to fresh locations, the corresponding actual argument values will be stored in those locations, and the _expression_ in the body of the __lambda__ expression will be evaluated in the extended environment. Use __begin__ to have a body with more than one expression. The result of the _expression_ will be returned as the result of the procedure call. Example: (lambda (r) (* r r)) ⇒ ::oo::Obj36010 |
-| [procedure call](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.3) | _proc_ _expression_... | If _proc_ is anything other than __quote__, __begin__, __if__, __and__, __or__, __define__, __set!__, or __lambda__, it is treated as a procedure. Evaluate _proc_ and all the _args_, and then the procedure is applied to the list of _arg_ values. Example: (sqrt (+ 4 12)) ⇒ 4.0
+| [procedure call](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.3) | _proc_ _expression_... | If _proc_ is anything other than __quote__, __begin__, __if__, __and__, __or__, __define__, __set!__, or __lambda__, it is treated as a procedure. Evaluate _proc_ and all the _expressions_, and then the procedure is applied to the list of _expression_ values. Example: (sqrt (+ 4 12)) ⇒ 4.0
 
 
 ```
@@ -516,16 +519,16 @@ proc update! {sym val env} {
 }
 ```
             
-__invoke__ calls a function, passing some arguments to it. The value of evaluating the
+__invoke__ calls a procedure, passing some arguments to it. The value of evaluating the
 expression in the function body is returned. Handles the difference in calling convention
 between a Procedure object and a regular proc command.
 
 ```
-proc invoke {fn vals} {
-    if {[info object isa typeof $fn Procedure]} {
-        return [$fn call {*}$vals]
+proc invoke {proc vals} {
+    if {[info object isa typeof $proc Procedure]} {
+        return [$proc call {*}$vals]
     } else {
-        return [$fn {*}$vals]
+        return [$proc {*}$vals]
     }
 }
 ```
@@ -574,7 +577,7 @@ After the call:
 
 Note how the global __r__ is shadowed by the local one, and how the local environment
 links to the global one to find __*__ and __pi__. After the call, we are back to the
-first image again.
+first state again.
 
 
 ### Environment class and objects
@@ -616,7 +619,10 @@ oo::class create Environment {
 ```
 
 
-On startup, an __Environment__ object called __global_env__ is created and populated with all the definitions from __standard_env__. Thereafter, each time a user-defined procedure is called a new __Environment__ object is created to hold the bindings introduced by the call, and also a link to the outer environment (the one closed over when the procedure was created).
+On startup, an __Environment__ object called __global_env__ is created and populated with all the
+definitions from __standard_env__. Thereafter, each time a user-defined procedure is called a new
+__Environment__ object is created to hold the bindings introduced by the call, and also a link to
+the outer environment (the one closed over when the procedure was defined).
 
 ```
 Environment create global_env {} {}
@@ -629,8 +635,9 @@ foreach sym [dict keys $standard_env] {
 
 ### Procedure class and objects
 
-A __Procedure__ object is basically a closure, storing the parameter list, the body,
-and the current environment when the object is created (when the procedure is defined).
+A __Procedure__ object is basically a [closure](https://en.wikipedia.org/wiki/Closure_(computer_programming)),
+storing the parameter list, the body, and the current environment when the object
+is created (when the procedure is defined).
 
 When a __Procedure__ object is called, it evaluates the body in a new environment
 where the parameters are given values from the argument list and the outer link

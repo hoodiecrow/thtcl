@@ -3,7 +3,8 @@ MD(
 ### The standard environment
 
 An environment is like a dictionary where you can look up terms (symbols) and
-find definitions for them. In Lisp, procedures are first class, i.e. they are
+find definitions for them. In Lisp, procedures are
+[first class](https://en.wikipedia.org/wiki/First-class_function), i.e. they are
 values just like any other data type, and can be passed to function calls or
 returned as values. This also means that just like the standard environment
 contains number values like __pi__, it also contains procedures like __cos__ 
@@ -26,7 +27,7 @@ The following symbols make up the standard environment:
 | = | ::thtcl::= | Equality operator |
 | > | ::thtcl::> | Greater-than operator |
 | >= | ::thtcl::>= | Greater-than-or-equal operator |
-| abs | ::tcl::mathfunc::abs | Absolute value of _arg_ |
+| abs | ::tcl::mathfunc::abs | Absolute value of _arg_. |
 | acos | ::tcl::mathfunc::acos | Returns the arc cosine of _arg_, in the range [0,pi] radians. _Arg_ should be in the range [-1,1]. |
 | append | ::concat | Concatenates (one level of) sublists to a single list. |
 | apply | ::thtcl::apply | Takes an operator and a list of arguments and applies the operator to them |
@@ -140,124 +141,124 @@ CB
 
 TT(
 ::tcltest::test standard_env-1.0 {append} {
-    scheme_str [evaluate [parse "(append (list 1 2) (list 3 4))"]]
+    printable [evaluate [parse "(append (list 1 2) (list 3 4))"]]
 } "(1 2 3 4)"
 TT)
 
 TT(
 ::tcltest::test standard_env-2.0 {apply} {
-    scheme_str [evaluate [parse "(begin (define e (list 1 2 3)) (apply car e))"]]
+    printable [evaluate [parse "(begin (define e (list 1 2 3)) (apply car e))"]]
 } "1"
 TT)
 
 TT(
 ::tcltest::test standard_env-3.0 {car} {
-    scheme_str [evaluate [parse "(car (list 1 2 3))"]]
+    printable [evaluate [parse "(car (list 1 2 3))"]]
 } "1"
 TT)
 
 TT(
 ::tcltest::test standard_env-4.0 {cdr} {
-    scheme_str [evaluate [parse "(cdr (list 1 2 3))"]]
+    printable [evaluate [parse "(cdr (list 1 2 3))"]]
 } "(2 3)"
 TT)
 
 TT(
 ::tcltest::test standard_env-5.0 {cons} {
-    scheme_str [evaluate [parse "(cons 1 (list 2 3))"]]
+    printable [evaluate [parse "(cons 1 (list 2 3))"]]
 } "(1 2 3)"
 TT)
 
 TT(
 ::tcltest::test standard_env-6.0 {eq?} {
-    scheme_str [evaluate [parse "(eq? 1 1)"]]
+    printable [evaluate [parse "(eq? 1 1)"]]
 } "#t"
 
 ::tcltest::test standard_env-6.1 {eq?} {
-    scheme_str [evaluate [parse "(eq? 1 1.0)"]]
+    printable [evaluate [parse "(eq? 1 1.0)"]]
 } "#f"
 
 ::tcltest::test standard_env-7.0 {equal?} {
-    scheme_str [evaluate [parse "(equal? 1 1)"]]
+    printable [evaluate [parse "(equal? 1 1)"]]
 } "#t"
 
 ::tcltest::test standard_env-7.1 {equal?} {
-    scheme_str [evaluate [parse "(equal? 1 1.0)"]]
+    printable [evaluate [parse "(equal? 1 1.0)"]]
 } "#f"
 
 ::tcltest::test standard_env-7.2 {equal? : =} {
-    scheme_str [evaluate [parse "(= 1 1)"]]
+    printable [evaluate [parse "(= 1 1)"]]
 } "#t"
 
 ::tcltest::test standard_env-7.3 {equal? : =} {
-    scheme_str [evaluate [parse "(= 1 1.0)"]]
+    printable [evaluate [parse "(= 1 1.0)"]]
 } "#t"
 
 ::tcltest::test standard_env-8.0 {length} {
-    scheme_str [evaluate [parse "(length (list 1 2 3))"]]
+    printable [evaluate [parse "(length (list 1 2 3))"]]
 } "3"
 
 ::tcltest::test standard_env-9.0 {list} {
-    scheme_str [evaluate [parse "(list 1 2 3)"]]
+    printable [evaluate [parse "(list 1 2 3)"]]
 } "(1 2 3)"
 
 ::tcltest::test standard_env-10.0 {map} {
     # verified in Scheme
-    scheme_str [evaluate [parse "(begin (define lst (list (list 1 2) (list 3 4))) (map car lst))"]]
+    printable [evaluate [parse "(begin (define lst (list (list 1 2) (list 3 4))) (map car lst))"]]
 } "(1 3)"
 
 ::tcltest::test standard_env-11.0 {not} {
-    scheme_str [evaluate [parse "(not #t)"]]
+    printable [evaluate [parse "(not #t)"]]
 } "#f"
 
 ::tcltest::test standard_env-11.1 {not} {
-    scheme_str [evaluate [parse "(not #f)"]]
+    printable [evaluate [parse "(not #f)"]]
 } "#t"
 
 ::tcltest::test standard_env-11.2 {not} {
-    scheme_str [evaluate [parse "(not 99)"]]
+    printable [evaluate [parse "(not 99)"]]
 } "#f"
 
 ::tcltest::test standard_env-12.0 {null?} {
-    scheme_str [evaluate [parse "(null? ())"]]
+    printable [evaluate [parse "(null? ())"]]
 } "#t"
 
 ::tcltest::test standard_env-12.1 {null?} {
-    scheme_str [evaluate [parse "(null? 99)"]]
+    printable [evaluate [parse "(null? 99)"]]
 } "#f"
 
 ::tcltest::test standard_env-13.0 {number?} {
-    scheme_str [evaluate [parse "(number? (list 1 2))"]]
+    printable [evaluate [parse "(number? (list 1 2))"]]
 } "#f"
 
 ::tcltest::test standard_env-13.1 {number?} {
-    scheme_str [evaluate [parse "(number? 99)"]]
+    printable [evaluate [parse "(number? 99)"]]
 } "#t"
 
 ::tcltest::test standard_env-14.0 {symbol?} {
-    scheme_str [evaluate [parse "(symbol? (list 1 2))"]]
+    printable [evaluate [parse "(symbol? (list 1 2))"]]
 } "#f"
 
 ::tcltest::test standard_env-14.1 {symbol?} {
-    scheme_str [evaluate [parse "(symbol? 99)"]]
+    printable [evaluate [parse "(symbol? 99)"]]
 } "#f"
 TT)
 
 TT(
 ::tcltest::test standard_env-15.0 {math} {
-    scheme_str [evaluate [parse "(list (+ 1 1) (+ 2 2) (* 2 3) (expt 2 3))"]]
+    printable [evaluate [parse "(list (+ 1 1) (+ 2 2) (* 2 3) (expt 2 3))"]]
 } "(2 4 6 8.0)"
 TT)
 
 TT(
 ::tcltest::test standard_env-16.0 {math: degrees and radians} {
-    scheme_str [evaluate [parse "(deg->rad 90)"]]
+    printable [evaluate [parse "(deg->rad 90)"]]
 } "1.5707963267948966"
 TT)
 
 TT(
 ::tcltest::test standard_env-16.1 {math: degrees and radians} {
-    scheme_str [evaluate [parse "(rad->deg (/ pi 2))"]]
+    printable [evaluate [parse "(rad->deg (/ pi 2))"]]
 } "90.0"
 TT)
 

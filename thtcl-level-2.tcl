@@ -114,11 +114,11 @@ proc update! {sym val env} {
 }
             
 
-proc invoke {fn vals} {
-    if {[info object isa typeof $fn Procedure]} {
-        return [$fn call {*}$vals]
+proc invoke {proc vals} {
+    if {[info object isa typeof $proc Procedure]} {
+        return [$proc call {*}$vals]
     } else {
-        return [$fn {*}$vals]
+        return [$proc {*}$vals]
     }
 }
 
@@ -254,13 +254,13 @@ oo::class create Procedure {
 
 
 
-proc raw_input {prompt} {
+proc input {prompt} {
     puts -nonewline $prompt
     return [gets stdin]
 }
 
 
-proc scheme_str {val} {
+proc printable {val} {
     if {[llength $val] > 1} {
         set val "($val)"
     }
@@ -275,12 +275,12 @@ proc parse {str} {
 
 proc repl {{prompt "Thtcl> "}} {
     while true {
-        set str [raw_input $prompt]
+        set str [input $prompt]
         if {$str eq ""} break
         set val [evaluate [parse $str]]
         # should be None
         if {$val ne {}} {
-            puts [scheme_str $val]
+            puts [printable $val]
         }
     }
 }
