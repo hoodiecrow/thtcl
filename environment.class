@@ -1,7 +1,10 @@
 MD(
 ### Environment class and objects
 
-The class for environments is called __Environment__.
+The class for environments is called __Environment__. It is mostly a wrapper around a dictionary,
+ with the added finesse of keeping a link to the outer environment (starting a chain that goes all
+ the way to the global environment and then stops) which can be traversed by the find method to 
+find which innermost environment a given symbol is bound in.
 MD)
 
 CB

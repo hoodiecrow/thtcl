@@ -1,5 +1,12 @@
 MD(
 ### Procedure class and objects
+
+A __Procedure__ object is basically a closure, storing the parameter list, the body,
+and the current environment when the object is created.
+
+When a __Procedure__ object is called, it evaluates the body in a new environment
+where the parameters are given values from the argument list and the outer link
+goes to the closure environment.
 MD)
 
 CB
@@ -19,5 +26,4 @@ oo::class create Procedure {
 CB
 
 MD(
-A __Procedure__ object is basically a closure, storing the parameter list, the body, and the current environment when the object is created. When a __Procedure__ object is called, it evaluates the body in a new environment where the parameters are given values from the argument list and the outer link goes to the closure environment.
 MD)

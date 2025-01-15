@@ -303,7 +303,7 @@ proc repl {{prompt "Thtcl> "}} {
 
 ## Level 2 Full Thtcl
 
-The second level of the interpreter has a full set of syntactic forms and a dynamic structure of variable environments. It is defined in the source file thtcl2.tcl which defines the procedure __evaluate__ which recognizes and processes the following syntactic forms:
+The second level of the interpreter has a full set of syntactic forms and a dynamic structure of variable environments. It is by the procedure __evaluate__ as found in the source file thtcl-level-2.tcl, and recognizes and processes the following syntactic forms:
 
 | Syntactic form | Syntax | Semantics |
 |----------------|--------|-----------|
@@ -493,7 +493,10 @@ time {evaluate [parse "(fact 100)"]} 10
 
 ### Environment class and objects
 
-The class for environments is called __Environment__.
+The class for environments is called __Environment__. It is mostly a wrapper around a dictionary,
+ with the added finesse of keeping a link to the outer environment (starting a chain that goes all
+ the way to the global environment and then stops) which can be traversed by the find method to 
+find which innermost environment a given symbol is bound in.
 
 ```
 catch { Environment destroy }
@@ -540,6 +543,13 @@ foreach sym [dict keys $standard_env] {
 
 ### Procedure class and objects
 
+A __Procedure__ object is basically a closure, storing the parameter list, the body,
+and the current environment when the object is created.
+
+When a __Procedure__ object is called, it evaluates the body in a new environment
+where the parameters are given values from the argument list and the outer link
+goes to the closure environment.
+
 ```
 catch { Procedure destroy }
 
@@ -556,7 +566,6 @@ oo::class create Procedure {
 }
 ```
 
-A __Procedure__ object is basically a closure, storing the parameter list, the body, and the current environment when the object is created. When a __Procedure__ object is called, it evaluates the body in a new environment where the parameters are given values from the argument list and the outer link goes to the closure environment.
 ## Level 3 Advanced Thtcl
 
 I may have to leave this for the reader as an exercise.
