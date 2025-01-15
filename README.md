@@ -22,6 +22,15 @@ The first level of the interpreter has a reduced set of syntactic forms and a si
 | [definition](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-8.html#%_sec_5.2) | __define__ _symbol_ _expression_ | A definition binds the _symbol_ to the value of the _expression_. A definition does not evaluate to anything. Example: (define r 10) ⇒ |
 | [procedure call](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.3) | _proc_ _expression_... | If _proc_ is anything other than __begin__, __if__, or __define__, it is treated as a procedure. Evaluate _proc_ and all the _args_, and then the procedure is applied to the list of _arg_ values. Example: (sqrt (+ 4 12)) ⇒ 4.0 |
 
+To evaluate an expression, the evaluator first needs to classify the expression. It can be
+an atomic (indivisible) expression or a list expression. An atomic expression is either a
+symbol, meaning the expression should be evaluated as a variable reference, or a number,
+meaning the expression should be evaluated as a constant literal.
+
+If it is a list expression, the evaluator needs to examine the first element in it. If it
+is a keyword like __begin__ or __if__, the expression should be evaluated as a _special
+form_ like sequence or conditional. If it isn't a keyword, it's an operator and the 
+expression should be evaluated like a procedure call.
 
 ```
 proc evaluate {exp {env ::standard_env}} {
@@ -303,7 +312,10 @@ proc repl {{prompt "Thtcl> "}} {
 
 ## Level 2 Full Thtcl
 
-The second level of the interpreter has a full set of syntactic forms and a dynamic structure of variable environments. It is by the procedure __evaluate__ as found in the source file thtcl-level-2.tcl, and recognizes and processes the following syntactic forms:
+The second level of the interpreter has a full set of syntactic forms and a dynamic
+structure of variable environments. It is defined by the procedure __evaluate__ as
+found in the source file __thtcl-level-2.tcl__, and recognizes and processes the
+following syntactic forms:
 
 | Syntactic form | Syntax | Semantics |
 |----------------|--------|-----------|
