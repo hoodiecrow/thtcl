@@ -594,7 +594,7 @@ __*__ and __pi__ will still be available through the local environment's link
 to the outer global environment. This is all part of _[lexical scoping](https://en.wikipedia.org/wiki/Scope_(computer_science)#Lexical_scope)_.
 
 In the first image, we see the global environment before we call __circle-area__
-(and also the empty __null_env__ which __global_env__ links to:
+(and also the empty null environment which the global environment links to):
 
 ![A global environment](/images/env1.png)
 
