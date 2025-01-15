@@ -545,10 +545,10 @@ Thtcl> (circle-area 10)
 During procedure call, the symbol __r__ is bound to the value 10. But we don't
 want the binding to go into the global environment, possibly clobbering an
 earlier definition of __r__. The solution is to use separate (but linked)
-environments, making __r__'s binding a _local variable_ in its own environment,
-which the procedure will be evaluated in. The symbols __*__ and __pi__ will 
-still be available through the local environment's link to the outer global
-environment. This is all part of _lexical scoping_.
+environments, making __r__'s binding a _[local variable](https://en.wikipedia.org/wiki/Local_variable)_
+in its own environment, which the procedure will be evaluated in. The symbols
+__*__ and __pi__ will still be available through the local environment's link
+to the outer global environment. This is all part of _[lexical scoping](https://en.wikipedia.org/wiki/Scope_(computer_science)#Lexical_scope)_.
 
 In the first image, we see the global environment before we call __circle-area__:
 
