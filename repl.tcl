@@ -10,7 +10,7 @@ level's __evaluate__, and _prints_ the result after filtering it through __print
 MD)
 
 MD(
-__input__ is modeled after the Python 3 function. It displays a prompt and reads a string.
+__input__ is modelled after the Python 3 function. It displays a prompt and reads a string.
 MD)
 
 CB

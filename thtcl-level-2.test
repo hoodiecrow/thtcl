@@ -1,4 +1,4 @@
-package require tcltest 2.5
+package require tcltest
 source thtcl-level-2.tcl
 
 ::tcltest::test thtcl2-1.0 {calculate circle area} {
@@ -84,7 +84,7 @@ source thtcl-level-2.tcl
 
 ::tcltest::test thtcl2-7.2 {assignment to an unbound symbol} -body {
     printable [evaluate [parse "(begin (set! XX 20))"]]
-} -returnCodes error -result "trying to assign to an unbound symbol"
+} -returnCodes error -result "Unbound variable: XX"
 
 ::tcltest::test thtcl2-8.0 {procedure definition} -body {
     printable [evaluate [parse "(lambda (r) (* r r))"]]
@@ -134,15 +134,16 @@ source thtcl-level-2.tcl
 ::tcltest::test thtcl2-13.0 {dereference an unbound symbol} -body {
     printable [evaluate [parse "foo"]]
     # searches for sym in env {}
-} -returnCodes error -result "invalid command name \"\""
+} -returnCodes error -result "Unbound variable: foo"
 
 ::tcltest::test thtcl2-13.1 {dereference an unbound symbol: procedure} -body {
     printable [evaluate [parse "(foo)"]]
     # searches for sym in env {}
-} -returnCodes error -result "invalid command name \"\""
+} -returnCodes error -result "Unbound variable: foo"
 
 ::tcltest::test global_env-1.0 {check for a symbol} {
     lookup pi ::global_env
 } 3.1415926535897931
+
 
 ::tcltest::cleanupTests

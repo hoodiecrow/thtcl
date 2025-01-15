@@ -1,10 +1,4 @@
 
-TT(
-package require tcltest 2.5
-eval ::tcltest::configure $argv
-source thtcl-level-1.tcl
-TT)
-
 MD(
 ## Level 1 Thtcl Calculator
 

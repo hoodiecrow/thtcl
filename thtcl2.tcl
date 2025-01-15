@@ -282,7 +282,7 @@ TT(
 
 ::tcltest::test thtcl2-7.2 {assignment to an unbound symbol} -body {
     printable [evaluate [parse "(begin (set! XX 20))"]]
-} -returnCodes error -result "trying to assign to an unbound symbol"
+} -returnCodes error -result "Unbound variable: XX"
 
 ::tcltest::test thtcl2-8.0 {procedure definition} -body {
     printable [evaluate [parse "(lambda (r) (* r r))"]]
@@ -332,12 +332,12 @@ TT(
 ::tcltest::test thtcl2-13.0 {dereference an unbound symbol} -body {
     printable [evaluate [parse "foo"]]
     # searches for sym in env {}
-} -returnCodes error -result "invalid command name \"\""
+} -returnCodes error -result "Unbound variable: foo"
 
 ::tcltest::test thtcl2-13.1 {dereference an unbound symbol: procedure} -body {
     printable [evaluate [parse "(foo)"]]
     # searches for sym in env {}
-} -returnCodes error -result "invalid command name \"\""
+} -returnCodes error -result "Unbound variable: foo"
 TT)
 
 MD(

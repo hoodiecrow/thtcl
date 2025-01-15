@@ -1,8 +1,4 @@
-package require tcltest 2.5
-source thtcl-level-1.tcl
-
-package require tcltest 2.5
-eval ::tcltest::configure $argv
+package require tcltest
 source thtcl-level-1.tcl
 
 ::tcltest::test thtcl1-1.0 {calculate circle area} {
@@ -175,6 +171,14 @@ source thtcl-level-1.tcl
     printable [evaluate [parse "(odd? 1)"]]
 } "#t"
 
+::tcltest::test standard_env-17.10 {math: zero, positive, negative, even, odd predicates} -body {
+    printable [evaluate [parse "(odd? (list 1 2))"]]
+} -returnCodes error -result "NUMBER expected (odd? (1 2))"
+
+::tcltest::test standard_env-17.11 {math: zero, positive, negative, even, odd predicates} -body {
+    printable [evaluate [parse "(zero? (positive? 1))"]]
+} -returnCodes error -result "NUMBER expected (zero? #t)"
+
 
 ::tcltest::test standard_env-18.0 {list reverse} {
     printable [evaluate [parse "(reverse (list 1 2 3))"]]
@@ -183,5 +187,6 @@ source thtcl-level-1.tcl
 ::tcltest::test standard_env-19.0 {list index} {
     printable [evaluate [parse "(list-ref (list 1 2 3) 1)"]]
 } "2"
+
 
 ::tcltest::cleanupTests

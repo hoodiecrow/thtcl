@@ -1,6 +1,5 @@
 
 
-
 proc evaluate {exp {env ::standard_env}} {
     if {[::thtcl::atom? $exp]} {
         if {[::thtcl::symbol? $exp]} { # variable reference
@@ -73,10 +72,11 @@ set standard_env [dict create pi 3.1415926535897931 #t true #f false]
 
 foreach op {+ - * /} { dict set standard_env $op ::tcl::mathop::$op }
 
-foreach fn {abs acos asin atan atan2 ceil cos cosh
+foreach fn {abs acos asin atan atan2 cos cosh
     exp floor fmod hypot int isqrt log log10 max min
     rand round sin sinh sqrt srand tan tanh } { dict set standard_env $fn ::tcl::mathfunc::$fn }
 
+dict set standard_env ceiling ::tcl::mathfunc::ceil
 dict set standard_env expt ::tcl::mathfunc::pow
 
 namespace eval ::thtcl {
@@ -93,9 +93,9 @@ proc apply {proc args} { invoke $proc $args }
 
 proc atom? {exp} { boolexpr {[string index [string trim $exp] 0] ne "\{" && " " ni [split [string trim $exp] {}]} }
 
-proc car {list} { if {$list eq {}} {error "car of an empty list"} ; lindex $list 0 }
+proc car {list} { if {$list eq {}} {error "PAIR expected (car '())"} ; lindex $list 0 }
 
-proc cdr {list} { if {$list eq {}} {error "cdr of an empty list"} ; lrange $list 1 end }
+proc cdr {list} { if {$list eq {}} {error "PAIR expected (cdr '())"} ; lrange $list 1 end }
 
 proc cons {a list} { linsert $list 0 $a }
 
@@ -103,7 +103,7 @@ proc deg->rad {arg} { expr {$arg * 3.1415926535897931 / 180} }
 
 proc eq? {a b} { boolexpr {$a eq $b} }
 
-proc eqv? {a b} { boolexpr {$a eq "#t" && $b eq "#t" || $a eq "#f" && $b eq "#f" || ([string is double $a] && [string is double $b]) && $a == $b} || $a eq $b || $a eq "" && $b eq "" }
+proc eqv? {a b} { boolexpr {$a && $b || !$a && !$b || ([string is double $a] && [string is double $b]) && $a == $b} || $a eq $b || $a eq "" && $b eq "" }
 
 proc equal? {a b} { boolexpr {[printable $a] eq [printable $b]} }
 
@@ -119,15 +119,15 @@ proc rad->deg {arg} { expr {$arg * 180 / 3.1415926535897931} }
 
 proc symbol? {exp} { boolexpr {[atom? $exp] && ![string is double $exp]} }
 
-proc zero? {val} { boolexpr {$val == 0} }
+proc zero? {val} { if {![string is double $val]} {error "NUMBER expected (zero? [printable $val])"} ; boolexpr {$val == 0} }
 
-proc positive? {val} { boolexpr {$val > 0} }
+proc positive? {val} { if {![string is double $val]} {error "NUMBER expected (positive? [printable $val])"} ; boolexpr {$val > 0} }
 
-proc negative? {val} { boolexpr {$val < 0} }
+proc negative? {val} { if {![string is double $val]} {error "NUMBER expected (negative? [printable $val])"} ; boolexpr {$val < 0} }
 
-proc even? {val} { boolexpr {$val % 2 == 0} }
+proc even? {val} { if {![string is double $val]} {error "NUMBER expected (even? [printable $val])"} ; boolexpr {$val % 2 == 0} }
 
-proc odd? {val} { boolexpr {$val % 2 != 0} }
+proc odd? {val} { if {![string is double $val]} {error "NUMBER expected (odd? [printable $val])"} ; boolexpr {$val % 2 != 0} }
 
 }
 

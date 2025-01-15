@@ -19,16 +19,16 @@ thtcl-level-2.tcl: thtcl2.tcl standard_env.tcl environment.class global_env.tcl 
 	cat $^ |sed -e /CB/d -e /MD/,/MD/d -e /TT/,/TT/d >$@
 
 thtcl-level-1.test: thtcl1.tcl standard_env.tcl repl.tcl
-	echo 'package require tcltest 2.5' >$@
+	echo 'package require tcltest' >$@
 	echo 'source thtcl-level-1.tcl\n' >>$@
 	cat $^ |sed -n '/TT/,// { //n ; p }' >>$@
-	echo ::tcltest::cleanupTests >>$@
+	echo '\n::tcltest::cleanupTests' >>$@
 
 thtcl-level-2.test: thtcl2.tcl environment.class global_env.tcl procedure.class
-	echo 'package require tcltest 2.5' >$@
+	echo 'package require tcltest' >$@
 	echo 'source thtcl-level-2.tcl\n' >>$@
 	cat $^ |sed -n '/TT/,// { //n ; p }' >>$@
-	echo ::tcltest::cleanupTests >>$@
+	echo '\n::tcltest::cleanupTests' >>$@
 
 
 .PHONY: clean
