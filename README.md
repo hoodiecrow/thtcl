@@ -593,7 +593,8 @@ in its own environment, which the procedure will be evaluated in. The symbols
 __*__ and __pi__ will still be available through the local environment's link
 to the outer global environment. This is all part of _[lexical scoping](https://en.wikipedia.org/wiki/Scope_(computer_science)#Lexical_scope)_.
 
-In the first image, we see the global environment before we call __circle-area__:
+In the first image, we see the global environment before we call __circle-area__
+(and also the empty __null_env__ which __global_env__ links to:
 
 ![A global environment](/images/env1.png)
 
@@ -613,9 +614,9 @@ first state again.
 ### Environment class and objects
 
 The class for environments is called __Environment__. It is mostly a wrapper around a dictionary,
- with the added finesse of keeping a link to the outer environment (starting a chain that goes all
- the way to the global environment and then stops) which can be traversed by the find method to 
-find which innermost environment a given symbol is bound in.
+with the added finesse of keeping a link to the outer environment (starting a chain that goes all
+the way to the global environment and then stops at the null environment) which can be traversed
+by the find method to find which innermost environment a given symbol is bound in.
 
 ```
 catch { Environment destroy }
@@ -659,8 +660,8 @@ Environment create null_env {} {}
 
 oo::objdefine null_env {
     method find {sym} {return [self]}
-    method set {sym val} {error "Unbound variable: $sym"}
     method get {sym} {error "Unbound variable: $sym"}
+    method set {sym val} {error "Unbound variable: $sym"}
 }
 ```
 
