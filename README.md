@@ -559,7 +559,8 @@ After the call:
 ![A local environment shadows the global](/images/env2.png)
 
 Note how the global __r__ is shadowed by the local one, and how the local environment
-links to the global one to find __*__ and __pi__.
+links to the global one to find __*__ and __pi__. After the call, we are back to the
+first image again.
 
 
 ### Environment class and objects
