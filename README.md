@@ -1,6 +1,8 @@
 # Thtcl
 
-A small Lisp [interpreter](https://en.wikipedia.org/wiki/Interpreter_(computing)) in [Tcl](https://en.wikipedia.org/wiki/Tcl)
+A small [Lisp](https://en.wikipedia.org/wiki/Lisp_(programming_language))
+([Scheme](https://en.wikipedia.org/wiki/Scheme_(programming_language)))
+[interpreter](https://en.wikipedia.org/wiki/Interpreter_(computing)) in [Tcl](https://en.wikipedia.org/wiki/Tcl)
 inspired by [Peter Norvig](https://en.wikipedia.org/wiki/Peter_Norvig)'s [Lispy](https://norvig.com/lispy.html). I've also drawn some
 inspiration from '[Lisp in Small Pieces](http://books.google.com/books?id=81mFK8pqh5EC&lpg=PP1&dq=scheme%20programming%20book&pg=PP1#v=onepage&q&f=false)'
 by [Christian Queinnec](https://christian.queinnec.org/).
@@ -11,7 +13,7 @@ To use, place the compound source files (__thtcl-level-1.tcl__ and __thtcl-level
 in a directory. Start __tkcon__ and navigate to the directory. Source either __thtcl-level-1.tcl__
 or __thtcl-level-2.tcl__. Use the __repl__ command to run a dialog loop with the interpreter.
 
-
+For A.
 
 
 ## Level 1 Thtcl Calculator
@@ -160,7 +162,7 @@ values just like any other data type, and can be passed to function calls or
 returned as values. This also means that just like the standard environment
 contains number values like __pi__, it also contains procedures like __cos__ 
 or __apply__. The standard environment can also be extended with user-defined
-symbols and definitions, using __define__ (like (`define e 2.718281828459045)`).
+symbols and definitions, using __define__ (like `(define e 2.718281828459045)`).
 
 The Calculator uses a single environment for all variables (bound symbols).
 The following symbols make up the standard environment:
