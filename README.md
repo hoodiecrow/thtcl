@@ -102,7 +102,7 @@ The __evaluate__ procedure relies on some sub-procedures for processing forms:
 
 __lookup__ dereferences a symbol, returning the value bound to it in the given environment.
 On this level, the environment is expected to be given as a dict variable name (to wit:
-`::standard_env`). On level 2, __lookup__ will use an environment object.
+`::standard_env`). On level 2, __lookup__ will use an environment object instead.
 
 ```
 proc lookup {sym env} {
@@ -111,7 +111,8 @@ proc lookup {sym env} {
 ```
 
 __ebegin__ evaluates expressions in a list in sequence, returning the value of the last
-one. This is generally not very interesting unless the expressions have side effects.
+one. This is generally not very interesting unless the expressions have side effects (like
+printing something, or defining a variable).
 
 ```
 proc ebegin {exps env} {
@@ -134,6 +135,9 @@ proc _if {c t f} {
 
 
 __edefine__ adds a symbol binding to the given environment, creating a variable.
+On this level, the environment is expected to be given as a dict variable name
+(to wit: `::standard_env`). On level 2, __edefine__ will use an environment object
+instead.
 
 ```
 proc edefine {sym val env} {
@@ -146,8 +150,8 @@ __invoke__ calls a procedure, passing some arguments to it. The procedure
 typically returns a value.
 
 ```
-proc invoke {proc vals} {
-    return [$proc {*}$vals]
+proc invoke {op vals} {
+    return [$op {*}$vals]
 }
 ```
 
@@ -186,7 +190,7 @@ The following symbols make up the standard environment:
 | apply | ::thtcl::apply | Takes an operator and a list of arguments and applies the operator to them |
 | asin | ::tcl::mathfunc::asin | Returns the arc sine of _arg_, in the range [-pi/2,pi/2] radians. _Arg_ should be in the range [-1,1]. |
 | atan | ::tcl::mathfunc::atan | Returns the arc tangent of _arg_, in the range [-pi/2,pi/2] radians. |
-| atan2 | ::tcl::mathfunc::atan2 | Returns the arc tangent of _y_ / _x_, in the range [-pi,pi] radians. _x_ and _y_ cannot both be 0. If _x_ is greater than 0, this is equivalent to “atan (/ _y_ _x_)”. |
+| atan2 | ::tcl::mathfunc::atan2 | Returns the arc tangent of _y_ / _x_, in the range [-pi,pi] radians. _x_ and _y_ cannot both be 0. If _x_ is greater than 0, this is equivalent to “atan _y_ / _x_”. |
 | atom? | ::thtcl::atom? | Takes an _obj_, returns true if _obj_ is not a list, otherwise returns false. |
 | car | ::thtcl::car | Takes a list and returns the first item |
 | cdr | ::thtcl::cdr | Takes a list and returns it with the first item removed |
@@ -197,27 +201,34 @@ The following symbols make up the standard environment:
 | deg->rad | ::thtcl::deg->rad | For a degree _arg_, returns the same angle in radians. |
 | eq? | ::thtcl::eq? | Takes two objects and returns true if their string form is the same, false otherwise |
 | equal? | ::thtcl::equal? | In this interpreter, the same as __eq?__ |
+| eqv? | ::thtcl::eqv? | In this interpreter, the same as __eq?__ |
+| even? | ::thtcl::even? | Returns true if _arg_ is even. |
 | exp | ::tcl::mathfunc::exp | Returns the exponential of _arg_, defined as _e<sup>arg</sup>_. If the result would cause an overflow, an error is returned. |
 | expt | ::tcl::mathfunc::pow | Computes the value of _x_ raised to the power _y_ (_x<sup>y</sup>_). If _x_ is negative, _y_ must be an integer value. |
 | floor | ::tcl::mathfunc::floor | Returns the largest integral floating-point value (i.e. with a zero fractional part) not greater than _arg_. The argument may be any numeric value. |
 | fmod | ::tcl::mathfunc::fmod | Returns the floating-point remainder of the division of _x_ by _y_. If _y_ is 0, an error is returned. |
-| hypot | ::tcl::mathfunc::hypot | Computes the length of the hypotenuse of a right-angled triangle, approximately “sqrt _x<sup>2</sup>_+_y<sup>2</sup>_}]” except for being more numerically stable when the two arguments have substantially different magnitudes. |
+| hypot | ::tcl::mathfunc::hypot | Computes the length of the hypotenuse of a right-angled triangle, approximately "sqrt _x<sup>2</sup>_ + _y<sup>2</sup>_" except for being more numerically stable when the two arguments have substantially different magnitudes. |
 | int | ::tcl::mathfunc::int | The argument may be any numeric value. The integer part of _arg_ is determined, and then the low order bits of that integer value up to the machine word size are returned as an integer value. |
 | isqrt | ::tcl::mathfunc::isqrt | Computes the integer part of the square root of _arg_. _Arg_ must be a positive value, either an integer or a floating point number. |
 | length | ::llength | Takes a list, returns the number of items in it |
 | list | ::list | Takes a number of objects and returns them inside a list |
+| list-ref | ::lindex | Returns the item at index _arg_ in list. |
 | log | ::tcl::mathfunc::log | Returns the natural logarithm of _arg_. _Arg_ must be a positive value. |
 | log10 | ::tcl::mathfunc::log10 | Returns the base 10 logarithm of _arg_. _Arg_ must be a positive value. |
 | map | ::thtcl::map | Takes an operator and a list, returns a list of results of applying the operator to each item in the list |
 | max | ::tcl::mathfunc::max | Takes one or more numbers, returns the number with the greatest value |
 | min | ::tcl::mathfunc::min | Takes one or more numbers, returns the number with the smallest value |
+| negative? | ::thtcl::negative? | Returns true if _arg_ is < 0. |
 | not | ::thtcl::not | Takes an _obj_, returns true if _obj_ is false, and returns false otherwise. |
 | null? | ::thtcl::null? | Takes an _obj_, returns true if _obj_ is the empty list, otherwise returns false. |
 | number? | ::thtcl::number? | Takes an _obj_, returns true if _obj_ is a valid number, otherwise returns false. |
+| odd? | ::thtcl::odd? | Returns true if _arg_ is odd. |
 | pi | 3.1415926535897931 |  |
+| positive? | ::thtcl::positive? | Returns true if _arg_ is > 0. |
 | print | ::puts | Takes an object and outputs it |
 | rad->deg | ::thtcl::rad->deg | For a radian _arg_, returns the same angle in degrees. |
 | rand | ::tcl::mathfunc::rand | Returns a pseudo-random floating-point value in the range (0,1). |
+| reverse | ::lreverse | Returns a list in opposite order. |
 | round | ::tcl::mathfunc::round | Takes an _arg_: if _arg_ is an integer value, returns _arg_, otherwise converts _arg_ to integer by rounding and returns the converted value. |
 | sin | ::tcl::mathfunc::sin | Returns the sine of _arg_, measured in radians. |
 | sinh | ::tcl::mathfunc::sinh | Returns the hyperbolic sine of _arg_. If the result would cause an overflow, an error is returned. |
@@ -226,6 +237,7 @@ The following symbols make up the standard environment:
 | symbol? | ::thtcl::symbol? | Takes an _obj_, returns true if _obj_ is a valid symbol, otherwise returns false. |
 | tan | ::tcl::mathfunc::tan | Returns the tangent of _arg_, measured in radians. |
 | tanh | ::tcl::mathfunc::tanh | Returns the hyperbolic tangent of _arg_. |
+| zero? | ::thtcl::zero? | Returns true if _arg_ is = 0. |
 
 
 ```
@@ -255,9 +267,9 @@ proc apply {proc args} { invoke $proc $args }
 
 proc atom? {exp} { boolexpr {[string index [string trim $exp] 0] ne "\{" && " " ni [split [string trim $exp] {}]} }
 
-proc car {list} { lindex $list 0 }
+proc car {list} { if {$list eq {}} {error "car of an empty list"} ; lindex $list 0 }
 
-proc cdr {list} { lrange $list 1 end }
+proc cdr {list} { if {$list eq {}} {error "cdr of an empty list"} ; lrange $list 1 end }
 
 proc cons {a list} { linsert $list 0 $a }
 
@@ -265,7 +277,9 @@ proc deg->rad {arg} { expr {$arg * 3.1415926535897931 / 180} }
 
 proc eq? {a b} { boolexpr {$a eq $b} }
 
-proc equal? {a b} { boolexpr {$a eq $b} }
+proc eqv? {a b} { boolexpr {$a eq "#t" && $b eq "#t" || $a eq "#f" && $b eq "#f" || ([string is double $a] && [string is double $b]) && $a == $b} || $a eq $b || $a eq "" && $b eq "" }
+
+proc equal? {a b} { boolexpr {[printable $a] eq [printable $b]} }
 
 proc map {proc list} { lmap elt $list { invoke $proc [list $elt] } }
 
@@ -277,19 +291,32 @@ proc number? {val} { boolexpr {[string is double $val]} }
 
 proc rad->deg {arg} { expr {$arg * 180 / 3.1415926535897931} }
 
-# non-standard definition of symbol?
 proc symbol? {exp} { boolexpr {[atom? $exp] && ![string is double $exp]} }
+
+proc zero? {val} { boolexpr {$val == 0} }
+
+proc positive? {val} { boolexpr {$val > 0} }
+
+proc negative? {val} { boolexpr {$val < 0} }
+
+proc even? {val} { boolexpr {$val % 2 == 0} }
+
+proc odd? {val} { boolexpr {$val % 2 != 0} }
 
 }
 
-foreach func {> < >= <= = apply atom? car cdr cons deg->rad eq? equal? map not null? number? rad->deg symbol?} {
+foreach func {> < >= <= = apply atom? car cdr cons deg->rad eq? eqv? equal?
+    map not null? number? rad->deg symbol? zero? positive? negative? even? odd?} {
     dict set standard_env $func ::thtcl::$func
 }
 
-foreach {func impl} {append concat length llength list list print puts} {
+foreach {func impl} {append concat length llength list list print puts reverse lreverse list-ref lindex} {
     dict set standard_env $func ::$impl
 }
 ```
+
+
+
 
 
 
@@ -527,11 +554,11 @@ expression in the function body is returned. Handles the difference in calling c
 between a Procedure object and a regular proc command.
 
 ```
-proc invoke {proc vals} {
-    if {[info object isa typeof $proc Procedure]} {
-        return [$proc call {*}$vals]
+proc invoke {op vals} {
+    if {[info object isa typeof $op Procedure]} {
+        return [$op call {*}$vals]
     } else {
-        return [$proc {*}$vals]
+        return [$op {*}$vals]
     }
 }
 ```

@@ -60,8 +60,8 @@ proc edefine {sym val env} {
 }
 
 
-proc invoke {proc vals} {
-    return [$proc {*}$vals]
+proc invoke {op vals} {
+    return [$op {*}$vals]
 }
 
 
@@ -93,9 +93,9 @@ proc apply {proc args} { invoke $proc $args }
 
 proc atom? {exp} { boolexpr {[string index [string trim $exp] 0] ne "\{" && " " ni [split [string trim $exp] {}]} }
 
-proc car {list} { lindex $list 0 }
+proc car {list} { if {$list eq {}} {error "car of an empty list"} ; lindex $list 0 }
 
-proc cdr {list} { lrange $list 1 end }
+proc cdr {list} { if {$list eq {}} {error "cdr of an empty list"} ; lrange $list 1 end }
 
 proc cons {a list} { linsert $list 0 $a }
 
@@ -103,7 +103,9 @@ proc deg->rad {arg} { expr {$arg * 3.1415926535897931 / 180} }
 
 proc eq? {a b} { boolexpr {$a eq $b} }
 
-proc equal? {a b} { boolexpr {$a eq $b} }
+proc eqv? {a b} { boolexpr {$a eq "#t" && $b eq "#t" || $a eq "#f" && $b eq "#f" || ([string is double $a] && [string is double $b]) && $a == $b} || $a eq $b || $a eq "" && $b eq "" }
+
+proc equal? {a b} { boolexpr {[printable $a] eq [printable $b]} }
 
 proc map {proc list} { lmap elt $list { invoke $proc [list $elt] } }
 
@@ -115,18 +117,31 @@ proc number? {val} { boolexpr {[string is double $val]} }
 
 proc rad->deg {arg} { expr {$arg * 180 / 3.1415926535897931} }
 
-# non-standard definition of symbol?
 proc symbol? {exp} { boolexpr {[atom? $exp] && ![string is double $exp]} }
+
+proc zero? {val} { boolexpr {$val == 0} }
+
+proc positive? {val} { boolexpr {$val > 0} }
+
+proc negative? {val} { boolexpr {$val < 0} }
+
+proc even? {val} { boolexpr {$val % 2 == 0} }
+
+proc odd? {val} { boolexpr {$val % 2 != 0} }
 
 }
 
-foreach func {> < >= <= = apply atom? car cdr cons deg->rad eq? equal? map not null? number? rad->deg symbol?} {
+foreach func {> < >= <= = apply atom? car cdr cons deg->rad eq? eqv? equal?
+    map not null? number? rad->deg symbol? zero? positive? negative? even? odd?} {
     dict set standard_env $func ::thtcl::$func
 }
 
-foreach {func impl} {append concat length llength list list print puts} {
+foreach {func impl} {append concat length llength list list print puts reverse lreverse list-ref lindex} {
     dict set standard_env $func ::$impl
 }
+
+
+
 
 
 

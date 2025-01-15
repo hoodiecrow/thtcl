@@ -135,4 +135,53 @@ source thtcl-level-1.tcl
     printable [evaluate [parse "(rad->deg (/ pi 2))"]]
 } "90.0"
 
+::tcltest::test standard_env-17.0 {math: zero, positive, negative, even, odd predicates} {
+    printable [evaluate [parse "(zero? 2)"]]
+} "#f"
+
+::tcltest::test standard_env-17.1 {math: zero, positive, negative, even, odd predicates} {
+    printable [evaluate [parse "(zero? 0)"]]
+} "#t"
+
+::tcltest::test standard_env-17.2 {math: zero, positive, negative, even, odd predicates} {
+    printable [evaluate [parse "(positive? 0)"]]
+} "#f"
+
+::tcltest::test standard_env-17.3 {math: zero, positive, negative, even, odd predicates} {
+    printable [evaluate [parse "(positive? 1)"]]
+} "#t"
+
+::tcltest::test standard_env-17.4 {math: zero, positive, negative, even, odd predicates} {
+    printable [evaluate [parse "(negative? 0)"]]
+} "#f"
+
+::tcltest::test standard_env-17.5 {math: zero, positive, negative, even, odd predicates} {
+    printable [evaluate [parse "(negative? -1)"]]
+} "#t"
+
+::tcltest::test standard_env-17.6 {math: zero, positive, negative, even, odd predicates} {
+    printable [evaluate [parse "(even? 0)"]]
+} "#t"
+
+::tcltest::test standard_env-17.7 {math: zero, positive, negative, even, odd predicates} {
+    printable [evaluate [parse "(even? 1)"]]
+} "#f"
+
+::tcltest::test standard_env-17.8 {math: zero, positive, negative, even, odd predicates} {
+    printable [evaluate [parse "(odd? 0)"]]
+} "#f"
+
+::tcltest::test standard_env-17.9 {math: zero, positive, negative, even, odd predicates} {
+    printable [evaluate [parse "(odd? 1)"]]
+} "#t"
+
+
+::tcltest::test standard_env-18.0 {list reverse} {
+    printable [evaluate [parse "(reverse (list 1 2 3))"]]
+} "(3 2 1)"
+
+::tcltest::test standard_env-19.0 {list index} {
+    printable [evaluate [parse "(list-ref (list 1 2 3) 1)"]]
+} "2"
+
 ::tcltest::cleanupTests
