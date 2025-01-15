@@ -1,4 +1,20 @@
 MD(
+A procedure definition form creates a new procedure. Example:
+
+```
+Thtcl> (define circle-area (lambda (r) (* pi (* r r))))
+Thtcl> (circle-area 10)
+314.1592653589793
+```
+
+During procedure call, the symbol __r__ is bound to the value 10. But we don't
+want the binding to go into the global environment, possibly clobbering an
+earlier definition of __r__. The solution is to use separate (but linked)
+environments, making __r__'s binding a _local variable_ in its own environment,
+which the procedure will be evaluated in. The symbols __*__ and __pi__ will 
+still be available through the local environment's link to the outer global
+environment. This is all part of _lexical scoping_.
+
 ### Environment class and objects
 
 The class for environments is called __Environment__. It is mostly a wrapper around a dictionary,

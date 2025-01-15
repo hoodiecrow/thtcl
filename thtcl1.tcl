@@ -19,6 +19,36 @@ The first level of the interpreter has a reduced set of syntactic forms and a si
 | [definition](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-8.html#%_sec_5.2) | __define__ _symbol_ _expression_ | A definition binds the _symbol_ to the value of the _expression_. A definition does not evaluate to anything. Example: (define r 10) ⇒ |
 | [procedure call](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.3) | _proc_ _expression_... | If _proc_ is anything other than __begin__, __if__, or __define__, it is treated as a procedure. Evaluate _proc_ and all the _args_, and then the procedure is applied to the list of _arg_ values. Example: (sqrt (+ 4 12)) ⇒ 4.0 |
 
+To evaluate an expression, the evaluator first needs to classify the expression. It can be
+an atomic (indivisible) expression or a list expression. An atomic expression is either a
+symbol, meaning the expression should be evaluated as a variable reference, or a number,
+meaning the expression should be evaluated as a constant literal.
+
+If it is a list expression, the evaluator needs to examine the first element in it. If it
+is a keyword like __begin__ or __if__, the expression should be evaluated as a _special
+form_ like sequence or conditional. If it isn't a keyword, it's an operator and the 
+expression should be evaluated like a procedure call.
+
+A full programming language interpreter works in basically two phases, parsing and 
+evaluating. The parsing phase analyses the text of the program and converts it to a
+structure called an _abstract syntax tree_ (AST). The evaluation phase takes the AST
+and processes it according to the semantic rules of the language, which carries out
+the computation.
+
+Lisp's peculiar syntax derives from the fact that the program text is already in AST 
+form. The Lisp parser's job is therefore relatively easy.
+
+Example:
+```
+% set program "(begin (define r 10) (* pi (* r r)))"
+
+% parse $program
+{begin {define r 10} {* pi {* r r}}}
+
+% evaluate $_
+314.1592653589793
+
+```
 MD)
 
 CB

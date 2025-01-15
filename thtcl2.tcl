@@ -2,7 +2,10 @@
 MD(
 ## Level 2 Full Thtcl
 
-The second level of the interpreter has a full set of syntactic forms and a dynamic structure of variable environments. It is by the procedure __evaluate__ as found in the source file thtcl-level-2.tcl, and recognizes and processes the following syntactic forms:
+The second level of the interpreter has a full set of syntactic forms and a dynamic
+structure of variable environments. It is defined by the procedure __evaluate__ as
+found in the source file __thtcl-level-2.tcl__, and recognizes and processes the
+following syntactic forms:
 
 | Syntactic form | Syntax | Semantics |
 |----------------|--------|-----------|

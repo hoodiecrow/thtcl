@@ -2,6 +2,14 @@
 MD(
 ### The standard environment
 
+An environment is like a dictionary where you can look up terms (symbols) and
+find definitions for them. In Lisp, procedures are first class, i.e. they are
+values just like any other data type, and can be passed to function calls or
+returned as values. This also means that just like the standard environment
+contains number values like __pi__, it also contains procedures like __cos__ 
+or __apply__. The standard environment can also be extended with user-defined
+symbols and definitions, using __define__ (like (define e 2.718281828459045)).
+
 The Calculator uses a single environment for all variables (bound symbols).
 The following symbols make up the standard environment:
 

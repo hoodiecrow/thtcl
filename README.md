@@ -32,6 +32,27 @@ is a keyword like __begin__ or __if__, the expression should be evaluated as a _
 form_ like sequence or conditional. If it isn't a keyword, it's an operator and the 
 expression should be evaluated like a procedure call.
 
+A full programming language interpreter works in basically two phases, parsing and 
+evaluating. The parsing phase analyses the text of the program and converts it to a
+structure called an _abstract syntax tree_ (AST). The evaluation phase takes the AST
+and processes it according to the semantic rules of the language, which carries out
+the computation.
+
+Lisp's peculiar syntax derives from the fact that the program text is already in AST 
+form. The Lisp parser's job is therefore relatively easy.
+
+Example:
+```
+% set program "(begin (define r 10) (* pi (* r r)))"
+
+% parse $program
+{begin {define r 10} {* pi {* r r}}}
+
+% evaluate $_
+314.1592653589793
+
+```
+
 ```
 proc evaluate {exp {env ::standard_env}} {
     if {[::thtcl::atom? $exp]} {
@@ -120,6 +141,14 @@ proc invoke {fn vals} {
 
 
 ### The standard environment
+
+An environment is like a dictionary where you can look up terms (symbols) and
+find definitions for them. In Lisp, procedures are first class, i.e. they are
+values just like any other data type, and can be passed to function calls or
+returned as values. This also means that just like the standard environment
+contains number values like __pi__, it also contains procedures like __cos__ 
+or __apply__. The standard environment can also be extended with user-defined
+symbols and definitions, using __define__ (like (define e 2.718281828459045)).
 
 The Calculator uses a single environment for all variables (bound symbols).
 The following symbols make up the standard environment:
@@ -503,6 +532,22 @@ evaluate [parse "(define fact (lambda (n) (if (<= n 1) 1 (* n (fact (- n 1))))))
 time {evaluate [parse "(fact 100)"]} 10
 ```
 
+A procedure definition form creates a new procedure. Example:
+
+```
+Thtcl> (define circle-area (lambda (r) (* pi (* r r))))
+Thtcl> (circle-area 10)
+314.1592653589793
+```
+
+During procedure call, the symbol __r__ is bound to the value 10. But we don't
+want the binding to go into the global environment, possibly clobbering an
+earlier definition of __r__. The solution is to use separate (but linked)
+environments, making __r__'s binding a _local variable_ in its own environment,
+which the procedure will be evaluated in. The symbols __*__ and __pi__ will 
+still be available through the local environment's link to the outer global
+environment. This is all part of _lexical scoping_.
+
 ### Environment class and objects
 
 The class for environments is called __Environment__. It is mostly a wrapper around a dictionary,
@@ -556,7 +601,7 @@ foreach sym [dict keys $standard_env] {
 ### Procedure class and objects
 
 A __Procedure__ object is basically a closure, storing the parameter list, the body,
-and the current environment when the object is created.
+and the current environment when the object is created (when the procedure is defined).
 
 When a __Procedure__ object is called, it evaluates the body in a new environment
 where the parameters are given values from the argument list and the outer link

@@ -2,7 +2,7 @@ MD(
 ### Procedure class and objects
 
 A __Procedure__ object is basically a closure, storing the parameter list, the body,
-and the current environment when the object is created.
+and the current environment when the object is created (when the procedure is defined).
 
 When a __Procedure__ object is called, it evaluates the body in a new environment
 where the parameters are given values from the argument list and the outer link
