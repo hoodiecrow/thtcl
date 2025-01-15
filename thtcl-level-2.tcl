@@ -19,7 +19,7 @@ proc evaluate {exp {env ::global_env}} {
             return [lindex $args 0]
         }
         begin { # sequencing
-            return [eprogn $args $env]
+            return [ebegin $args $env]
         }
         if { # conditional
             lassign $args cond conseq alt
@@ -55,7 +55,7 @@ proc lookup {sym env} {
 }
 
 
-proc eprogn {exps env} {
+proc ebegin {exps env} {
     set v [list]
     foreach exp $exps {
         set v [evaluate $exp $env]

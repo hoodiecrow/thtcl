@@ -16,7 +16,7 @@ proc evaluate {exp {env ::standard_env}} {
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
     switch $op {
         begin { # sequencing
-            return [eprogn $args $env]
+            return [ebegin $args $env]
         }
         if { # conditional
             lassign $args cond conseq alt
@@ -39,7 +39,7 @@ proc lookup {sym env} {
 }
 
 
-proc eprogn {exps env} {
+proc ebegin {exps env} {
     set v [list]
     foreach exp $exps {
         set v [evaluate $exp $env]

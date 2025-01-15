@@ -3,10 +3,12 @@
 MD(
 ### The REPL
 
-The REPL (read-eval-print loop) is a loop that repeatedly _reads_ a Scheme source string from the user through the command __raw_input__ (breaking the loop if given an empty line), _evaluates_ it using __parse__ and the current __evaluate__, and _prints_ the result after filtering it through __scheme_str__.
+The REPL (read-eval-print loop) is a loop that repeatedly _reads_ a Scheme source string from the user through the command __raw_input__ (breaking the loop if given an empty line),
+_evaluates_ it using __parse__ and this level's __evaluate__, and _prints_ the result after filtering it through __scheme_str__.
 MD)
 
 MD(
+__raw_input__ is modeled after the Python function. It displays a prompt and reads a string.
 MD)
 
 CB
@@ -17,6 +19,7 @@ proc raw_input {prompt} {
 CB
 
 MD(
+__scheme_str__ dresses up the value as a Scheme expression, using a weak rule of thumb to detect lists and exchanging braces for parentheses.
 MD)
 
 CB
@@ -29,6 +32,7 @@ proc scheme_str {val} {
 CB
 
 MD(
+__parse__ simply exchanges parentheses for braces.
 MD)
 
 CB
@@ -38,6 +42,8 @@ proc parse {str} {
 CB
 
 MD(
+__repl__ puts the loop in the read-eval-print loop. It repeats prompting for a string until given a blank input. Given non-blank input, it parses and evaluates the string, printing the
+resulting value.
 MD)
 
 CB

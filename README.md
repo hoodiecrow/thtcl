@@ -11,7 +11,7 @@ To use, place the compound source files (__thtcl-level-1.tcl__ and __thtcl-level
 
 ## Level 1 Thtcl Calculator
 
-The first level of the interpreter has a reduced set of syntactic forms and a single variable environment. It is defined in the source file __thtcl1.tcl__ which defines the procedure __evaluate__ which recognizes and processes the following syntactic forms:
+The first level of the interpreter has a reduced set of syntactic forms and a single variable environment. It is defined by the procedure __evaluate__ which recognizes and processes the following syntactic forms:
 
 | Syntactic form | Syntax | Semantics |
 |----------------|--------|-----------|
@@ -39,7 +39,7 @@ proc evaluate {exp {env ::standard_env}} {
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
     switch $op {
         begin { # sequencing
-            return [eprogn $args $env]
+            return [ebegin $args $env]
         }
         if { # conditional
             lassign $args cond conseq alt
@@ -67,11 +67,11 @@ proc lookup {sym env} {
 }
 ```
 
-__eprogn__ evaluates expressions in a list in sequence, returning the value of the last
-one.
+__ebegin__ evaluates expressions in a list in sequence, returning the value of the last
+one. This is generally not very interesting unless the expressions have side effects.
 
 ```
-proc eprogn {exps env} {
+proc ebegin {exps env} {
     set v [list]
     foreach exp $exps {
         set v [evaluate $exp $env]
@@ -100,7 +100,7 @@ proc edefine {sym val env} {
 ```
 
 __invoke__ calls a function, passing some arguments to it. The value of evaluating the
-expression in the function body is returned.
+function is returned.
 
 ```
 proc invoke {fn vals} {
@@ -252,8 +252,10 @@ foreach {func impl} {append concat length llength list list print puts} {
 
 ### The REPL
 
-The REPL (read-eval-print loop) is a loop that repeatedly _reads_ a Scheme source string from the user through the command __raw_input__ (breaking the loop if given an empty line), _evaluates_ it using __parse__ and the current __evaluate__, and _prints_ the result after filtering it through __scheme_str__.
+The REPL (read-eval-print loop) is a loop that repeatedly _reads_ a Scheme source string from the user through the command __raw_input__ (breaking the loop if given an empty line),
+_evaluates_ it using __parse__ and this level's __evaluate__, and _prints_ the result after filtering it through __scheme_str__.
 
+__raw_input__ is modeled after the Python function. It displays a prompt and reads a string.
 
 ```
 proc raw_input {prompt} {
@@ -262,6 +264,7 @@ proc raw_input {prompt} {
 }
 ```
 
+__scheme_str__ dresses up the value as a Scheme expression, using a weak rule of thumb to detect lists and exchanging braces for parentheses.
 
 ```
 proc scheme_str {val} {
@@ -272,6 +275,7 @@ proc scheme_str {val} {
 }
 ```
 
+__parse__ simply exchanges parentheses for braces.
 
 ```
 proc parse {str} {
@@ -279,6 +283,8 @@ proc parse {str} {
 }
 ```
 
+__repl__ puts the loop in the read-eval-print loop. It repeats prompting for a string until given a blank input. Given non-blank input, it parses and evaluates the string, printing the
+resulting value.
 
 ```
 proc repl {{prompt "Thtcl> "}} {
@@ -334,7 +340,7 @@ proc evaluate {exp {env ::global_env}} {
             return [lindex $args 0]
         }
         begin { # sequencing
-            return [eprogn $args $env]
+            return [ebegin $args $env]
         }
         if { # conditional
             lassign $args cond conseq alt
@@ -376,11 +382,11 @@ proc lookup {sym env} {
 }
 ```
 
-__eprogn__ evaluates _expressions_ in a list in sequence, returning the value of the last
+__ebegin__ evaluates _expressions_ in a list in sequence, returning the value of the last
 one.
 
 ```
-proc eprogn {exps env} {
+proc ebegin {exps env} {
     set v [list]
     foreach exp $exps {
         set v [evaluate $exp $env]

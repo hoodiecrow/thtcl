@@ -8,7 +8,7 @@ TT)
 MD(
 ## Level 1 Thtcl Calculator
 
-The first level of the interpreter has a reduced set of syntactic forms and a single variable environment. It is defined in the source file __thtcl1.tcl__ which defines the procedure __evaluate__ which recognizes and processes the following syntactic forms:
+The first level of the interpreter has a reduced set of syntactic forms and a single variable environment. It is defined by the procedure __evaluate__ which recognizes and processes the following syntactic forms:
 
 | Syntactic form | Syntax | Semantics |
 |----------------|--------|-----------|
@@ -37,7 +37,7 @@ proc evaluate {exp {env ::standard_env}} {
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
     switch $op {
         begin { # sequencing
-            return [eprogn $args $env]
+            return [ebegin $args $env]
         }
         if { # conditional
             lassign $args cond conseq alt
@@ -73,12 +73,12 @@ proc lookup {sym env} {
 CB
 
 MD(
-__eprogn__ evaluates expressions in a list in sequence, returning the value of the last
-one.
+__ebegin__ evaluates expressions in a list in sequence, returning the value of the last
+one. This is generally not very interesting unless the expressions have side effects.
 MD)
 
 CB
-proc eprogn {exps env} {
+proc ebegin {exps env} {
     set v [list]
     foreach exp $exps {
         set v [evaluate $exp $env]
@@ -126,7 +126,7 @@ CB
 
 MD(
 __invoke__ calls a function, passing some arguments to it. The value of evaluating the
-expression in the function body is returned.
+function is returned.
 MD)
 
 CB

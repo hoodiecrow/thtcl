@@ -40,7 +40,7 @@ proc evaluate {exp {env ::global_env}} {
             return [lindex $args 0]
         }
         begin { # sequencing
-            return [eprogn $args $env]
+            return [ebegin $args $env]
         }
         if { # conditional
             lassign $args cond conseq alt
@@ -85,12 +85,12 @@ proc lookup {sym env} {
 CB
 
 MD(
-__eprogn__ evaluates _expressions_ in a list in sequence, returning the value of the last
+__ebegin__ evaluates _expressions_ in a list in sequence, returning the value of the last
 one.
 MD)
 
 CB
-proc eprogn {exps env} {
+proc ebegin {exps env} {
     set v [list]
     foreach exp $exps {
         set v [evaluate $exp $env]
