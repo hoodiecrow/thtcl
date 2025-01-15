@@ -532,6 +532,8 @@ evaluate [parse "(define fact (lambda (n) (if (<= n 1) 1 (* n (fact (- n 1))))))
 time {evaluate [parse "(fact 100)"]} 10
 ```
 
+#### Lexical scoping
+
 A procedure definition form creates a new procedure. Example:
 
 ```
