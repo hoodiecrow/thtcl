@@ -550,6 +550,18 @@ which the procedure will be evaluated in. The symbols __*__ and __pi__ will
 still be available through the local environment's link to the outer global
 environment. This is all part of _lexical scoping_.
 
+In the first image, we see the global environment before we call __circle-area__:
+
+![A global environment](/images/env1.png)
+
+After the call:
+
+![A local environment shadows the global](/images/env2.png)
+
+Note how the global __r__ is shadowed by the local one, and how the local environment
+links to the global one to find __*__ and __pi__.
+
+
 ### Environment class and objects
 
 The class for environments is called __Environment__. It is mostly a wrapper around a dictionary,
