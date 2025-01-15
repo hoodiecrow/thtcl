@@ -1,17 +1,23 @@
 # Thtcl
 
-A small Lisp interpreter in Tcl inspired by Peter Norvig's [Lispy](https://norvig.com/lispy.html). I've also drawn some inspiration from '[Lisp in Small Pieces](http://books.google.com/books?id=81mFK8pqh5EC&lpg=PP1&dq=scheme%20programming%20book&pg=PP1#v=onepage&q&f=false)' by Christian Queinnec.
+A small Lisp [interpreter](https://en.wikipedia.org/wiki/Interpreter_(computing)) in [Tcl](https://en.wikipedia.org/wiki/Tcl)
+inspired by Peter Norvig's [Lispy](https://norvig.com/lispy.html). I've also drawn some
+inspiration from '[Lisp in Small Pieces](http://books.google.com/books?id=81mFK8pqh5EC&lpg=PP1&dq=scheme%20programming%20book&pg=PP1#v=onepage&q&f=false)' by Christian Queinnec.
 
 The name Thtcl comes from Lisp + Tcl. Pronunciation '_thtickel_'. Or whatever.
 
-To use, place the compound source files (__thtcl-level-1.tcl__ and __thtcl-level-2.tcl__) in a directory. Start __tkcon__ and navigate to the directory. Source either __thtcl-level-1.tcl__ or __thtcl-level-2.tcl__. Use the __repl__ command to run a dialog loop with the interpreter.
+To use, place the compound source files (__thtcl-level-1.tcl__ and __thtcl-level-2.tcl__)
+in a directory. Start __tkcon__ and navigate to the directory. Source either __thtcl-level-1.tcl__
+or __thtcl-level-2.tcl__. Use the __repl__ command to run a dialog loop with the interpreter.
 
 
 
 
 ## Level 1 Thtcl Calculator
 
-The first level of the interpreter has a reduced set of syntactic forms and a single variable environment. It is defined by the procedure __evaluate__ which recognizes and processes the following syntactic forms:
+The first level of the interpreter has a reduced set of syntactic forms and a single
+variable environment. It is defined by the procedure __evaluate__ in __thtcl-level-1.tcl__
+which recognizes and processes the following syntactic forms:
 
 | Syntactic form | Syntax | Semantics |
 |----------------|--------|-----------|
@@ -22,21 +28,22 @@ The first level of the interpreter has a reduced set of syntactic forms and a si
 | [definition](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-8.html#%_sec_5.2) | __define__ _symbol_ _expression_ | A definition binds the _symbol_ to the value of the _expression_. A definition does not evaluate to anything. Example: (define r 10) ⇒ |
 | [procedure call](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.3) | _proc_ _expression_... | If _proc_ is anything other than __begin__, __if__, or __define__, it is treated as a procedure. Evaluate _proc_ and all the _args_, and then the procedure is applied to the list of _arg_ values. Example: (sqrt (+ 4 12)) ⇒ 4.0 |
 
-To evaluate an expression, the evaluator first needs to classify the expression. It can be
-an atomic (indivisible) expression or a list expression. An atomic expression is either a
-symbol, meaning the expression should be evaluated as a variable reference, or a number,
-meaning the expression should be evaluated as a constant literal.
+To evaluate an [expression](https://en.wikipedia.org/wiki/Expression_(computer_science)),
+the evaluator first needs to classify the expression. It can be an atomic (indivisible)
+expression or a list expression. An atomic expression is either a symbol, meaning the
+expression should be evaluated as a variable reference, or a number, meaning the
+expression should be evaluated as a constant literal.
 
 If it is a list expression, the evaluator needs to examine the first element in it. If it
 is a keyword like __begin__ or __if__, the expression should be evaluated as a _special
-form_ like sequence or conditional. If it isn't a keyword, it's an operator and the 
-expression should be evaluated like a procedure call.
+form_ like _sequence_ or _conditional_. If it isn't a keyword, it's an operator and the 
+expression should be evaluated like a [procedure](https://en.wikipedia.org/wiki/Function_(computer_programming)) call.
 
 A full programming language interpreter works in basically two phases, parsing and 
-evaluating. The parsing phase analyses the text of the program and converts it to a
-structure called an _abstract syntax tree_ (AST). The evaluation phase takes the AST
-and processes it according to the semantic rules of the language, which carries out
-the computation.
+evaluating. The parsing phase analyses the text of the program and uses it to build a
+structure called an _[abstract syntax tree](https://en.wikipedia.org/wiki/Abstract_syntax_tree)_ (AST).
+The evaluation phase takes the AST and processes it according to the semantic rules of
+the language, which carries out the computation.
 
 Lisp's peculiar syntax derives from the fact that the program text is already in AST 
 form. The Lisp parser's job is therefore relatively easy.
@@ -90,6 +97,8 @@ proc evaluate {exp {env ::standard_env}} {
 The __evaluate__ procedure relies on some sub-procedures for processing forms:
 
 __lookup__ dereferences a symbol, returning the value bound to it in the given environment.
+On this level, the environment is expected to be given as a dict variable name. On level 2,
+__lookup__ will use an environment object.
 
 ```
 proc lookup {sym env} {
@@ -120,7 +129,8 @@ proc _if {c t f} {
 ```
 
 
-__edefine__ adds a symbol binding to the given environment, creating a variable.
+__edefine__ adds a symbol binding to the given environment, creating a
+[variable](https://en.wikipedia.org/wiki/Variable_(computer_science)).
 
 ```
 proc edefine {sym val env} {
@@ -129,8 +139,8 @@ proc edefine {sym val env} {
 }
 ```
 
-__invoke__ calls a function, passing some arguments to it. The value of evaluating the
-function is returned.
+__invoke__ calls a procedure, passing some arguments to it. The procedure
+typically returns a value.
 
 ```
 proc invoke {fn vals} {
@@ -143,7 +153,7 @@ proc invoke {fn vals} {
 ### The standard environment
 
 An environment is like a dictionary where you can look up terms (symbols) and
-find definitions for them. In Lisp, procedures are first class, i.e. they are
+find definitions for them. In Lisp, procedures are [first class](https://en.wikipedia.org/w/index.php?title=First-class_object&redirect=no), i.e. they are
 values just like any other data type, and can be passed to function calls or
 returned as values. This also means that just like the standard environment
 contains number values like __pi__, it also contains procedures like __cos__ 
@@ -554,9 +564,13 @@ In the first image, we see the global environment before we call __circle-area__
 
 ![A global environment](/images/env1.png)
 
-After the call:
+During the call:
 
 ![A local environment shadows the global](/images/env2.png)
+
+After the call:
+
+![A global environment](/images/env1.png)
 
 Note how the global __r__ is shadowed by the local one, and how the local environment
 links to the global one to find __*__ and __pi__. After the call, we are back to the
