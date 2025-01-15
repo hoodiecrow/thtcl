@@ -153,7 +153,7 @@ proc invoke {fn vals} {
 ### The standard environment
 
 An environment is like a dictionary where you can look up terms (symbols) and
-find definitions for them. In Lisp, procedures are [first class](https://en.wikipedia.org/w/index.php?title=First-class_object&redirect=no), i.e. they are
+find definitions for them. In Lisp, procedures are [first class](https://en.wikipedia.org/w/index.php?title=First-class_object), i.e. they are
 values just like any other data type, and can be passed to function calls or
 returned as values. This also means that just like the standard environment
 contains number values like __pi__, it also contains procedures like __cos__ 
