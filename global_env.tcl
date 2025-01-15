@@ -7,11 +7,7 @@ the outer environment (the one closed over when the procedure was defined).
 MD)
 
 CB
-Environment create global_env {} {}
-
-foreach sym [dict keys $standard_env] {
-    global_env set $sym [dict get $standard_env $sym]
-}
+Environment create global_env [dict keys $standard_env] [dict values $standard_env]
 CB
 
 TT(

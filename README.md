@@ -628,11 +628,7 @@ __Environment__ object is created to hold the bindings introduced by the call, a
 the outer environment (the one closed over when the procedure was defined).
 
 ```
-Environment create global_env {} {}
-
-foreach sym [dict keys $standard_env] {
-    global_env set $sym [dict get $standard_env $sym]
-}
+Environment create global_env [dict keys $standard_env] [dict values $standard_env]
 ```
 
 

@@ -228,11 +228,7 @@ oo::class create Environment {
 
 
 
-Environment create global_env {} {}
-
-foreach sym [dict keys $standard_env] {
-    global_env set $sym [dict get $standard_env $sym]
-}
+Environment create global_env [dict keys $standard_env] [dict values $standard_env]
 
 
 
