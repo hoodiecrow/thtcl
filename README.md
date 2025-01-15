@@ -651,24 +651,28 @@ oo::class create Environment {
 
 
 On startup, two __Environment__ objects called __null_env__ and __global_env__ are created. 
-__null_env__ remains empty while __global_env__ is populated with all the
-definitions from __standard_env__. Thereafter, each time a user-defined procedure is called a new
-__Environment__ object is created to hold the bindings introduced by the call, and also a link to
-the outer environment (the one closed over when the procedure was defined).
 
-Make __null_env__ unresponsive.
+Make __null_env__ empty and unresponsive: this is where searches for unbound symbols end up.
 
 ```
 Environment create null_env {} {}
 
 oo::objdefine null_env {
-    method find {sym} {return {}}
+    method find {sym} {return [self]}
     method set {sym val} {error "Unbound variable: $sym"}
     method get {sym} {error "Unbound variable: $sym"}
 }
+```
 
+Meanwhile, __global_env__ is populated with all the definitions from __standard_env__.
+
+```
 Environment create global_env [dict keys $standard_env] [dict values $standard_env] null_env
 ```
+
+Thereafter, each time a user-defined procedure is called, a new __Environment__ object is
+created to hold the bindings introduced by the call, and also a link to the outer environment
+(the one closed over when the procedure was defined).
 
 
 ### Procedure class and objects
