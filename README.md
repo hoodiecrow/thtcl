@@ -748,6 +748,29 @@ single form (use a __begin__ form for multiple steps of computation). The `for´
 are incomplete.
 
 ```
+proc prepare-clauses {name env} {
+    upvar $name clauses
+    for {set i 0} {$i < [llength $clauses]} {incr i} {
+        if {[string is integer [lindex $clauses $i 1]]} {
+            lset clauses $i 1 [::thtcl::in-range [lindex $clauses $i 1]]
+        } else {
+            lset clauses $i 1 [evaluate [lindex $clauses $i 1] $env]
+        }
+    }
+}
+
+proc process-clauses {iter clauses env} {
+    foreach clause $clauses {
+        lassign $clause id seqval
+        if {$iter >= [llength $seqval]} {
+            return false
+        } else {
+            edefine $id [lindex $seqval $iter] $env
+        }
+    }
+    return true
+}
+
 proc expand-macro {n1 n2 env} {
     upvar $n1 op $n2 args
     switch $op {
@@ -798,24 +821,10 @@ proc expand-macro {n1 n2 env} {
         for {
             set iter 0
             lassign $args clauses body
-            for {set i 0} {$i < [llength $clauses]} {incr i} {
-                if {[string is integer [lindex $clauses $i 1]]} {
-                    lset clauses $i 1 [::thtcl::in-range [lindex $clauses $i 1]]
-                } else {
-                    lset clauses $i 1 [evaluate [lindex $clauses $i 1] $env]
-                }
-            }
+            prepare-clauses clauses $env
             set loop true
             while {$loop} {
-                foreach clause $clauses {
-                    lassign $clause id seqval
-                    if {$iter >= [llength $seqval]} {
-                        set loop false
-                        break
-                    } else {
-                        edefine $id [lindex $seqval $iter] $env
-                    }
-                }
+                set loop [process-clauses $iter $clauses $env]
                 if {$loop} {
                     evaluate $body $env
                     incr iter
@@ -826,25 +835,11 @@ proc expand-macro {n1 n2 env} {
         for/list {
             set iter 0
             lassign $args clauses body
-            for {set i 0} {$i < [llength $clauses]} {incr i} {
-                if {[string is integer [lindex $clauses $i 1]]} {
-                    lset clauses $i 1 [::thtcl::in-range [lindex $clauses $i 1]]
-                } else {
-                    lset clauses $i 1 [evaluate [lindex $clauses $i 1] $env]
-                }
-            }
+            prepare-clauses clauses $env
             set result [list]
             set loop true
             while {$loop} {
-                foreach clause $clauses {
-                    lassign $clause id seqval
-                    if {$iter >= [llength $seqval]} {
-                        set loop false
-                        break
-                    } else {
-                        edefine $id [lindex $seqval $iter] $env
-                    }
-                }
+                set loop [process-clauses $iter $clauses $env]
                 if {$loop} {
                     lappend result [evaluate $body $env]
                     incr iter
@@ -855,25 +850,11 @@ proc expand-macro {n1 n2 env} {
         for/and {
             set iter 0
             lassign $args clauses body
-            for {set i 0} {$i < [llength $clauses]} {incr i} {
-                if {[string is integer [lindex $clauses $i 1]]} {
-                    lset clauses $i 1 [::thtcl::in-range [lindex $clauses $i 1]]
-                } else {
-                    lset clauses $i 1 [evaluate [lindex $clauses $i 1] $env]
-                }
-            }
+            prepare-clauses clauses $env
             set result [list]
             set loop true
             while {$loop} {
-                foreach clause $clauses {
-                    lassign $clause id seqval
-                    if {$iter >= [llength $seqval]} {
-                        set loop false
-                        break
-                    } else {
-                        edefine $id [lindex $seqval $iter] $env
-                    }
-                }
+                set loop [process-clauses $iter $clauses $env]
                 if {$loop} {
                     if {![set result [evaluate $body $env]]} {
                         set args [lassign false op]
@@ -888,25 +869,11 @@ proc expand-macro {n1 n2 env} {
         for/or {
             set iter 0
             lassign $args clauses body
-            for {set i 0} {$i < [llength $clauses]} {incr i} {
-                if {[string is integer [lindex $clauses $i 1]]} {
-                    lset clauses $i 1 [::thtcl::in-range [lindex $clauses $i 1]]
-                } else {
-                    lset clauses $i 1 [evaluate [lindex $clauses $i 1] $env]
-                }
-            }
+            prepare-clauses clauses $env
             set result [list]
             set loop true
             while {$loop} {
-                foreach clause $clauses {
-                    lassign $clause id seqval
-                    if {$iter >= [llength $seqval]} {
-                        set loop false
-                        break
-                    } else {
-                        edefine $id [lindex $seqval $iter] $env
-                    }
-                }
+                set loop [process-clauses $iter $clauses $env]
                 if {$loop} {
                     if {[set result [evaluate $body $env]]} {
                         set args [lassign [list quote $result] op]
