@@ -22,6 +22,8 @@ __thtcl-level-2.tcl__, and recognizes and processes the following syntactic form
 | [procedure definition](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.4) | __lambda__ (_symbol_...) _expression_ | A __lambda__ expression evaluates to a procedure. The environment in effect when the lambda expression was evaluated is remembered as part of the procedure. When the procedure is later called with some actual arguments, the environment in which the lambda expression was evaluated will be extended by binding the symbols in the formal argument list to fresh locations, the corresponding actual argument values will be stored in those locations, and the _expression_ in the body of the __lambda__ expression will be evaluated in the extended environment. Use __begin__ to have a body with more than one expression. The result of the _expression_ will be returned as the result of the procedure call. Example: `(lambda (r) (* r r))` ⇒ ::oo::Obj36010 |
 | [procedure call](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.3) | _proc_ _expression_... | If _proc_ is anything other than __quote__, __begin__, __if__, __and__, __or__, __define__, __set!__, or __lambda__, it is treated as a procedure. Evaluate _proc_ and all the _expressions_, and then the procedure is applied to the list of _expression_ values. Example: `(sqrt (+ 4 12))` ⇒ 4.0
 
+The evaluator also does a simple form of macro expansion on __op__ and __args__ before processing them in the big __switch__. 
+See the part about macros below.
 MD)
 
 CB

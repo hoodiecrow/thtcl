@@ -195,7 +195,7 @@ proc printable {val} {
 
 
 proc parse {str} {
-    return [string map {( \{ ) \} \[ \{ \] \}} $str]
+    return [string map {( \{ ) \} [ \{ ] \}} $str]
 }
 
 

@@ -39,7 +39,7 @@ MD)
 
 CB
 proc parse {str} {
-    return [string map {( \{ ) \} \[ \{ \] \}} $str]
+    return [string map {( \{ ) \} [ \{ ] \}} $str]
 }
 CB
 
