@@ -110,8 +110,6 @@ proc update! {sym val env} {
     if {[set actual_env [$env find $sym]] ne {}} {
         $actual_env set $sym $val
         return $val
-    } else {
-        error "trying to assign to an unbound symbol"
     }
 }
             

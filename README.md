@@ -574,8 +574,6 @@ proc update! {sym val env} {
     if {[set actual_env [$env find $sym]] ne {}} {
         $actual_env set $sym $val
         return $val
-    } else {
-        error "trying to assign to an unbound symbol"
     }
 }
 ```
@@ -912,7 +910,10 @@ Thtcl> (for/list ([i (in-range 4 1 -1)]) i)
 
 ### Identifier validation
 
-Some routines for checking if a string is a valid identifier.
+Some routines for checking if a string is a valid identifier. `idcheckinit` checks the
+first character, `idchecksubs` checks the rest. `idcheck` calls the others and raises
+errors if they fail. A valid symbol is still an invalid identifier if has the name of
+some keyword, which idcheck also checks, for a set of keywords given in the standard.
 
 ```
 proc idcheckinit {init} {
