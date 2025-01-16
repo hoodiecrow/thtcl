@@ -711,8 +711,12 @@ goes to the closure environment.
 
 ### Macros
 
-Here's a part of a macro facility: macros are defined, in Tcl, in switch cases
+Here's some percentage of a macro facility: macros are defined, in Tcl, in switch cases
 in __expand-macro__ and they work by modifying _op_ and _args_ inside __evaluate__.
+
+Currently, the macros `let`, `cond`, and `case` are defined. They differ somewhat
+from the standard ones in that the body or clause body must be a single form (use a
+__begin__ form for multiple steps of computation).
 
 ```
 proc expand-macro {n1 n2 env} {
@@ -730,16 +734,44 @@ proc expand-macro {n1 n2 env} {
             foreach clause $args {
                 lassign $clause testform body
                 if {[evaluate $testform $env]} {
-                    set args [lassign $body op]
+                    if {$body ne {}} {
+                        set args [lassign $body op]
+                    } else {
+                        set args [lassign $testform op]
+                    }
                     return
                 }
             }
             set args [lassign list op]
             return
         }
+        case {
+            set clauses [lassign $args keyform]
+            set testkey [evaluate $keyform $env]
+            foreach clause [lrange $clauses 0 end-1] {
+                lassign $clause keylist body
+                if {$testkey in $keylist} {
+                    set args [lassign $body op]
+                    return
+                }
+                set clause [lindex $clauses end]
+                lassign $clause keylist body
+                if {$keylist eq "else"} {
+                    set args [lassign $body op]
+                } else {
+                    if {$testkey in $keylist} {
+                        set args [lassign $body op]
+                    } else {
+                        set args [lassign list op]
+                    }
+                }
+            }
+        }
     }
 }
 ```
+
+
 
 
 ## Level 3 Advanced Thtcl
