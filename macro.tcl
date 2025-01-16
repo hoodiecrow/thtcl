@@ -153,6 +153,22 @@ proc expand-macro {n1 n2 env} {
 }
 CB
 
+MD(
+Examples:
+```
+Thtcl> (let ((a 4) (b 5)) (+ a 2))
+6
+Thtcl> (cond ((> 3 4) (+ 4 2)) ((> 1 2) (+ 5 5)) (#t (- 8 5)))
+3
+Thtcl> (case (* 2 3) ((2 3 5 7) (quote prime)) ((1 4 6 8 9) (quote composite)))
+composite
+Thtcl> (for/list ([i (quote (1 2 3))]) (* i i))
+(1 4 9)
+Thtcl> (for/list ([i (in-range 4 1 -1)]) i)
+(4 3 2)
+```
+MD)
+
 TT(
 ::tcltest::test macro-1.0 {let macro} {
     set exp [parse "(let ((a 4) (b 5)) (+ a 2))"]
