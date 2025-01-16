@@ -153,7 +153,7 @@ MD)
 
 CB
 proc edefine {sym val env} {
-    dict set $env $sym $val
+    dict set $env [idcheck $sym] $val
     return {}
 }
 CB

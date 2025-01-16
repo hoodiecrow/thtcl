@@ -164,7 +164,7 @@ MD)
 
 CB
 proc edefine {sym val env} {
-    $env set $sym $val
+    $env set [idcheck $sym] $val
     return {}
 }
 CB
@@ -177,6 +177,7 @@ MD)
 
 CB
 proc update! {sym val env} {
+    set sym [idcheck $sym]
     if {[set actual_env [$env find $sym]] ne {}} {
         $actual_env set $sym $val
         return $val
