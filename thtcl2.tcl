@@ -3,7 +3,8 @@ MD(
 ## Level 2 Full Thtcl
 
 The second level of the interpreter has a full set of syntactic forms and a dynamic
-structure of variable environments for [lexical scoping](https://en.wikipedia.org/wiki/Scope_(computer_science)#Lexical_scope).
+structure of variable environments for
+[lexical scoping](https://en.wikipedia.org/wiki/Scope_(computer_science)#Lexical_scope).
 It is defined by the procedure __evaluate__ as found in the source file
 __thtcl-level-2.tcl__, and recognizes and processes the following syntactic forms:
 
@@ -38,6 +39,7 @@ proc evaluate {exp {env ::global_env}} {
     set args [lassign $exp op]
     # kludge to get around Tcl's list literal handling
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
+    expand-macro op args $env
     switch $op {
         quote { # quotation
             return [lindex $args 0]
@@ -329,15 +331,14 @@ TT(
     printable [evaluate [parse "(or)"]]
 } "#f"
 
-::tcltest::test thtcl2-13.0 {dereference an unbound symbol} -body {
-    printable [evaluate [parse "foo"]]
-    # searches for sym in env {}
-} -returnCodes error -result "Unbound variable: foo"
+::tcltest::test thtcl2-13.0 {let macro} {
+    printable [evaluate [parse "(let ((a 5) (b 4)) (+ a b))"]]
+} "9"
 
-::tcltest::test thtcl2-13.1 {dereference an unbound symbol: procedure} -body {
-    printable [evaluate [parse "(foo)"]]
-    # searches for sym in env {}
-} -returnCodes error -result "Unbound variable: foo"
+::tcltest::test thtcl2-14.0 {cond macro} {
+    printable [evaluate [parse "(cond ((> 3 4) (+ 4 2)) ((> 1 2) (+ 5 5)) (#t (- 8 5)))"]]
+} "3"
+
 TT)
 
 MD(

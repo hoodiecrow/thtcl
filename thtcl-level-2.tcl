@@ -14,6 +14,7 @@ proc evaluate {exp {env ::global_env}} {
     set args [lassign $exp op]
     # kludge to get around Tcl's list literal handling
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
+    expand-macro op args $env
     switch $op {
         quote { # quotation
             return [lindex $args 0]
@@ -217,10 +218,10 @@ catch { Environment destroy }
 
 oo::class create Environment {
     variable bindings outer_env
-    constructor {parms args {outer {}}} {
+    constructor {syms vals {outer {}}} {
 	set bindings [dict create]
-        foreach parm $parms arg $args {
-            my set $parm $arg
+        foreach sym $syms val $vals {
+            my set $sym $val
         }
         set outer_env $outer
     }
@@ -228,10 +229,6 @@ oo::class create Environment {
         if {$sym in [dict keys $bindings]} {
             return [self]
         } else {
-            if {$outer_env eq "null_env"} {
-                # no more environments to search
-                return null_env
-            }
             return [$outer_env find $sym]
         }
     }
@@ -259,6 +256,7 @@ Environment create global_env [dict keys $standard_env] [dict values $standard_e
 
 
 
+
 catch { Procedure destroy }
 
 oo::class create Procedure {
@@ -269,6 +267,9 @@ oo::class create Procedure {
         set env $e
     }
     method call {args} {
+	if {[llength $parms] != [llength $args]} {
+	    error "Wrong number of arguments passed to procedure"
+	}
         evaluate $body [Environment new $parms $args $env]
     }
 }
@@ -307,4 +308,32 @@ proc repl {{prompt "Thtcl> "}} {
         }
     }
 }
+
+
+
+proc expand-macro {n1 n2 env} {
+    upvar $n1 op $n2 args
+    switch $op {
+        let {
+            lassign $args bindings body
+            foreach binding $bindings {
+                dict set vars {*}$binding
+            }
+            set op [list lambda [dict keys $vars] $body]
+            set args [dict values $vars]
+        }
+        cond {
+            foreach clause $args {
+                lassign $clause testform body
+                if {[evaluate $testform $env]} {
+                    set args [lassign $body op]
+                    return
+                }
+            }
+            set args [lassign list op]
+            return
+        }
+    }
+}
+
 

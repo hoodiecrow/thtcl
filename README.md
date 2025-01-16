@@ -420,7 +420,7 @@ proc evaluate {exp {env ::global_env}} {
     set args [lassign $exp op]
     # kludge to get around Tcl's list literal handling
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
-    expand-macro op args
+    expand-macro op args $env
     switch $op {
         quote { # quotation
             return [lindex $args 0]
@@ -709,13 +709,13 @@ When a __Procedure__ object is called, the body is evaluated in a new environmen
 where the parameters are given values from the argument list and the outer link
 goes to the closure environment.
 
-#### Macros
+### Macros
 
-Here's half of a macro facility: macros are defined in Tcl inside __expand-macro__
-and they work by modifying _op_ and _args_ inside __evaluate__.
+Here's a part of a macro facility: macros are defined, in Tcl, in switch cases
+in __expand-macro__ and they work by modifying _op_ and _args_ inside __evaluate__.
 
 ```
-proc expand-macro {n1 n2} {
+proc expand-macro {n1 n2 env} {
     upvar $n1 op $n2 args
     switch $op {
         let {
@@ -726,9 +726,21 @@ proc expand-macro {n1 n2} {
             set op [list lambda [dict keys $vars] $body]
             set args [dict values $vars]
         }
+        cond {
+            foreach clause $args {
+                lassign $clause testform body
+                if {[evaluate $testform $env]} {
+                    set args [lassign $body op]
+                    return
+                }
+            }
+            set args [lassign list op]
+            return
+        }
     }
 }
 ```
+
 
 ## Level 3 Advanced Thtcl
 

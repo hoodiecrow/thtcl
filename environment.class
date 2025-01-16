@@ -1,39 +1,4 @@
 MD(
-#### Lexical scoping
-
-A procedure definition form creates a new procedure. Example:
-
-```
-Thtcl> (define circle-area (lambda (r) (* pi (* r r))))
-Thtcl> (circle-area 10)
-314.1592653589793
-```
-
-During procedure call, the symbol __r__ is bound to the value 10. But we don't
-want the binding to go into the global environment, possibly clobbering an
-earlier definition of __r__. The solution is to use separate (but linked)
-environments, making __r__'s binding a _[local variable](https://en.wikipedia.org/wiki/Local_variable)_
-in its own environment, which the procedure will be evaluated in. The symbols
-__*__ and __pi__ will still be available through the local environment's link
-to the outer global environment. This is all part of _[lexical scoping](https://en.wikipedia.org/wiki/Scope_(computer_science)#Lexical_scope)_.
-
-In the first image, we see the global environment before we call __circle-area__
-(and also the empty null environment which the global environment links to):
-
-![A global environment](/images/env1.png)
-
-During the call:
-
-![A local environment shadows the global](/images/env2.png)
-
-After the call:
-
-![A global environment](/images/env1.png)
-
-Note how the global __r__ is shadowed by the local one, and how the local environment
-links to the global one to find __*__ and __pi__. After the call, we are back to the
-first state again.
-
 
 ### Environment class and objects
 
@@ -48,10 +13,10 @@ catch { Environment destroy }
 
 oo::class create Environment {
     variable bindings outer_env
-    constructor {parms args {outer {}}} {
+    constructor {syms vals {outer {}}} {
 	set bindings [dict create]
-        foreach parm $parms arg $args {
-            my set $parm $arg
+        foreach sym $syms val $vals {
+            my set $sym $val
         }
         set outer_env $outer
     }
@@ -59,10 +24,6 @@ oo::class create Environment {
         if {$sym in [dict keys $bindings]} {
             return [self]
         } else {
-            if {$outer_env eq "null_env"} {
-                # no more environments to search
-                return null_env
-            }
             return [$outer_env find $sym]
         }
     }
