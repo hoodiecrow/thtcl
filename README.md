@@ -709,6 +709,8 @@ When a __Procedure__ object is called, the body is evaluated in a new environmen
 where the parameters are given values from the argument list and the outer link
 goes to the closure environment.
 
+#### Macros
+
 Here's half of a macro facility: macros are defined in Tcl inside __expand-macro__
 and they work by modifying _op_ and _args_ inside __evaluate__.
 
