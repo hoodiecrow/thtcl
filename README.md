@@ -575,6 +575,69 @@ evaluate [parse "(define fact (lambda (n) (if (<= n 1) 1 (* n (fact (- n 1))))))
 time {evaluate [parse "(fact 100)"]} 10
 ```
 
+
+### Environment class and objects
+
+The class for environments is called __Environment__. It is mostly a wrapper around a dictionary,
+with the added finesse of keeping a link to the outer environment (starting a chain that goes all
+the way to the global environment and then stops at the null environment) which can be traversed
+by the find method to find which innermost environment a given symbol is bound in.
+
+```
+catch { Environment destroy }
+
+oo::class create Environment {
+    variable bindings outer_env
+    constructor {syms vals {outer {}}} {
+	set bindings [dict create]
+        foreach sym $syms val $vals {
+            my set $sym $val
+        }
+        set outer_env $outer
+    }
+    method find {sym} {
+        if {$sym in [dict keys $bindings]} {
+            return [self]
+        } else {
+            return [$outer_env find $sym]
+        }
+    }
+    method get {sym} {
+        dict get $bindings $sym
+    }
+    method set {sym val} {
+        dict set bindings $sym $val
+    }
+}
+```
+
+
+On startup, two __Environment__ objects called __null_env__ (the null environment, not the same
+as __null-environment__ in Scheme) and __global_env__ (the global environment) are created. 
+
+Make __null_env__ empty and unresponsive: this is where searches for unbound symbols end up.
+
+```
+Environment create null_env {} {}
+
+oo::objdefine null_env {
+    method find {sym} {return [self]}
+    method get {sym} {error "Unbound variable: $sym"}
+    method set {sym val} {error "Unbound variable: $sym"}
+}
+```
+
+Meanwhile, __global_env__ is populated with all the definitions from __standard_env__. This is
+where top level evaluation happens.
+
+```
+Environment create global_env [dict keys $standard_env] [dict values $standard_env] null_env
+```
+
+Thereafter, each time a user-defined procedure is called, a new __Environment__ object is
+created to hold the bindings introduced by the call, and also a link to the outer environment
+(the one closed over when the procedure was defined).
+
 #### Lexical scoping
 
 A procedure definition form creates a new procedure. Example:
@@ -610,70 +673,6 @@ Note how the global __r__ is shadowed by the local one, and how the local enviro
 links to the global one to find __*__ and __pi__. After the call, we are back to the
 first state again.
 
-
-### Environment class and objects
-
-The class for environments is called __Environment__. It is mostly a wrapper around a dictionary,
-with the added finesse of keeping a link to the outer environment (starting a chain that goes all
-the way to the global environment and then stops at the null environment) which can be traversed
-by the find method to find which innermost environment a given symbol is bound in.
-
-```
-catch { Environment destroy }
-
-oo::class create Environment {
-    variable bindings outer_env
-    constructor {parms args {outer {}}} {
-	set bindings [dict create]
-        foreach parm $parms arg $args {
-            my set $parm $arg
-        }
-        set outer_env $outer
-    }
-    method find {sym} {
-        if {$sym in [dict keys $bindings]} {
-            return [self]
-        } else {
-            if {$outer_env eq "null_env"} {
-                # no more environments to search
-                return null_env
-            }
-            return [$outer_env find $sym]
-        }
-    }
-    method get {sym} {
-        dict get $bindings $sym
-    }
-    method set {sym val} {
-        dict set bindings $sym $val
-    }
-}
-```
-
-
-On startup, two __Environment__ objects called __null_env__ and __global_env__ are created. 
-
-Make __null_env__ empty and unresponsive: this is where searches for unbound symbols end up.
-
-```
-Environment create null_env {} {}
-
-oo::objdefine null_env {
-    method find {sym} {return [self]}
-    method get {sym} {error "Unbound variable: $sym"}
-    method set {sym val} {error "Unbound variable: $sym"}
-}
-```
-
-Meanwhile, __global_env__ is populated with all the definitions from __standard_env__.
-
-```
-Environment create global_env [dict keys $standard_env] [dict values $standard_env] null_env
-```
-
-Thereafter, each time a user-defined procedure is called, a new __Environment__ object is
-created to hold the bindings introduced by the call, and also a link to the outer environment
-(the one closed over when the procedure was defined).
 
 
 ### Procedure class and objects
