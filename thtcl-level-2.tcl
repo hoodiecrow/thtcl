@@ -502,10 +502,12 @@ proc idchecksubs {subs} {
 }
 
 proc idcheck {sym} {
-    if {(![idcheckinit [string index $sym 0]] || ![idchecksubs [string range $sym 1 end]]) && $sym ni {+ - ...}} {
+    if {(![idcheckinit [string index $sym 0]] ||
+        ![idchecksubs [string range $sym 1 end]]) && $sym ni {+ - ...}} {
         error "Identifier expected"
     } else {
-        if {$sym in {else => define unquote unquote-splicing quote lambda if set! begin cond and or case let let* letrec do delay quasiquote}} {
+        if {$sym in {else => define unquote unquote-splicing quote lambda if set! begin
+            cond and or case let let* letrec do delay quasiquote}} {
             error "Macro name can't be used as a variable: $sym"
         }
     }
