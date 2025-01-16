@@ -46,16 +46,16 @@ proc expand-macro {n1 n2 env} {
                     set args [lassign $body op]
                     return
                 }
-                set clause [lindex $clauses end]
-                lassign $clause keylist body
-                if {$keylist eq "else"} {
+            }
+            set clause [lindex $clauses end]
+            lassign $clause keylist body
+            if {$keylist eq "else"} {
+                set args [lassign $body op]
+            } else {
+                if {$testkey in $keylist} {
                     set args [lassign $body op]
                 } else {
-                    if {$testkey in $keylist} {
-                        set args [lassign $body op]
-                    } else {
-                        set args [lassign list op]
-                    }
+                    set args [lassign list op]
                 }
             }
         }
