@@ -198,4 +198,44 @@ source thtcl-level-2.tcl
 } "(quote consonant)"
 
 
+::tcltest::test macro-4.0 {for macro} -body {
+    set exp [parse "(for ((i (quote (1 2 3)))) (display i))"]
+    set args [lassign $exp op]
+    # kludge to get around Tcl's list literal handling
+    if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
+    expand-macro op args ::global_env
+    printable [list $op {*}$args]
+} -result "(quote ())" -output 123
+
+::tcltest::test macro-4.1 {for macro} -body {
+    set exp [parse "(for ((i 4)) (display i))"]
+    set args [lassign $exp op]
+    # kludge to get around Tcl's list literal handling
+    if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
+    expand-macro op args ::global_env
+    printable [list $op {*}$args]
+} -result "(quote ())" -output 0123
+
+
+
+::tcltest::test macro-5.0 {for/list macro} -body {
+    set exp [parse {(for/list ([i (quote (1 2 3))]) (* i i))}]
+    set args [lassign $exp op]
+    # kludge to get around Tcl's list literal handling
+    if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
+    expand-macro op args ::global_env
+    printable [list $op {*}$args]
+} -result "(quote (1 4 9))"
+
+::tcltest::test macro-5.1 {for/list macro} -body {
+    set exp [parse {(for/list ([i (in-range 1 4)]) (* i i))}]
+    set args [lassign $exp op]
+    # kludge to get around Tcl's list literal handling
+    if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
+    expand-macro op args ::global_env
+    printable [list $op {*}$args]
+} -result "(quote (1 4 9))"
+
+
+
 ::tcltest::cleanupTests

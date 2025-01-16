@@ -34,12 +34,12 @@ proc printable {val} {
 CB
 
 MD(
-__parse__ simply exchanges parentheses for braces.
+__parse__ simply exchanges parentheses (and square brackets) for braces.
 MD)
 
 CB
 proc parse {str} {
-    return [string map {( \{ ) \}} $str]
+    return [string map {( \{ ) \} \[ \{ \] \}} $str]
 }
 CB
 

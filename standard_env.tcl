@@ -42,6 +42,7 @@ The following symbols make up the standard environment:
 | cos | ::tcl::mathfunc::cos | Returns the cosine of _arg_, measured in radians. |
 | cosh | ::tcl::mathfunc::cosh | Returns the hyperbolic cosine of _arg_. If the result would cause an overflow, an error is returned. |
 | deg->rad | ::thtcl::deg->rad | For a degree _arg_, returns the same angle in radians. |
+| display | ::thtcl::display | Takes an object and prints it without following newline. |
 | eq? | ::thtcl::eq? | Takes two objects and returns true if their string form is the same, false otherwise |
 | equal? | ::thtcl::equal? | In this interpreter, the same as __eq?__ |
 | eqv? | ::thtcl::eqv? | In this interpreter, the same as __eq?__ |
@@ -51,6 +52,7 @@ The following symbols make up the standard environment:
 | floor | ::tcl::mathfunc::floor | Returns the largest integral floating-point value (i.e. with a zero fractional part) not greater than _arg_. The argument may be any numeric value. |
 | fmod | ::tcl::mathfunc::fmod | Returns the floating-point remainder of the division of _x_ by _y_. If _y_ is 0, an error is returned. |
 | hypot | ::tcl::mathfunc::hypot | Computes the length of the hypotenuse of a right-angled triangle, approximately "sqrt _x<sup>2</sup>_ + _y<sup>2</sup>_" except for being more numerically stable when the two arguments have substantially different magnitudes. |
+| in-range | ::thtcl::in-range | Produces a range of integers. When given one arg, that's the stop point. Two args are start and stop. Three args are start, stop, and step. |
 | int | ::tcl::mathfunc::int | The argument may be any numeric value. The integer part of _arg_ is determined, and then the low order bits of that integer value up to the machine word size are returned as an integer value. |
 | isqrt | ::tcl::mathfunc::isqrt | Computes the integer part of the square root of _arg_. _Arg_ must be a positive value, either an integer or a floating point number. |
 | length | ::llength | Takes a list, returns the number of items in it |
@@ -148,10 +150,34 @@ proc even? {val} { if {![string is double $val]} {error "NUMBER expected (even? 
 
 proc odd? {val} { if {![string is double $val]} {error "NUMBER expected (odd? [printable $val])"} ; boolexpr {$val % 2 != 0} }
 
+proc display {val} { puts -nonewline $val }
+
+#started out as DKF's code
+proc in-range {args} {
+    set start 0
+    set step 1
+    switch [llength $args] {
+        1 {
+            set end [lindex $args 0]
+        }
+        2 {
+            lassign $args start end
+        }
+        3 {
+            lassign $args start end step
+        }
+    }
+    set res $start
+    while {$step > 0 && $end > [incr start $step] || $step < 0 && $end < [incr start $step]} {
+        lappend res $start
+    }
+    return $res
+}
+
 }
 
 foreach func {> < >= <= = apply atom? car cdr cons deg->rad eq? eqv? equal?
-    map not null? number? rad->deg symbol? zero? positive? negative? even? odd?} {
+    map not null? number? rad->deg symbol? zero? positive? negative? even? odd? display in-range} {
     dict set standard_env $func ::thtcl::$func
 }
 

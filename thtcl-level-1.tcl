@@ -129,10 +129,34 @@ proc even? {val} { if {![string is double $val]} {error "NUMBER expected (even? 
 
 proc odd? {val} { if {![string is double $val]} {error "NUMBER expected (odd? [printable $val])"} ; boolexpr {$val % 2 != 0} }
 
+proc display {val} { puts -nonewline $val }
+
+#started out as DKF's code
+proc in-range {args} {
+    set start 0
+    set step 1
+    switch [llength $args] {
+        1 {
+            set end [lindex $args 0]
+        }
+        2 {
+            lassign $args start end
+        }
+        3 {
+            lassign $args start end step
+        }
+    }
+    set res $start
+    while {$step > 0 && $end > [incr start $step] || $step < 0 && $end < [incr start $step]} {
+        lappend res $start
+    }
+    return $res
+}
+
 }
 
 foreach func {> < >= <= = apply atom? car cdr cons deg->rad eq? eqv? equal?
-    map not null? number? rad->deg symbol? zero? positive? negative? even? odd?} {
+    map not null? number? rad->deg symbol? zero? positive? negative? even? odd? display in-range} {
     dict set standard_env $func ::thtcl::$func
 }
 
@@ -171,7 +195,7 @@ proc printable {val} {
 
 
 proc parse {str} {
-    return [string map {( \{ ) \}} $str]
+    return [string map {( \{ ) \} \[ \{ \] \}} $str]
 }
 
 

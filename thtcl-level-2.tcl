@@ -190,10 +190,34 @@ proc even? {val} { if {![string is double $val]} {error "NUMBER expected (even? 
 
 proc odd? {val} { if {![string is double $val]} {error "NUMBER expected (odd? [printable $val])"} ; boolexpr {$val % 2 != 0} }
 
+proc display {val} { puts -nonewline $val }
+
+#started out as DKF's code
+proc in-range {args} {
+    set start 0
+    set step 1
+    switch [llength $args] {
+        1 {
+            set end [lindex $args 0]
+        }
+        2 {
+            lassign $args start end
+        }
+        3 {
+            lassign $args start end step
+        }
+    }
+    set res $start
+    while {$step > 0 && $end > [incr start $step] || $step < 0 && $end < [incr start $step]} {
+        lappend res $start
+    }
+    return $res
+}
+
 }
 
 foreach func {> < >= <= = apply atom? car cdr cons deg->rad eq? eqv? equal?
-    map not null? number? rad->deg symbol? zero? positive? negative? even? odd?} {
+    map not null? number? rad->deg symbol? zero? positive? negative? even? odd? display in-range} {
     dict set standard_env $func ::thtcl::$func
 }
 
@@ -293,7 +317,7 @@ proc printable {val} {
 
 
 proc parse {str} {
-    return [string map {( \{ ) \}} $str]
+    return [string map {( \{ ) \} \[ \{ \] \}} $str]
 }
 
 
@@ -335,7 +359,6 @@ proc expand-macro {n1 n2 env} {
                 }
             }
             set args [lassign list op]
-            return
         }
         case {
             set clauses [lassign $args keyform]
@@ -359,8 +382,133 @@ proc expand-macro {n1 n2 env} {
                 }
             }
         }
+        for {
+            set iter 0
+            lassign $args clauses body
+            for {set i 0} {$i < [llength $clauses]} {incr i} {
+                if {[string is integer [lindex $clauses $i 1]]} {
+                    lset clauses $i 1 [::thtcl::in-range [lindex $clauses $i 1]]
+                } else {
+                    lset clauses $i 1 [evaluate [lindex $clauses $i 1] $env]
+                }
+            }
+            set loop true
+            while {$loop} {
+                foreach clause $clauses {
+                    lassign $clause id seqval
+                    if {$iter >= [llength $seqval]} {
+                        set loop false
+                        break
+                    } else {
+                        edefine $id [lindex $seqval $iter] $env
+                    }
+                }
+                if {$loop} {
+                    evaluate $body $env
+                    incr iter
+                }
+            }
+            set args [lassign [list quote {}] op]
+        }
+        for/list {
+            set iter 0
+            lassign $args clauses body
+            for {set i 0} {$i < [llength $clauses]} {incr i} {
+                if {[string is integer [lindex $clauses $i 1]]} {
+                    lset clauses $i 1 [::thtcl::in-range [lindex $clauses $i 1]]
+                } else {
+                    lset clauses $i 1 [evaluate [lindex $clauses $i 1] $env]
+                }
+            }
+            set result [list]
+            set loop true
+            while {$loop} {
+                foreach clause $clauses {
+                    lassign $clause id seqval
+                    if {$iter >= [llength $seqval]} {
+                        set loop false
+                        break
+                    } else {
+                        edefine $id [lindex $seqval $iter] $env
+                    }
+                }
+                if {$loop} {
+                    lappend result [evaluate $body $env]
+                    incr iter
+                }
+            }
+            set args [lassign [list quote $result] op]
+        }
+        for/and {
+            set iter 0
+            lassign $args clauses body
+            for {set i 0} {$i < [llength $clauses]} {incr i} {
+                if {[string is integer [lindex $clauses $i 1]]} {
+                    lset clauses $i 1 [::thtcl::in-range [lindex $clauses $i 1]]
+                } else {
+                    lset clauses $i 1 [evaluate [lindex $clauses $i 1] $env]
+                }
+            }
+            set result [list]
+            set loop true
+            while {$loop} {
+                foreach clause $clauses {
+                    lassign $clause id seqval
+                    if {$iter >= [llength $seqval]} {
+                        set loop false
+                        break
+                    } else {
+                        edefine $id [lindex $seqval $iter] $env
+                    }
+                }
+                if {$loop} {
+                    if {![set result [evaluate $body $env]]} {
+                        set args [lassign false op]
+                        return
+                    } else {
+                        set args [lassign [list quote $result] op]
+                    }
+                    incr iter
+                }
+            }
+        }
+        for/or {
+            set iter 0
+            lassign $args clauses body
+            for {set i 0} {$i < [llength $clauses]} {incr i} {
+                if {[string is integer [lindex $clauses $i 1]]} {
+                    lset clauses $i 1 [::thtcl::in-range [lindex $clauses $i 1]]
+                } else {
+                    lset clauses $i 1 [evaluate [lindex $clauses $i 1] $env]
+                }
+            }
+            set result [list]
+            set loop true
+            while {$loop} {
+                foreach clause $clauses {
+                    lassign $clause id seqval
+                    if {$iter >= [llength $seqval]} {
+                        set loop false
+                        break
+                    } else {
+                        edefine $id [lindex $seqval $iter] $env
+                    }
+                }
+                if {$loop} {
+                    if {[set result [evaluate $body $env]]} {
+                        set args [lassign [list quote $result] op]
+                        return
+                    } else {
+                        set args [lassign [list quote $result] op]
+                    }
+                    incr iter
+                }
+            }
+        }
     }
 }
+
+
 
 
 
