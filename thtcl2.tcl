@@ -199,138 +199,146 @@ CB
 
 TT(
 ::tcltest::test thtcl2-1.0 {calculate circle area} {
-    printable [evaluate [parse "(define circle-area (lambda (r) (* pi (* r r))))"]]
-    printable [evaluate [parse "(circle-area 3)"]]
+    pep "(define circle-area (lambda (r) (* pi (* r r))))"
+    pep "(circle-area 3)"
 } 28.274333882308138
 
 ::tcltest::test thtcl2-2.0 {calculate factorial} {
-    printable [evaluate [parse "(define fact (lambda (n) (if (<= n 1) 1 (* n (fact (- n 1))))))"]]
-    printable [evaluate [parse "(fact 10)"]]
+    pep "(define fact (lambda (n) (if (<= n 1) 1 (* n (fact (- n 1))))))"
+    pep "(fact 10)"
 } 3628800
 
 ::tcltest::test thtcl2-2.1 {calculate factorial} {
-    printable [evaluate [parse "(fact 100)"]]
+    pep "(fact 100)"
 } 93326215443944152681699238856266700490715968264381621468592963895217599993229915608941463976156518286253697920827223758251185210916864000000000000000000000000
 
 ::tcltest::test thtcl2-2.2 {calculate factorial} {
-    printable [evaluate [parse "(circle-area (fact 10))"]]
+    pep "(circle-area (fact 10))"
 } 41369087205782.695
 
 ::tcltest::test thtcl2-3.0 {count} -body {
-    printable [evaluate [parse "(define first car)"]]
-    printable [evaluate [parse "(define rest cdr)"]]
-    printable [evaluate [parse "(define truthtoint (lambda (val) (if val 1 0)))"]]
-    printable [evaluate [parse "(define count (lambda (item L) (if L (+ (truthtoint (equal? item (first L))) (count item (rest L))) 0)))"]]
+    pep "(define first car)"
+    pep "(define rest cdr)"
+    pep "(define truthtoint (lambda (val) (if val 1 0)))"
+    pep "(define count (lambda (item L) (if L (+ (truthtoint (equal? item (first L))) (count item (rest L))) 0)))"
 } -result ""
 
 ::tcltest::test thtcl2-3.0 {count} -body {
-    printable [evaluate [parse "(count 9 (list 9 1 2 3 9 9))"]]
+    pep "(count 9 (list 9 1 2 3 9 9))"
 } -result 3
 
 ::tcltest::test thtcl2-3.1 {count} -body {
-    printable [evaluate [parse "(count (quote the) (quote (the more the merrier the bigger the better)))"]]
+    pep "(count (quote the) (quote (the more the merrier the bigger the better)))"
 } -result 4
 
 ::tcltest::test thtcl2-4.0 {twice} {
-    printable [evaluate [parse "(define twice (lambda (x) (* 2 x)))"]]
-    printable [evaluate [parse "(twice 5)"]]
+    pep "(define twice (lambda (x) (* 2 x)))"
+    pep "(twice 5)"
 } 10
 
 ::tcltest::test thtcl2-4.1 {twice} {
-    printable [evaluate [parse "(define repeat (lambda (f) (lambda (x) (f (f x)))))"]]
-    printable [evaluate [parse "((repeat twice) 10)"]]
+    pep "(define repeat (lambda (f) (lambda (x) (f (f x)))))"
+    pep "((repeat twice) 10)"
 } 40
 
 ::tcltest::test thtcl2-4.2 {twice} {
-    printable [evaluate [parse "((repeat (repeat twice)) 10)"]]
+    pep "((repeat (repeat twice)) 10)"
 } 160
 
 ::tcltest::test thtcl2-4.3 {twice} {
-    printable [evaluate [parse "((repeat (repeat (repeat twice))) 10)"]]
+    pep "((repeat (repeat (repeat twice))) 10)"
 } 2560
 
 ::tcltest::test thtcl2-4.4 {twice} {
-    printable [evaluate [parse "((repeat (repeat (repeat (repeat twice)))) 10)"]]
+    pep "((repeat (repeat (repeat (repeat twice)))) 10)"
 } 655360
 
 ::tcltest::test thtcl2-5.0 {fib-range} {
-    printable [evaluate [parse "(define fib (lambda (n) (if (< n 2) 1 (+ (fib (- n 1)) (fib (- n 2))))))"]]
-    printable [evaluate [parse "(define range (lambda (a b) (if (= a b) (quote ()) (cons a (range (+ a 1) b)))))"]]
-    printable [evaluate [parse "(range 0 10)"]]
+    pep "(define fib (lambda (n) (if (< n 2) 1 (+ (fib (- n 1)) (fib (- n 2))))))"
+    pep "(define range (lambda (a b) (if (= a b) (quote ()) (cons a (range (+ a 1) b)))))"
+    pep "(range 0 10)"
 } "(0 1 2 3 4 5 6 7 8 9)"
 
 ::tcltest::test thtcl2-5.1 {fib-range} {
-    printable [evaluate [parse "(map fib (range 0 10))"]]
+    pep "(map fib (range 0 10))"
 } "(1 1 2 3 5 8 13 21 34 55)"
 
 ::tcltest::test thtcl2-5.2 {fib-range} {
-    printable [evaluate [parse "(map fib (range 0 20))"]]
+    pep "(map fib (range 0 20))"
 } "(1 1 2 3 5 8 13 21 34 55 89 144 233 377 610 987 1597 2584 4181 6765)"
 
 ::tcltest::test thtcl2-6.0 {procedure call with a list operator} {
-    printable [evaluate [parse "((if #t + *) 2 3)"]]
+    pep "((if #t + *) 2 3)"
 } "5"
 
 ::tcltest::test thtcl2-7.0 {assignment} {
-    printable [evaluate [parse "(begin (define r 10) (set! r 20) r)"]]
+    pep "(begin (define r 10) (set! r 20) r)"
 } "20"
 
 ::tcltest::test thtcl2-7.1 {assignment returns a value} {
-    printable [evaluate [parse "(begin (define r 10) (set! r 20))"]]
+    pep "(begin (define r 10) (set! r 20))"
 } "20"
 
 ::tcltest::test thtcl2-7.2 {assignment to an unbound symbol} -body {
-    printable [evaluate [parse "(begin (set! XX 20))"]]
+    pep "(begin (set! XX 20))"
 } -returnCodes error -result "Unbound variable: XX"
 
 ::tcltest::test thtcl2-8.0 {procedure definition} -body {
-    printable [evaluate [parse "(lambda (r) (* r r))"]]
+    pep "(lambda (r) (* r r))"
 } -match regexp -result "::oo::Obj\\d+"
 
 ::tcltest::test thtcl2-9.0 {symbol?} {
-    printable [evaluate [parse "(symbol? (quote foo99))"]]
+    pep "(symbol? (quote foo99))"
 } "#t"
 
 ::tcltest::test thtcl2-10.0 {shadowing} {
-    printable [evaluate [parse "(begin (define r 10) (define f (lambda (r) set! r 20)) r)"]]
+    pep "(begin (define r 10) (define f (lambda (r) set! r 20)) r)"
 } "10"
 
 #-constraints knownBug 
 ::tcltest::test thtcl2-11.0 {and} -body {
-    printable [evaluate [parse "(and (= 2 2) (> 2 1))"]]
+    pep "(and (= 2 2) (> 2 1))"
 } -result "#t"
 
 ::tcltest::test thtcl2-11.1 {and} {
-    printable [evaluate [parse "(and (= 2 2) (< 2 1))"]]
+    pep "(and (= 2 2) (< 2 1))"
 } "#f"
 
 ::tcltest::test thtcl2-11.2 {and :( } -body {
-    printable [evaluate [parse "(and)"]]
+    pep "(and)"
 } -result "#t"
 
 ::tcltest::test thtcl2-11.3 {and} {
-    printable [evaluate [parse "(and 1 2 (quote c) (quote (f g)))"]]
+    pep "(and 1 2 (quote c) (quote (f g)))"
 } "(f g)"
 
 ::tcltest::test thtcl2-12.0 {or} {
-    printable [evaluate [parse "(or (= 2 2) (> 2 1))"]]
+    pep "(or (= 2 2) (> 2 1))"
 } "#t"
 
 ::tcltest::test thtcl2-12.1 {or} {
-    printable [evaluate [parse "(or (= 2 2) (< 2 1))"]]
+    pep "(or (= 2 2) (< 2 1))"
 } "#t"
 
 ::tcltest::test thtcl2-12.2 {or} {
-    printable [evaluate [parse "(or #f #f #f)"]]
+    pep "(or #f #f #f)"
 } "#f"
 
 ::tcltest::test thtcl2-12.3 {or} {
-    printable [evaluate [parse "(or)"]]
+    pep "(or)"
 } "#f"
+
+::tcltest::test thtcl2-13.0 {expandquotes} {
+    pep "''foo"
+} "(quote foo)"
 
 TT)
 
 MD(
+#### Foo
+
+2025-01-17: code passes 100 tests. Go me.
+
 #### Benchmark
 
 On my slow computer, the following takes 0.012 seconds to run. Lispy does it in 0.003

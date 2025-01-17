@@ -487,6 +487,13 @@ proc repl {{prompt "Thtcl> "}} {
 }
 ```
 
+This procedure mostly makes tests easier to write.
+
+```
+proc pep {str} {
+    printable [evaluate [parse $str]]
+}
+```
 
 ## Level 2 Full Thtcl
 
@@ -668,6 +675,10 @@ proc invoke {op vals} {
 }
 ```
 
+
+#### Foo
+
+2025-01-17: code passes 100 tests. Go me.
 
 #### Benchmark
 

@@ -193,7 +193,7 @@ TT(
 } "(if (> 3 4) (+ 4 2) (if (> 1 2) (+ 5 5) (if #t (- 8 5) (quote ()))))"
 
 ::tcltest::test macro-2.1 {cond macro} {
-    printable [evaluate [parse "(cond ((> 3 4) (+ 4 2)) ((> 1 2) (+ 5 5)) (#t (- 8 5)))"]]
+    pep "(cond ((> 3 4) (+ 4 2)) ((> 1 2) (+ 5 5)) (#t (- 8 5)))"
 } "3"
 
 ::tcltest::test macro-2.2 {cond macro} {
@@ -206,7 +206,7 @@ TT(
 } "(if (> 3 4) (+ 4 2) (if (> 1 2) (+ 5 5) (quote ())))"
 
 ::tcltest::test macro-2.3 {cond macro} {
-    printable [evaluate [parse "(cond ((> 3 4) (+ 4 2)) ((> 1 2) (+ 5 5)))"]]
+    pep "(cond ((> 3 4) (+ 4 2)) ((> 1 2) (+ 5 5)))"
 } ""
 TT)
 
@@ -221,7 +221,7 @@ TT(
 } "(if (or (eqv? (quote 6) (quote 2)) (eqv? (quote 6) (quote 3)) (eqv? (quote 6) (quote 5)) (eqv? (quote 6) (quote 7))) (quote prime) (if (or (eqv? (quote 6) (quote 1)) (eqv? (quote 6) (quote 4)) (eqv? (quote 6) (quote 6)) (eqv? (quote 6) (quote 8)) (eqv? (quote 6) (quote 9))) (quote composite) (quote ())))"
 
 ::tcltest::test macro-3.1 {case macro} {
-    printable [evaluate [parse "(case (* 2 3) ((2 3 5 7) (quote prime)) ((1 4 6 8 9) (quote composite)))"]]
+    pep "(case (* 2 3) ((2 3 5 7) (quote prime)) ((1 4 6 8 9) (quote composite)))"
 } "composite"
 
 ::tcltest::test macro-3.2 {case macro} {
@@ -234,7 +234,7 @@ TT(
 } "(if (or (eqv? (quote c) (quote a)) (eqv? (quote c) (quote e)) (eqv? (quote c) (quote i)) (eqv? (quote c) (quote o)) (eqv? (quote c) (quote u))) (quote vowel) (if (or (eqv? (quote c) (quote w)) (eqv? (quote c) (quote y))) (quote semivowel) (if #t (quote consonant) (quote ()))))"
 
 ::tcltest::test macro-3.3 {case macro} {
-    printable [evaluate [parse "(case (car (quote (c d))) ((a e i o u) (quote vowel)) ((w y) (quote semivowel)) (else (quote consonant)))"]]
+    pep "(case (car (quote (c d))) ((a e i o u) (quote vowel)) ((w y) (quote semivowel)) (else (quote consonant)))"
 } "consonant"
 TT)
 

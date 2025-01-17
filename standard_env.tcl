@@ -191,187 +191,187 @@ CB
 
 TT(
 ::tcltest::test standard_env-1.0 {append} {
-    printable [evaluate [parse "(append (list 1 2) (list 3 4))"]]
+    pep "(append (list 1 2) (list 3 4))"
 } "(1 2 3 4)"
 TT)
 
 TT(
 ::tcltest::test standard_env-2.0 {apply} {
-    printable [evaluate [parse "(begin (define e (list 1 2 3)) (apply car e))"]]
+    pep "(begin (define e (list 1 2 3)) (apply car e))"
 } "1"
 TT)
 
 TT(
 ::tcltest::test standard_env-3.0 {car} {
-    printable [evaluate [parse "(car (list 1 2 3))"]]
+    pep "(car (list 1 2 3))"
 } "1"
 TT)
 
 TT(
 ::tcltest::test standard_env-4.0 {cdr} {
-    printable [evaluate [parse "(cdr (list 1 2 3))"]]
+    pep "(cdr (list 1 2 3))"
 } "(2 3)"
 TT)
 
 TT(
 ::tcltest::test standard_env-5.0 {cons} {
-    printable [evaluate [parse "(cons 1 (list 2 3))"]]
+    pep "(cons 1 (list 2 3))"
 } "(1 2 3)"
 TT)
 
 TT(
 ::tcltest::test standard_env-6.0 {eq?} {
-    printable [evaluate [parse "(eq? 1 1)"]]
+    pep "(eq? 1 1)"
 } "#t"
 
 ::tcltest::test standard_env-6.1 {eq?} {
-    printable [evaluate [parse "(eq? 1 1.0)"]]
+    pep "(eq? 1 1.0)"
 } "#f"
 
 ::tcltest::test standard_env-7.0 {equal?} {
-    printable [evaluate [parse "(equal? 1 1)"]]
+    pep "(equal? 1 1)"
 } "#t"
 
 ::tcltest::test standard_env-7.1 {equal?} {
-    printable [evaluate [parse "(equal? 1 1.0)"]]
+    pep "(equal? 1 1.0)"
 } "#f"
 
 ::tcltest::test standard_env-7.2 {equal? : =} {
-    printable [evaluate [parse "(= 1 1)"]]
+    pep "(= 1 1)"
 } "#t"
 
 ::tcltest::test standard_env-7.3 {equal? : =} {
-    printable [evaluate [parse "(= 1 1.0)"]]
+    pep "(= 1 1.0)"
 } "#t"
 
 ::tcltest::test standard_env-8.0 {length} {
-    printable [evaluate [parse "(length (list 1 2 3))"]]
+    pep "(length (list 1 2 3))"
 } "3"
 
 ::tcltest::test standard_env-9.0 {list} {
-    printable [evaluate [parse "(list 1 2 3)"]]
+    pep "(list 1 2 3)"
 } "(1 2 3)"
 
 ::tcltest::test standard_env-10.0 {map} {
     # verified in Scheme
-    printable [evaluate [parse "(begin (define lst (list (list 1 2) (list 3 4))) (map car lst))"]]
+    pep "(begin (define lst (list (list 1 2) (list 3 4))) (map car lst))"
 } "(1 3)"
 
 ::tcltest::test standard_env-11.0 {not} {
-    printable [evaluate [parse "(not #t)"]]
+    pep "(not #t)"
 } "#f"
 
 ::tcltest::test standard_env-11.1 {not} {
-    printable [evaluate [parse "(not #f)"]]
+    pep "(not #f)"
 } "#t"
 
 ::tcltest::test standard_env-11.2 {not} {
-    printable [evaluate [parse "(not 99)"]]
+    pep "(not 99)"
 } "#f"
 
 ::tcltest::test standard_env-12.0 {null?} {
-    printable [evaluate [parse "(null? ())"]]
+    pep "(null? ())"
 } "#t"
 
 ::tcltest::test standard_env-12.1 {null?} {
-    printable [evaluate [parse "(null? 99)"]]
+    pep "(null? 99)"
 } "#f"
 
 ::tcltest::test standard_env-13.0 {number?} {
-    printable [evaluate [parse "(number? (list 1 2))"]]
+    pep "(number? (list 1 2))"
 } "#f"
 
 ::tcltest::test standard_env-13.1 {number?} {
-    printable [evaluate [parse "(number? 99)"]]
+    pep "(number? 99)"
 } "#t"
 
 ::tcltest::test standard_env-14.0 {symbol?} {
-    printable [evaluate [parse "(symbol? (list 1 2))"]]
+    pep "(symbol? (list 1 2))"
 } "#f"
 
 ::tcltest::test standard_env-14.1 {symbol?} {
-    printable [evaluate [parse "(symbol? 99)"]]
+    pep "(symbol? 99)"
 } "#f"
 TT)
 
 TT(
 ::tcltest::test standard_env-15.0 {math} {
-    printable [evaluate [parse "(list (+ 1 1) (+ 2 2) (* 2 3) (expt 2 3))"]]
+    pep "(list (+ 1 1) (+ 2 2) (* 2 3) (expt 2 3))"
 } "(2 4 6 8.0)"
 TT)
 
 TT(
 ::tcltest::test standard_env-16.0 {math: degrees and radians} {
-    printable [evaluate [parse "(deg->rad 90)"]]
+    pep "(deg->rad 90)"
 } "1.5707963267948966"
 TT)
 
 TT(
 ::tcltest::test standard_env-16.1 {math: degrees and radians} {
-    printable [evaluate [parse "(rad->deg (/ pi 2))"]]
+    pep "(rad->deg (/ pi 2))"
 } "90.0"
 TT)
 
 TT(
 ::tcltest::test standard_env-17.0 {math: zero, positive, negative, even, odd predicates} {
-    printable [evaluate [parse "(zero? 2)"]]
+    pep "(zero? 2)"
 } "#f"
 
 ::tcltest::test standard_env-17.1 {math: zero, positive, negative, even, odd predicates} {
-    printable [evaluate [parse "(zero? 0)"]]
+    pep "(zero? 0)"
 } "#t"
 
 ::tcltest::test standard_env-17.2 {math: zero, positive, negative, even, odd predicates} {
-    printable [evaluate [parse "(positive? 0)"]]
+    pep "(positive? 0)"
 } "#f"
 
 ::tcltest::test standard_env-17.3 {math: zero, positive, negative, even, odd predicates} {
-    printable [evaluate [parse "(positive? 1)"]]
+    pep "(positive? 1)"
 } "#t"
 
 ::tcltest::test standard_env-17.4 {math: zero, positive, negative, even, odd predicates} {
-    printable [evaluate [parse "(negative? 0)"]]
+    pep "(negative? 0)"
 } "#f"
 
 ::tcltest::test standard_env-17.5 {math: zero, positive, negative, even, odd predicates} {
-    printable [evaluate [parse "(negative? -1)"]]
+    pep "(negative? -1)"
 } "#t"
 
 ::tcltest::test standard_env-17.6 {math: zero, positive, negative, even, odd predicates} {
-    printable [evaluate [parse "(even? 0)"]]
+    pep "(even? 0)"
 } "#t"
 
 ::tcltest::test standard_env-17.7 {math: zero, positive, negative, even, odd predicates} {
-    printable [evaluate [parse "(even? 1)"]]
+    pep "(even? 1)"
 } "#f"
 
 ::tcltest::test standard_env-17.8 {math: zero, positive, negative, even, odd predicates} {
-    printable [evaluate [parse "(odd? 0)"]]
+    pep "(odd? 0)"
 } "#f"
 
 ::tcltest::test standard_env-17.9 {math: zero, positive, negative, even, odd predicates} {
-    printable [evaluate [parse "(odd? 1)"]]
+    pep "(odd? 1)"
 } "#t"
 
 ::tcltest::test standard_env-17.10 {math: zero, positive, negative, even, odd predicates} -body {
-    printable [evaluate [parse "(odd? (list 1 2))"]]
+    pep "(odd? (list 1 2))"
 } -returnCodes error -result "NUMBER expected (odd? (1 2))"
 
 ::tcltest::test standard_env-17.11 {math: zero, positive, negative, even, odd predicates} -body {
-    printable [evaluate [parse "(zero? (positive? 1))"]]
+    pep "(zero? (positive? 1))"
 } -returnCodes error -result "NUMBER expected (zero? #t)"
 
 TT)
 
 TT(
 ::tcltest::test standard_env-18.0 {list reverse} {
-    printable [evaluate [parse "(reverse (list 1 2 3))"]]
+    pep "(reverse (list 1 2 3))"
 } "(3 2 1)"
 TT)
 
 TT(
 ::tcltest::test standard_env-19.0 {list index} {
-    printable [evaluate [parse "(list-ref (list 1 2 3) 1)"]]
+    pep "(list-ref (list 1 2 3) 1)"
 } "2"
 TT)
 

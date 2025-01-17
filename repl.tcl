@@ -34,23 +34,20 @@ proc printable {val} {
 CB
 
 MD(
-__parse__ simply exchanges parentheses (and square brackets) for braces and the Scheme boolean constant for Tcl's, and expands quote characters.
+__parse__ simply exchanges parentheses (and square brackets) for braces, and the Scheme boolean constant for Tcl's, and expands quote characters.
 MD)
 
 CB
 proc expandquotes {str} {
     if {"'" in [split $str {}]} {
         set res ""
-        # (foo bar 'qux)
-        # (foo '(bar qux))
-        # ''foo            ==> (quote 'foo)
-        #  '(foo 'bar)     ==> (quote (foo 'bar))
         set state text
         for {set p 0} {$p < [string length $str]} {incr p} {
             switch $state {
                 text {
                     set c [string index $str $p]
                     if {$c eq "'"} {
+                        set qcount 1
                         set state quote
                         append res "\{quote "
                     } else {
@@ -59,7 +56,10 @@ proc expandquotes {str} {
                 }
                 quote {
                     set c [string index $str $p]
-                    if {$c eq "\{"} {
+                    if {$c eq "'"} {
+                        incr qcount
+                        append res "\{quote "
+                    } elseif {$c eq "\{"} {
                         set state quoteb
                         set bcount 1
                         append res $c
@@ -75,7 +75,11 @@ proc expandquotes {str} {
                     } elseif {$c eq "\}"} {
                         incr bcount -1
                         if {$bcount == 0} {
-                            append res $c \}
+                            append res $c
+                            for {set i 0} {$i < $qcount} {incr i} {
+                                append res "\}"
+                            }
+                            set qcount 0
                             set state text
                         }
                     } else {
@@ -86,7 +90,11 @@ proc expandquotes {str} {
                 quotew {
                     set c [string index $str $p]
                     if {[string is space $c]} {
-                        append res \} $c
+                        for {set i 0} {$i < $qcount} {incr i} {
+                            append res "\}"
+                        }
+                        set qcount 0
+                        append res $c
                         set state text
                     } else {
                         append res $c
@@ -97,7 +105,9 @@ proc expandquotes {str} {
             }
         }
         if {$state eq "quotew"} {
-            append res \}
+            for {set i 0} {$i < $qcount} {incr i} {
+                append res "\}"
+            }
         }
         return $res
     }
@@ -122,6 +132,14 @@ TT(
     parse "foo 'bar"
 } "foo {quote bar}"
 
+::tcltest::test repl-1.3 {expandquotes} {
+    parse "'foo ''bar"
+} "{quote foo} {quote {quote bar}}"
+
+::tcltest::test repl-1.4 {expandquotes} {
+    parse "''(foo bar)"
+} "{quote {quote {foo bar}}}"
+
 TT)
 
 MD(
@@ -143,3 +161,12 @@ proc repl {{prompt "Thtcl> "}} {
 }
 CB
 
+MD(
+This procedure mostly makes tests easier to write.
+MD)
+
+CB
+proc pep {str} {
+    printable [evaluate [parse $str]]
+}
+CB

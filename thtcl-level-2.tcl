@@ -409,6 +409,10 @@ proc repl {{prompt "Thtcl> "}} {
 }
 
 
+proc pep {str} {
+    printable [evaluate [parse $str]]
+}
+
 
 proc prepare-clauses {name env} {
     upvar $name clauses

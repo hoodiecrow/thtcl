@@ -84,15 +84,15 @@ CB
 
 TT(
 ::tcltest::test thtcl1-1.0 {calculate circle area} {
-    printable [evaluate [parse "(begin (define r 10) (* pi (* r r)))"]]
+    pep "(begin (define r 10) (* pi (* r r)))"
 } 314.1592653589793
 
 ::tcltest::test thtcl1-1.1 {boolean literals} {
-    printable [evaluate [parse "#t"]]
+    pep "#t"
 } "#t"
 
 ::tcltest::test thtcl1-1.2 {boolean literals} {
-    printable [evaluate [parse "#f"]]
+    pep "#f"
 } "#f"
 
 TT)
@@ -140,15 +140,15 @@ CB
 
 TT(
 ::tcltest::test thtcl1-2.0 {conditional} {
-    printable [evaluate [parse "(if (> (* 11 11) 120) (* 7 6) oops)"]]
+    pep "(if (> (* 11 11) 120) (* 7 6) oops)"
 } 42
 
 ::tcltest::test thtcl1-2.1 {conditional} -body {
-    printable [evaluate [parse "(if)"]]
+    pep "(if)"
 } -result {}
 
 ::tcltest::test thtcl1-2.2 {conditional} -body {
-    printable [evaluate [parse "(if 1 2 3 4 5)"]]
+    pep "(if 1 2 3 4 5)"
 } -result 2
 
 TT)
@@ -183,10 +183,10 @@ MD)
 
 TT(
 ::tcltest::test thtcl1-3.0 {procedure call with a list operator} {
-    printable [evaluate [parse "((if #t + *) 2 3)"]]
+    pep "((if #t + *) 2 3)"
 } "5"
 
 ::tcltest::test thtcl1-4.0 {dereference an unbound symbol} -body {
-    printable [evaluate [parse "foo"]]
+    pep "foo"
 } -returnCodes error -result "key \"foo\" not known in dictionary"
 TT)

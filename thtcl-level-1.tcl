@@ -291,6 +291,10 @@ proc repl {{prompt "Thtcl> "}} {
 }
 
 
+proc pep {str} {
+    printable [evaluate [parse $str]]
+}
+
 
 proc idcheckinit {init} {
     if {[string is alpha $init] || $init in {! $ % & * / : < = > ? ^ _ ~}} {

@@ -75,11 +75,11 @@ TT)
 
 TT(
 ::tcltest::test global_env-2.0 {dereference an unbound symbol} -body {
-    printable [evaluate [parse "foo"]]
+    pep "foo"
 } -returnCodes error -result "Unbound variable: foo"
 
 ::tcltest::test global_env-2.1 {dereference an unbound symbol: procedure} -body {
-    printable [evaluate [parse "(foo)"]]
+    pep "(foo)"
 } -returnCodes error -result "Unbound variable: foo"
 TT)
 
