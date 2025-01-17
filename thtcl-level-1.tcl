@@ -22,8 +22,8 @@ proc evaluate {exp {env ::standard_env}} {
             return [_if {evaluate $cond $env} {evaluate $conseq $env} {evaluate $alt $env}]
         }
         define { # definition
-            lassign $args sym val
-            return [edefine $sym [evaluate $val $env] $env]
+            lassign $args id expr
+            return [edefine $id [evaluate $expr $env] $env]
         }
         default { # procedure invocation
             return [invoke [evaluate $op $env] [lmap arg $args {evaluate $arg $env}]]
@@ -33,8 +33,8 @@ proc evaluate {exp {env ::standard_env}} {
 
 
 
-proc lookup {sym env} {
-    return [dict get [set $env] $sym]
+proc lookup {var env} {
+    return [dict get [set $env] $var]
 }
 
 
@@ -53,8 +53,8 @@ proc _if {c t f} {
 
 
 
-proc edefine {sym val env} {
-    dict set $env [idcheck $sym] $val
+proc edefine {id expr env} {
+    dict set $env [idcheck $id] $expr
     return {}
 }
 

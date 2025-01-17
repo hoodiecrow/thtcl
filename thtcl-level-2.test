@@ -131,14 +131,6 @@ source thtcl-level-2.tcl
     printable [evaluate [parse "(or)"]]
 } "#f"
 
-::tcltest::test thtcl2-13.0 {let macro} {
-    printable [evaluate [parse "(let ((a 5) (b 4)) (+ a b))"]]
-} "9"
-
-::tcltest::test thtcl2-14.0 {cond macro} {
-    printable [evaluate [parse "(cond ((> 3 4) (+ 4 2)) ((> 1 2) (+ 5 5)) (#t (- 8 5)))"]]
-} "3"
-
 
 ::tcltest::test global_env-1.0 {check for a symbol} {
     lookup pi ::global_env
@@ -168,16 +160,24 @@ source thtcl-level-2.tcl
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
     expand-macro op args ::global_env
     printable [list $op {*}$args]
-} "(- 8 5)"
+} "(if (> 3 4) (+ 4 2) (if (> 1 2) (+ 5 5) (if #t (- 8 5) (quote ()))))"
 
 ::tcltest::test macro-2.1 {cond macro} {
+    printable [evaluate [parse "(cond ((> 3 4) (+ 4 2)) ((> 1 2) (+ 5 5)) (#t (- 8 5)))"]]
+} "3"
+
+::tcltest::test macro-2.2 {cond macro} {
     set exp [parse "(cond ((> 3 4) (+ 4 2)) ((> 1 2) (+ 5 5)))"]
     set args [lassign $exp op]
     # kludge to get around Tcl's list literal handling
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
     expand-macro op args ::global_env
     printable [list $op {*}$args]
-} "list"
+} "(if (> 3 4) (+ 4 2) (if (> 1 2) (+ 5 5) (quote ())))"
+
+::tcltest::test macro-2.3 {cond macro} {
+    printable [evaluate [parse "(cond ((> 3 4) (+ 4 2)) ((> 1 2) (+ 5 5)))"]]
+} ""
 
 ::tcltest::test macro-3.0 {case macro} {
     set exp [parse "(case (* 2 3) ((2 3 5 7) (quote prime)) ((1 4 6 8 9) (quote composite)))"]

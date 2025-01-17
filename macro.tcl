@@ -9,6 +9,9 @@ Currently, the macros `let`, `cond`, `case`, `for`, `for/list`, `for/and`, and `
 They differ somewhat from the standard ones in that the body or clause body must be a
 single form (use a __begin__ form for multiple steps of computation). The `for´ macros
 are incomplete.
+
+As of now, the `let` and `cond` macros simply rewrite the code as good macros, while
+case and for/* are computed and the result substituted in the code.
 MD)
 
 CB
@@ -35,6 +38,16 @@ proc process-clauses {iter clauses env} {
     return true
 }
 
+proc do-cond {clauses} {
+    if {[llength $clauses] < 1} {
+        return [list quote {}]
+    } else {
+        lassign [lindex $clauses 0] pred body
+        if {$body eq {}} {set body $pred}
+        return [list if $pred $body [do-cond [lrange $clauses 1 end]]]
+    }
+}
+
 proc expand-macro {n1 n2 env} {
     upvar $n1 op $n2 args
     switch $op {
@@ -47,18 +60,7 @@ proc expand-macro {n1 n2 env} {
             set args [dict values $vars]
         }
         cond {
-            foreach clause $args {
-                lassign $clause testform body
-                if {[evaluate $testform $env]} {
-                    if {$body ne {}} {
-                        set args [lassign $body op]
-                    } else {
-                        set args [lassign $testform op]
-                    }
-                    return
-                }
-            }
-            set args [lassign list op]
+            set args [lassign [do-cond $args] op]
         }
         case {
             set clauses [lassign $args keyform]
@@ -188,16 +190,24 @@ TT(
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
     expand-macro op args ::global_env
     printable [list $op {*}$args]
-} "(- 8 5)"
+} "(if (> 3 4) (+ 4 2) (if (> 1 2) (+ 5 5) (if #t (- 8 5) (quote ()))))"
 
 ::tcltest::test macro-2.1 {cond macro} {
+    printable [evaluate [parse "(cond ((> 3 4) (+ 4 2)) ((> 1 2) (+ 5 5)) (#t (- 8 5)))"]]
+} "3"
+
+::tcltest::test macro-2.2 {cond macro} {
     set exp [parse "(cond ((> 3 4) (+ 4 2)) ((> 1 2) (+ 5 5)))"]
     set args [lassign $exp op]
     # kludge to get around Tcl's list literal handling
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
     expand-macro op args ::global_env
     printable [list $op {*}$args]
-} "list"
+} "(if (> 3 4) (+ 4 2) (if (> 1 2) (+ 5 5) (quote ())))"
+
+::tcltest::test macro-2.3 {cond macro} {
+    printable [evaluate [parse "(cond ((> 3 4) (+ 4 2)) ((> 1 2) (+ 5 5)))"]]
+} ""
 TT)
 
 TT(

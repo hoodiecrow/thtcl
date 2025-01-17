@@ -570,12 +570,11 @@ in the given environment or one of its outer environments.
 ```
 proc update! {var expr env} {
     set var [idcheck $var]
-    set actual_env [$env find $var]
-    $actual_env set $var $expr
+    [$env find $var] set $var $expr
     return $expr
 }
 ```
-            
+
 __invoke__ calls a procedure, passing some arguments to it. The value of evaluating the
 expression in the function body is returned. Handles the difference in calling convention
 between a Procedure object and a regular proc command.
@@ -744,6 +743,9 @@ They differ somewhat from the standard ones in that the body or clause body must
 single form (use a __begin__ form for multiple steps of computation). The `for´ macros
 are incomplete.
 
+As of now, the `let` and `cond` macros simply rewrite the code as good macros, while
+case and for/* are computed and the result substituted in the code.
+
 ```
 proc prepare-clauses {name env} {
     upvar $name clauses
@@ -768,6 +770,16 @@ proc process-clauses {iter clauses env} {
     return true
 }
 
+proc do-cond {clauses} {
+    if {[llength $clauses] < 1} {
+        return [list quote {}]
+    } else {
+        lassign [lindex $clauses 0] pred body
+        if {$body eq {}} {set body $pred}
+        return [list if $pred $body [do-cond [lrange $clauses 1 end]]]
+    }
+}
+
 proc expand-macro {n1 n2 env} {
     upvar $n1 op $n2 args
     switch $op {
@@ -780,18 +792,7 @@ proc expand-macro {n1 n2 env} {
             set args [dict values $vars]
         }
         cond {
-            foreach clause $args {
-                lassign $clause testform body
-                if {[evaluate $testform $env]} {
-                    if {$body ne {}} {
-                        set args [lassign $body op]
-                    } else {
-                        set args [lassign $testform op]
-                    }
-                    return
-                }
-            }
-            set args [lassign list op]
+            set args [lassign [do-cond $args] op]
         }
         case {
             set clauses [lassign $args keyform]

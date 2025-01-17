@@ -33,16 +33,16 @@ proc evaluate {exp {env ::global_env}} {
             return [disjunction $args $env]
         }
         define { # definition
-            lassign $args sym val
-            return [edefine $sym [evaluate $val $env] $env]
+            lassign $args id expr
+            return [edefine $id [evaluate $expr $env] $env]
         }
         set! { # assignment
-            lassign $args sym val
-            return [update! $sym [evaluate $val $env] $env]
+            lassign $args var expr
+            return [update! $var [evaluate $expr $env] $env]
         }
         lambda { # procedure definition
-            lassign $args parms body
-            return [Procedure new $parms $body $env]
+            lassign $args formals expr
+            return [Procedure new $formals $expr $env]
         }
         default { # procedure invocation
             return [invoke [evaluate $op $env] [lmap arg $args {evaluate $arg $env}]]
@@ -51,8 +51,8 @@ proc evaluate {exp {env ::global_env}} {
 }
 
 
-proc lookup {sym env} {
-    return [[$env find $sym] get $sym]
+proc lookup {var env} {
+    return [[$env find $var] get $var]
 }
 
 
@@ -99,20 +99,18 @@ proc _if {c t f} {
 }
 
 
-proc edefine {sym val env} {
-    $env set [idcheck $sym] $val
+proc edefine {id expr env} {
+    $env set [idcheck $id] $expr
     return {}
 }
 
 
-proc update! {sym val env} {
-    set sym [idcheck $sym]
-    if {[set actual_env [$env find $sym]] ne {}} {
-        $actual_env set $sym $val
-        return $val
-    }
+proc update! {var expr env} {
+    set var [idcheck $var]
+    [$env find $var] set $var $expr
+    return $expr
 }
-            
+
 
 proc invoke {op vals} {
     if {[info object isa typeof $op Procedure]} {
@@ -357,6 +355,16 @@ proc process-clauses {iter clauses env} {
     return true
 }
 
+proc do-cond {clauses} {
+    if {[llength $clauses] < 1} {
+        return [list quote {}]
+    } else {
+        lassign [lindex $clauses 0] pred body
+        if {$body eq {}} {set body $pred}
+        return [list if $pred $body [do-cond [lrange $clauses 1 end]]]
+    }
+}
+
 proc expand-macro {n1 n2 env} {
     upvar $n1 op $n2 args
     switch $op {
@@ -369,18 +377,7 @@ proc expand-macro {n1 n2 env} {
             set args [dict values $vars]
         }
         cond {
-            foreach clause $args {
-                lassign $clause testform body
-                if {[evaluate $testform $env]} {
-                    if {$body ne {}} {
-                        set args [lassign $body op]
-                    } else {
-                        set args [lassign $testform op]
-                    }
-                    return
-                }
-            }
-            set args [lassign list op]
+            set args [lassign [do-cond $args] op]
         }
         case {
             set clauses [lassign $args keyform]
