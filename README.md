@@ -382,7 +382,7 @@ proc printable {val} {
 }
 ```
 
-__parse__ simply exchanges parentheses (and square brackets) for braces and the Scheme boolean constant for Tcl's.
+__parse__ simply exchanges parentheses (and square brackets) for braces and the Scheme boolean constant for Tcl's, and expands quote characters.
 
 ```
 proc expandquotes {str} {
@@ -399,18 +399,14 @@ proc expandquotes {str} {
                     set c [string index $str $p]
                     if {$c eq "'"} {
                         set state quote
-                        append res "(quote "
+                        append res "\{quote "
                     } else {
                         append res $c
                     }
                 }
                 quote {
                     set c [string index $str $p]
-                    if {$c eq "("} {
-                        set state quotep
-                        set pcount 1
-                        append res $c
-                    } elseif {$c eq "\["} {
+                    if {$c eq "\{"} {
                         set state quoteb
                         set bcount 1
                         append res $c
@@ -419,29 +415,14 @@ proc expandquotes {str} {
                         append res $c
                     }
                 }
-                quotep {
-                    set c [string index $str $p]
-                    if {$c eq "("} {
-                        incr pcount
-                    } elseif {$c eq ")"} {
-                        incr pcount -1
-                        if {$pcount == 0} {
-                            append res $c )
-                            set state text
-                        }
-                    } else {
-                        append res $c
-                    }
-
-                }
                 quoteb {
                     set c [string index $str $p]
-                    if {$c eq "\["} {
+                    if {$c eq "\{"} {
                         incr bcount
-                    } elseif {$c eq "\]"} {
+                    } elseif {$c eq "\}"} {
                         incr bcount -1
-                        if {$pcount == 0} {
-                            append res $c )
+                        if {$bcount == 0} {
+                            append res $c \}
                             set state text
                         }
                     } else {
@@ -452,7 +433,7 @@ proc expandquotes {str} {
                 quotew {
                     set c [string index $str $p]
                     if {[string is space $c]} {
-                        append res ) $c
+                        append res \} $c
                         set state text
                     } else {
                         append res $c
@@ -463,7 +444,7 @@ proc expandquotes {str} {
             }
         }
         if {$state eq "quotew"} {
-            append res )
+            append res \}
         }
         return $res
     }
@@ -471,13 +452,13 @@ proc expandquotes {str} {
 }
 
 proc parse {str} {
-    return [string map {( \{ ) \} [ \{ ] \} #t true #f false} [expandquotes $str]]
+    return [expandquotes [string map {( \{ ) \} [ \{ ] \} #t true #f false} $str]]
 }
 ```
 
 
-__repl__ puts the loop in the read-eval-print loop. It repeats prompting for a string until given a blank input. Given non-blank input, it parses and evaluates the string, printing the
-resulting value.
+__repl__ puts the loop in the read-eval-print loop. It repeats prompting for a string until given
+a blank input. Given non-blank input, it parses and evaluates the string, printing the resulting value.
 
 ```
 proc repl {{prompt "Thtcl> "}} {
