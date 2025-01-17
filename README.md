@@ -17,9 +17,9 @@ For A.
 
 #### Benchmark
 
-On my cheap computer, the following code takes 0.012 seconds to run. Lispy does it in 0.003
+On my cheap computer, the following code takes 0.013 seconds to run. Lispy does it in 0.003
 seconds on Norvig's probably significantly faster machine. If anyone would care to
-compare this code with the Python one I'm all ears (plewerin x gmail com).
+compare this code to the Python one I'm all ears (plewerin x gmail com).
 
 ```
 evaluate [parse "(define fact (lambda (n) (if (<= n 1) 1 (* n (fact (- n 1))))))"]
@@ -139,7 +139,7 @@ either the second or third expression, returning that value.
 
 ```
 proc _if {c t f} {
-    if {[uplevel $c] ni {0 no false {}}} then {uplevel $t} else {uplevel $f}
+    if {![string is false [uplevel $c]]} then {uplevel $t} else {uplevel $f}
 }
 ```
 
@@ -183,8 +183,6 @@ The following symbols make up the standard environment:
 
 |Symbol|Definition|Description|
 |------|----------|-----------|
-| #f | false | In this interpreter, #f is a symbol bound to Tcl falsehood |
-| #t | true | Likewise with truth |
 | * | ::tcl::mathop::* | Multiplication operator |
 | + | ::tcl::mathop::+ | Addition operator |
 | - | ::tcl::mathop::- | Subtraction operator |
@@ -256,7 +254,7 @@ The following symbols make up the standard environment:
 ```
 unset -nocomplain standard_env
 
-set standard_env [dict create pi 3.1415926535897931 #t true #f false]
+set standard_env [dict create pi 3.1415926535897931]
 
 foreach op {+ - * /} { dict set standard_env $op ::tcl::mathop::$op }
 
@@ -326,15 +324,9 @@ proc in-range {args} {
     set start 0
     set step 1
     switch [llength $args] {
-        1 {
-            set end [lindex $args 0]
-        }
-        2 {
-            lassign $args start end
-        }
-        3 {
-            lassign $args start end step
-        }
+        1 { set end [lindex $args 0] }
+        2 { lassign $args start end }
+        3 { lassign $args start end step }
     }
     set res $start
     while {$step > 0 && $end > [incr start $step] || $step < 0 && $end < [incr start $step]} {
@@ -616,9 +608,9 @@ proc conjunction {exps env} {
     set v true
     foreach exp $exps {
         set v [evaluate $exp $env]
-        if {$v in {0 no false {}}} {return false}
+        if {[string is false $v]} {return false}
     }
-    if {$v in {1 yes true}} {
+    if {[string is true $v]} {
         return true
     } else {
         return $v
@@ -631,13 +623,12 @@ that evaluates to a true value is returned: any remaining _expressions_ are not 
 
 ```
 proc disjunction {exps env} {
-    # disjunction
     set v false
     foreach exp $exps {
         set v [evaluate $exp $env]
-        if {$v ni {0 no false {}}} {break}
+        if {![string is false $v]} {break}
     }
-    if {$v in {1 yes true}} {
+    if {[string is true $v]} {
         return true
     } else {
         return $v
@@ -650,7 +641,7 @@ either the second or third expression, returning that value.
 
 ```
 proc _if {c t f} {
-    if {[uplevel $c] ni {0 no false {}}} then {uplevel $t} else {uplevel $f}
+    if {![string is false [uplevel $c]]} then {uplevel $t} else {uplevel $f}
 }
 ```
 
@@ -767,12 +758,13 @@ Thtcl> (circle-area 10)
 314.1592653589793
 ```
 
-During a procedure call, the symbol __r__ is bound to the value 10. But we don't
-want the binding to go into the global environment, possibly clobbering an
-earlier definition of __r__. The solution is to use separate (but linked)
-environments, making __r__'s binding a _[local variable](https://en.wikipedia.org/wiki/Local_variable)_
+During a a call to the procedure `circle-area`, the symbol `r` is bound to the
+value 10. But we don't want the binding to go into the global environment,
+possibly clobbering an earlier definition of `r`. The solution is to use
+separate (but linked) environments, making `r`'s binding a
+_[local variable](https://en.wikipedia.org/wiki/Local_variable)_
 in its own environment, which the procedure will be evaluated in. The symbols
-__*__ and __pi__ will still be available through the local environment's link
+`*` and `pi` will still be available through the local environment's link
 to the outer global environment. This is all part of
 _[lexical scoping](https://en.wikipedia.org/wiki/Scope_(computer_science)#Lexical_scope)_.
 
@@ -781,17 +773,15 @@ In the first image, we see the global environment before we call __circle-area__
 
 ![A global environment](/images/env1.png)
 
-During the call:
+During the call. Note how the global `r` is shadowed by the local one, and how
+the local environment links to the global one to find `*` and `pi`. 
 
 ![A local environment shadows the global](/images/env2.png)
 
-After the call:
+After the call, we are back to the first state again.
 
 ![A global environment](/images/env1.png)
 
-Note how the global __r__ is shadowed by the local one, and how the local environment
-links to the global one to find __*__ and __pi__. After the call, we are back to the
-first state again.
 
 
 
@@ -899,8 +889,7 @@ proc expand-macro {n1 n2 env} {
                 lappend res [list begin [list define $id $v] $body]
             }
             lappend res [list quote {}]
-            set res [list begin {*}$res]
-            set args [lassign $res op]
+            set args [lassign [list begin {*}$res] op]
         }
         for/list {
             #single-clause
@@ -917,8 +906,7 @@ proc expand-macro {n1 n2 env} {
                 lappend res [list begin [list define $id $v] [list set! res [list append res $body]]]
             }
             lappend res res
-            set res [list begin [list define res {}] {*}$res]
-            set args [lassign $res op]
+            set args [lassign [list begin [list define res {}] {*}$res] op]
         }
         for/and {
             #single-clause

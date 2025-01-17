@@ -115,9 +115,9 @@ proc conjunction {exps env} {
     set v true
     foreach exp $exps {
         set v [evaluate $exp $env]
-        if {$v in {0 no false {}}} {return false}
+        if {[string is false $v]} {return false}
     }
-    if {$v in {1 yes true}} {
+    if {[string is true $v]} {
         return true
     } else {
         return $v
@@ -132,13 +132,12 @@ MD)
 
 CB
 proc disjunction {exps env} {
-    # disjunction
     set v false
     foreach exp $exps {
         set v [evaluate $exp $env]
-        if {$v ni {0 no false {}}} {break}
+        if {![string is false $v]} {break}
     }
-    if {$v in {1 yes true}} {
+    if {[string is true $v]} {
         return true
     } else {
         return $v
@@ -153,7 +152,7 @@ MD)
 
 CB
 proc _if {c t f} {
-    if {[uplevel $c] ni {0 no false {}}} then {uplevel $t} else {uplevel $f}
+    if {![string is false [uplevel $c]]} then {uplevel $t} else {uplevel $f}
 }
 CB
 

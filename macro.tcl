@@ -74,8 +74,7 @@ proc expand-macro {n1 n2 env} {
                 lappend res [list begin [list define $id $v] $body]
             }
             lappend res [list quote {}]
-            set res [list begin {*}$res]
-            set args [lassign $res op]
+            set args [lassign [list begin {*}$res] op]
         }
         for/list {
             #single-clause
@@ -92,8 +91,7 @@ proc expand-macro {n1 n2 env} {
                 lappend res [list begin [list define $id $v] [list set! res [list append res $body]]]
             }
             lappend res res
-            set res [list begin [list define res {}] {*}$res]
-            set args [lassign $res op]
+            set args [lassign [list begin [list define res {}] {*}$res] op]
         }
         for/and {
             #single-clause

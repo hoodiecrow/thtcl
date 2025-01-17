@@ -16,8 +16,6 @@ The following symbols make up the standard environment:
 
 |Symbol|Definition|Description|
 |------|----------|-----------|
-| #f | false | In this interpreter, #f is a symbol bound to Tcl falsehood |
-| #t | true | Likewise with truth |
 | * | ::tcl::mathop::* | Multiplication operator |
 | + | ::tcl::mathop::+ | Addition operator |
 | - | ::tcl::mathop::- | Subtraction operator |
@@ -90,7 +88,7 @@ MD)
 CB
 unset -nocomplain standard_env
 
-set standard_env [dict create pi 3.1415926535897931 #t true #f false]
+set standard_env [dict create pi 3.1415926535897931]
 
 foreach op {+ - * /} { dict set standard_env $op ::tcl::mathop::$op }
 
@@ -160,15 +158,9 @@ proc in-range {args} {
     set start 0
     set step 1
     switch [llength $args] {
-        1 {
-            set end [lindex $args 0]
-        }
-        2 {
-            lassign $args start end
-        }
-        3 {
-            lassign $args start end step
-        }
+        1 { set end [lindex $args 0] }
+        2 { lassign $args start end }
+        3 { lassign $args start end step }
     }
     set res $start
     while {$step > 0 && $end > [incr start $step] || $step < 0 && $end < [incr start $step]} {

@@ -68,9 +68,9 @@ proc conjunction {exps env} {
     set v true
     foreach exp $exps {
         set v [evaluate $exp $env]
-        if {$v in {0 no false {}}} {return false}
+        if {[string is false $v]} {return false}
     }
-    if {$v in {1 yes true}} {
+    if {[string is true $v]} {
         return true
     } else {
         return $v
@@ -79,13 +79,12 @@ proc conjunction {exps env} {
 
 
 proc disjunction {exps env} {
-    # disjunction
     set v false
     foreach exp $exps {
         set v [evaluate $exp $env]
-        if {$v ni {0 no false {}}} {break}
+        if {![string is false $v]} {break}
     }
-    if {$v in {1 yes true}} {
+    if {[string is true $v]} {
         return true
     } else {
         return $v
@@ -94,7 +93,7 @@ proc disjunction {exps env} {
         
 
 proc _if {c t f} {
-    if {[uplevel $c] ni {0 no false {}}} then {uplevel $t} else {uplevel $f}
+    if {![string is false [uplevel $c]]} then {uplevel $t} else {uplevel $f}
 }
 
 
@@ -126,7 +125,7 @@ proc invoke {op vals} {
 
 unset -nocomplain standard_env
 
-set standard_env [dict create pi 3.1415926535897931 #t true #f false]
+set standard_env [dict create pi 3.1415926535897931]
 
 foreach op {+ - * /} { dict set standard_env $op ::tcl::mathop::$op }
 
@@ -196,15 +195,9 @@ proc in-range {args} {
     set start 0
     set step 1
     switch [llength $args] {
-        1 {
-            set end [lindex $args 0]
-        }
-        2 {
-            lassign $args start end
-        }
-        3 {
-            lassign $args start end step
-        }
+        1 { set end [lindex $args 0] }
+        2 { lassign $args start end }
+        3 { lassign $args start end step }
     }
     set res $start
     while {$step > 0 && $end > [incr start $step] || $step < 0 && $end < [incr start $step]} {
@@ -478,8 +471,7 @@ proc expand-macro {n1 n2 env} {
                 lappend res [list begin [list define $id $v] $body]
             }
             lappend res [list quote {}]
-            set res [list begin {*}$res]
-            set args [lassign $res op]
+            set args [lassign [list begin {*}$res] op]
         }
         for/list {
             #single-clause
@@ -496,8 +488,7 @@ proc expand-macro {n1 n2 env} {
                 lappend res [list begin [list define $id $v] [list set! res [list append res $body]]]
             }
             lappend res res
-            set res [list begin [list define res {}] {*}$res]
-            set args [lassign $res op]
+            set args [lassign [list begin [list define res {}] {*}$res] op]
         }
         for/and {
             #single-clause

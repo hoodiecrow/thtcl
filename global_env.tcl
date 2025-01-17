@@ -40,12 +40,13 @@ Thtcl> (circle-area 10)
 314.1592653589793
 ```
 
-During a procedure call, the symbol __r__ is bound to the value 10. But we don't
-want the binding to go into the global environment, possibly clobbering an
-earlier definition of __r__. The solution is to use separate (but linked)
-environments, making __r__'s binding a _[local variable](https://en.wikipedia.org/wiki/Local_variable)_
+During a a call to the procedure `circle-area`, the symbol `r` is bound to the
+value 10. But we don't want the binding to go into the global environment,
+possibly clobbering an earlier definition of `r`. The solution is to use
+separate (but linked) environments, making `r`'s binding a
+_[local variable](https://en.wikipedia.org/wiki/Local_variable)_
 in its own environment, which the procedure will be evaluated in. The symbols
-__*__ and __pi__ will still be available through the local environment's link
+`*` and `pi` will still be available through the local environment's link
 to the outer global environment. This is all part of
 _[lexical scoping](https://en.wikipedia.org/wiki/Scope_(computer_science)#Lexical_scope)_.
 
@@ -54,17 +55,15 @@ In the first image, we see the global environment before we call __circle-area__
 
 ![A global environment](/images/env1.png)
 
-During the call:
+During the call. Note how the global `r` is shadowed by the local one, and how
+the local environment links to the global one to find `*` and `pi`. 
 
 ![A local environment shadows the global](/images/env2.png)
 
-After the call:
+After the call, we are back to the first state again.
 
 ![A global environment](/images/env1.png)
 
-Note how the global __r__ is shadowed by the local one, and how the local environment
-links to the global one to find __*__ and __pi__. After the call, we are back to the
-first state again.
 MD)
 
 TT(

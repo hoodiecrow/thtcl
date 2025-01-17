@@ -2,9 +2,9 @@
 MD(
 #### Benchmark
 
-On my cheap computer, the following code takes 0.012 seconds to run. Lispy does it in 0.003
+On my cheap computer, the following code takes 0.013 seconds to run. Lispy does it in 0.003
 seconds on Norvig's probably significantly faster machine. If anyone would care to
-compare this code with the Python one I'm all ears (plewerin x gmail com).
+compare this code to the Python one I'm all ears (plewerin x gmail com).
 
 ```
 evaluate [parse "(define fact (lambda (n) (if (<= n 1) 1 (* n (fact (- n 1))))))"]
@@ -147,7 +147,7 @@ MD)
 
 CB
 proc _if {c t f} {
-    if {[uplevel $c] ni {0 no false {}}} then {uplevel $t} else {uplevel $f}
+    if {![string is false [uplevel $c]]} then {uplevel $t} else {uplevel $f}
 }
 CB
 
