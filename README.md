@@ -86,8 +86,8 @@ proc evaluate {exp {env ::standard_env}} {
             return [_if {evaluate $cond $env} {evaluate $conseq $env} {evaluate $alt $env}]
         }
         define { # definition
-            lassign $args sym val
-            return [edefine $sym [evaluate $val $env] $env]
+            lassign $args id expr
+            return [edefine $id [evaluate $expr $env] $env]
         }
         default { # procedure invocation
             return [invoke [evaluate $op $env] [lmap arg $args {evaluate $arg $env}]]
@@ -104,12 +104,12 @@ On this level, the environment is expected to be given as a dict variable name (
 `::standard_env`). On level 2, __lookup__ will use an environment object instead.
 
 ```
-proc lookup {sym env} {
-    return [dict get [set $env] $sym]
+proc lookup {var env} {
+    return [dict get [set $env] $var]
 }
 ```
 
-__ebegin__ evaluates expressions in a list in sequence, returning the value of the last
+__ebegin__ evaluates _expressions_ in a list in sequence, returning the value of the last
 one. This is generally not very interesting unless the expressions have side effects (like
 printing something, or defining a variable).
 
@@ -139,8 +139,8 @@ On this level, the environment is expected to be given as a dict variable name
 instead.
 
 ```
-proc edefine {sym val env} {
-    dict set $env [idcheck $sym] $val
+proc edefine {id expr env} {
+    dict set $env [idcheck $id] $expr
     return {}
 }
 ```
@@ -467,16 +467,16 @@ proc evaluate {exp {env ::global_env}} {
             return [disjunction $args $env]
         }
         define { # definition
-            lassign $args sym val
-            return [edefine $sym [evaluate $val $env] $env]
+            lassign $args id expr
+            return [edefine $id [evaluate $expr $env] $env]
         }
         set! { # assignment
-            lassign $args sym val
-            return [update! $sym [evaluate $val $env] $env]
+            lassign $args var expr
+            return [update! $var [evaluate $expr $env] $env]
         }
         lambda { # procedure definition
-            lassign $args parms body
-            return [Procedure new $parms $body $env]
+            lassign $args formals expr
+            return [Procedure new $formals $expr $env]
         }
         default { # procedure invocation
             return [invoke [evaluate $op $env] [lmap arg $args {evaluate $arg $env}]]
@@ -491,8 +491,8 @@ __lookup__ dereferences a symbol, returning the value bound to it in the given e
 or one of its outer environments.
 
 ```
-proc lookup {sym env} {
-    return [[$env find $sym] get $sym]
+proc lookup {var env} {
+    return [[$env find $var] get $var]
 }
 ```
 
@@ -558,8 +558,8 @@ proc _if {c t f} {
 __edefine__ adds a symbol binding to the given environment, creating a variable.
 
 ```
-proc edefine {sym val env} {
-    $env set [idcheck $sym] $val
+proc edefine {id expr env} {
+    $env set [idcheck $id] $expr
     return {}
 }
 ```
@@ -568,12 +568,11 @@ __update!__ updates a variable by changing the value at the location of a symbol
 in the given environment or one of its outer environments.
 
 ```
-proc update! {sym val env} {
-    set sym [idcheck $sym]
-    if {[set actual_env [$env find $sym]] ne {}} {
-        $actual_env set $sym $val
-        return $val
-    }
+proc update! {var expr env} {
+    set var [idcheck $var]
+    set actual_env [$env find $var]
+    $actual_env set $var $expr
+    return $expr
 }
 ```
             
