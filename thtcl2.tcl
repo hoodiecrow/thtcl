@@ -5,7 +5,7 @@ MD(
 The second level of the interpreter has a full set of syntactic forms and a dynamic
 structure of variable environments for
 [lexical scoping](https://en.wikipedia.org/wiki/Scope_(computer_science)#Lexical_scope).
-It is defined by the procedure __evaluate__ as found in the source file
+It is defined by the procedure `evaluate` as found in the source file
 __thtcl-level-2.tcl__, and recognizes and processes the following syntactic forms:
 
 | Syntactic form | Syntax | Semantics |
@@ -22,7 +22,7 @@ __thtcl-level-2.tcl__, and recognizes and processes the following syntactic form
 | [procedure definition](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.4) | __lambda__ _formals_ _expression_ | _Formals_ should be a list of identifiers. A __lambda__ expression evaluates to a procedure. The environment in effect when the lambda expression was evaluated is remembered as part of the procedure. When the procedure is later called with some actual arguments, the environment in which the lambda expression was evaluated will be extended by binding the symbols in the formal argument list to fresh locations, the corresponding actual argument values will be stored in those locations, and the _expression_ in the body of the __lambda__ expression will be evaluated in the extended environment. Use __begin__ to have a body with more than one expression. The result of the _expression_ will be returned as the result of the procedure call. Example: `(lambda (r) (* r r))` ⇒ ::oo::Obj36010 |
 | [procedure call](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.3) | _operator_ _operand_... | If _operator_ is anything other than __quote__, __begin__, __if__, __and__, __or__, __define__, __set!__, or __lambda__, it is treated as a procedure. Evaluate _operator_ and all the _operands_, and then the resulting procedure is applied to the resulting list of argument values. Example: `(sqrt (+ 4 12))` ⇒ 4.0 |
 
-The evaluator also does a simple form of macro expansion on __op__ and __args__ before processing them in the big __switch__. 
+The evaluator also does a simple form of macro expansion on `op` and `args` before processing them in the big `switch`. 
 See the part about macros below.
 MD)
 
@@ -78,9 +78,9 @@ proc evaluate {exp {env ::global_env}} {
 CB
 
 MD(
-The __evaluate__ procedure relies on some sub-procedures for processing forms:
+The `evaluate` procedure relies on some sub-procedures for processing forms:
 
-__lookup__ dereferences a symbol, returning the value bound to it in the given environment
+`lookup` dereferences a symbol, returning the value bound to it in the given environment
 or one of its outer environments.
 MD)
 
@@ -91,7 +91,7 @@ proc lookup {var env} {
 CB
 
 MD(
-__ebegin__ evaluates _expressions_ in a list in sequence, returning the value of the last
+`ebegin` evaluates _expressions_ in a list in sequence, returning the value of the last
 one.
 MD)
 
@@ -106,7 +106,18 @@ proc ebegin {exps env} {
 CB
 
 MD(
-__conjunction__ evaluates _expressions_ in order, and the value of the first _expression_
+`_if` evaluates the first expression passed to it, and then conditionally evaluates
+either the second or third expression, returning that value.
+MD)
+
+CB
+proc _if {c t f} {
+    if {![string is false [uplevel $c]]} then {uplevel $t} else {uplevel $f}
+}
+CB
+
+MD(
+`conjunction` evaluates _expressions_ in order, and the value of the first _expression_
 that evaluates to a false value is returned: any remaining _expressions_ are not evaluated.
 MD)
 
@@ -126,7 +137,7 @@ proc conjunction {exps env} {
 CB
 
 MD(
-__disjunction__ evaluates _expressions_ in order, and the value of the first _expression_
+`disjunction` evaluates _expressions_ in order, and the value of the first _expression_
 that evaluates to a true value is returned: any remaining _expressions_ are not evaluated.
 MD)
 
@@ -146,18 +157,7 @@ proc disjunction {exps env} {
 CB
         
 MD(
-___if__ evaluates the first expression passed to it, and then conditionally evaluates
-either the second or third expression, returning that value.
-MD)
-
-CB
-proc _if {c t f} {
-    if {![string is false [uplevel $c]]} then {uplevel $t} else {uplevel $f}
-}
-CB
-
-MD(
-__edefine__ adds a symbol binding to the given environment, creating a variable.
+`edefine` adds a symbol binding to the given environment, creating a variable.
 MD)
 
 CB
@@ -168,7 +168,7 @@ proc edefine {id expr env} {
 CB
 
 MD(
-__update!__ updates a variable by changing the value at the location of a symbol binding
+`update!` updates a variable by changing the value at the location of a symbol binding
 in the given environment or one of its outer environments.
 MD)
 
@@ -181,7 +181,7 @@ proc update! {var expr env} {
 CB
 
 MD(
-__invoke__ calls a procedure, passing some arguments to it. The value of evaluating the
+`invoke` calls a procedure, passing some arguments to it. The value of evaluating the
 expression in the function body is returned. Handles the difference in calling convention
 between a Procedure object and a regular proc command.
 MD)

@@ -64,6 +64,11 @@ proc ebegin {exps env} {
 }
 
 
+proc _if {c t f} {
+    if {![string is false [uplevel $c]]} then {uplevel $t} else {uplevel $f}
+}
+
+
 proc conjunction {exps env} {
     set v true
     foreach exp $exps {
@@ -91,11 +96,6 @@ proc disjunction {exps env} {
     }
 }
         
-
-proc _if {c t f} {
-    if {![string is false [uplevel $c]]} then {uplevel $t} else {uplevel $f}
-}
-
 
 proc edefine {id expr env} {
     $env set [idcheck $id] $expr
@@ -397,7 +397,6 @@ proc repl {{prompt "Thtcl> "}} {
         set str [input $prompt]
         if {$str eq ""} break
         set val [evaluate [parse $str]]
-        # should be None
         if {$val ne {}} {
             puts [printable $val]
         }

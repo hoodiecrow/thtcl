@@ -40,7 +40,7 @@ Thtcl> (circle-area 10)
 314.1592653589793
 ```
 
-During a a call to the procedure `circle-area`, the symbol `r` is bound to the
+During a call to the procedure `circle-area`, the symbol `r` is bound to the
 value 10. But we don't want the binding to go into the global environment,
 possibly clobbering an earlier definition of `r`. The solution is to use
 separate (but linked) environments, making `r`'s binding a

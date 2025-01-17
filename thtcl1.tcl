@@ -17,7 +17,7 @@ MD(
 
 The first level of the interpreter has a reduced set of syntactic forms and a single
 [variable](https://en.wikipedia.org/wiki/Variable_(computer_science)) environment. It is
-defined by the procedure __evaluate__ in __thtcl-level-1.tcl__ which recognizes and
+defined by the procedure `evaluate` in __thtcl-level-1.tcl__ which recognizes and
 processes the following syntactic forms:
 
 | Syntactic form | Syntax | Semantics |
@@ -111,11 +111,11 @@ TT(
 TT)
 
 MD(
-The __evaluate__ procedure relies on some sub-procedures for processing forms:
+The `evaluate` procedure relies on some sub-procedures for processing forms:
 
-__lookup__ dereferences a symbol, returning the value bound to it in the given environment.
+`lookup` dereferences a symbol, returning the value bound to it in the given environment.
 On this level, the environment is expected to be given as a dict variable name (to wit:
-`::standard_env`). On level 2, __lookup__ will use an environment object instead.
+`::standard_env`). On level 2, `lookup` will use an environment object instead.
 MD)
 
 CB
@@ -125,7 +125,7 @@ proc lookup {var env} {
 CB
 
 MD(
-__ebegin__ evaluates _expressions_ in a list in sequence, returning the value of the last
+`ebegin` evaluates _expressions_ in a list in sequence, returning the value of the last
 one. This is generally not very interesting unless the expressions have side effects (like
 printing something, or defining a variable).
 MD)
@@ -141,7 +141,7 @@ proc ebegin {exps env} {
 CB
 
 MD(
-___if__ evaluates the first expression passed to it, and then conditionally evaluates
+`_if` evaluates the first expression passed to it, and then conditionally evaluates
 either the second or third expression, returning that value.
 MD)
 
@@ -167,9 +167,9 @@ TT(
 TT)
 
 MD(
-__edefine__ adds a symbol binding to the given environment, creating a variable.
+`edefine` adds a symbol binding to the given environment, creating a variable.
 On this level, the environment is expected to be given as a dict variable name
-(to wit: `::standard_env`). On level 2, __edefine__ will use an environment object
+(to wit: `::standard_env`). On level 2, `edefine` will use an environment object
 instead.
 MD)
 
@@ -181,7 +181,7 @@ proc edefine {id expr env} {
 CB
 
 MD(
-__invoke__ calls a procedure, passing some arguments to it. The procedure
+`invoke` calls a procedure, passing some arguments to it. The procedure
 typically returns a value.
 MD)
 

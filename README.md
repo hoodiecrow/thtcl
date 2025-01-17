@@ -30,7 +30,7 @@ time {evaluate [parse "(fact 100)"]} 10
 
 The first level of the interpreter has a reduced set of syntactic forms and a single
 [variable](https://en.wikipedia.org/wiki/Variable_(computer_science)) environment. It is
-defined by the procedure __evaluate__ in __thtcl-level-1.tcl__ which recognizes and
+defined by the procedure `evaluate` in __thtcl-level-1.tcl__ which recognizes and
 processes the following syntactic forms:
 
 | Syntactic form | Syntax | Semantics |
@@ -108,11 +108,11 @@ proc evaluate {exp {env ::standard_env}} {
 ```
 
 
-The __evaluate__ procedure relies on some sub-procedures for processing forms:
+The `evaluate` procedure relies on some sub-procedures for processing forms:
 
-__lookup__ dereferences a symbol, returning the value bound to it in the given environment.
+`lookup` dereferences a symbol, returning the value bound to it in the given environment.
 On this level, the environment is expected to be given as a dict variable name (to wit:
-`::standard_env`). On level 2, __lookup__ will use an environment object instead.
+`::standard_env`). On level 2, `lookup` will use an environment object instead.
 
 ```
 proc lookup {var env} {
@@ -120,7 +120,7 @@ proc lookup {var env} {
 }
 ```
 
-__ebegin__ evaluates _expressions_ in a list in sequence, returning the value of the last
+`ebegin` evaluates _expressions_ in a list in sequence, returning the value of the last
 one. This is generally not very interesting unless the expressions have side effects (like
 printing something, or defining a variable).
 
@@ -134,7 +134,7 @@ proc ebegin {exps env} {
 }
 ```
 
-___if__ evaluates the first expression passed to it, and then conditionally evaluates
+`_if` evaluates the first expression passed to it, and then conditionally evaluates
 either the second or third expression, returning that value.
 
 ```
@@ -144,9 +144,9 @@ proc _if {c t f} {
 ```
 
 
-__edefine__ adds a symbol binding to the given environment, creating a variable.
+`edefine` adds a symbol binding to the given environment, creating a variable.
 On this level, the environment is expected to be given as a dict variable name
-(to wit: `::standard_env`). On level 2, __edefine__ will use an environment object
+(to wit: `::standard_env`). On level 2, `edefine` will use an environment object
 instead.
 
 ```
@@ -156,7 +156,7 @@ proc edefine {id expr env} {
 }
 ```
 
-__invoke__ calls a procedure, passing some arguments to it. The procedure
+`invoke` calls a procedure, passing some arguments to it. The procedure
 typically returns a value.
 
 ```
@@ -365,10 +365,10 @@ foreach {func impl} {append concat length llength list list print puts reverse l
 
 The REPL ([read-eval-print loop](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop))
 is a loop that repeatedly _reads_ a Scheme source string from the user through the command
-__input__ (breaking the loop if given an empty line), _evaluates_ it using __parse__ and the current
-level's __evaluate__, and _prints_ the result after filtering it through __printable__.
+`input` (breaking the loop if given an empty line), _evaluates_ it using `parse` and the current
+level's `evaluate`, and _prints_ the result after filtering it through `printable`.
 
-__input__ is modelled after the Python 3 function. It displays a prompt and reads a string.
+`input` is modelled after the Python 3 function. It displays a prompt and reads a string.
 
 ```
 proc input {prompt} {
@@ -377,7 +377,7 @@ proc input {prompt} {
 }
 ```
 
-__printable__ dresses up the value as a Scheme expression, using a weak rule of thumb to detect lists and exchanging braces for parentheses.
+`printable` dresses up the value as a Scheme expression, using a weak rule of thumb to detect lists and exchanging braces for parentheses.
 
 ```
 proc printable {val} {
@@ -388,7 +388,7 @@ proc printable {val} {
 }
 ```
 
-__parse__ simply exchanges parentheses (and square brackets) for braces, and the Scheme boolean constant for Tcl's, and expands quote characters.
+`parse` simply exchanges parentheses (and square brackets) for braces, and the Scheme boolean constant for Tcl's, and expands quote characters.
 
 ```
 proc expandquotes {str} {
@@ -475,7 +475,7 @@ proc parse {str} {
 ```
 
 
-__repl__ puts the loop in the read-eval-print loop. It repeats prompting for a string until given
+`repl` puts the loop in the read-eval-print loop. It repeats prompting for a string until given
 a blank input. Given non-blank input, it parses and evaluates the string, printing the resulting value.
 
 ```
@@ -484,7 +484,6 @@ proc repl {{prompt "Thtcl> "}} {
         set str [input $prompt]
         if {$str eq ""} break
         set val [evaluate [parse $str]]
-        # should be None
         if {$val ne {}} {
             puts [printable $val]
         }
@@ -505,7 +504,7 @@ proc pep {str} {
 The second level of the interpreter has a full set of syntactic forms and a dynamic
 structure of variable environments for
 [lexical scoping](https://en.wikipedia.org/wiki/Scope_(computer_science)#Lexical_scope).
-It is defined by the procedure __evaluate__ as found in the source file
+It is defined by the procedure `evaluate` as found in the source file
 __thtcl-level-2.tcl__, and recognizes and processes the following syntactic forms:
 
 | Syntactic form | Syntax | Semantics |
@@ -522,7 +521,7 @@ __thtcl-level-2.tcl__, and recognizes and processes the following syntactic form
 | [procedure definition](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.4) | __lambda__ _formals_ _expression_ | _Formals_ should be a list of identifiers. A __lambda__ expression evaluates to a procedure. The environment in effect when the lambda expression was evaluated is remembered as part of the procedure. When the procedure is later called with some actual arguments, the environment in which the lambda expression was evaluated will be extended by binding the symbols in the formal argument list to fresh locations, the corresponding actual argument values will be stored in those locations, and the _expression_ in the body of the __lambda__ expression will be evaluated in the extended environment. Use __begin__ to have a body with more than one expression. The result of the _expression_ will be returned as the result of the procedure call. Example: `(lambda (r) (* r r))` ⇒ ::oo::Obj36010 |
 | [procedure call](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.3) | _operator_ _operand_... | If _operator_ is anything other than __quote__, __begin__, __if__, __and__, __or__, __define__, __set!__, or __lambda__, it is treated as a procedure. Evaluate _operator_ and all the _operands_, and then the resulting procedure is applied to the resulting list of argument values. Example: `(sqrt (+ 4 12))` ⇒ 4.0 |
 
-The evaluator also does a simple form of macro expansion on __op__ and __args__ before processing them in the big __switch__. 
+The evaluator also does a simple form of macro expansion on `op` and `args` before processing them in the big `switch`. 
 See the part about macros below.
 
 ```
@@ -576,9 +575,9 @@ proc evaluate {exp {env ::global_env}} {
 }
 ```
 
-The __evaluate__ procedure relies on some sub-procedures for processing forms:
+The `evaluate` procedure relies on some sub-procedures for processing forms:
 
-__lookup__ dereferences a symbol, returning the value bound to it in the given environment
+`lookup` dereferences a symbol, returning the value bound to it in the given environment
 or one of its outer environments.
 
 ```
@@ -587,7 +586,7 @@ proc lookup {var env} {
 }
 ```
 
-__ebegin__ evaluates _expressions_ in a list in sequence, returning the value of the last
+`ebegin` evaluates _expressions_ in a list in sequence, returning the value of the last
 one.
 
 ```
@@ -600,7 +599,16 @@ proc ebegin {exps env} {
 }
 ```
 
-__conjunction__ evaluates _expressions_ in order, and the value of the first _expression_
+`_if` evaluates the first expression passed to it, and then conditionally evaluates
+either the second or third expression, returning that value.
+
+```
+proc _if {c t f} {
+    if {![string is false [uplevel $c]]} then {uplevel $t} else {uplevel $f}
+}
+```
+
+`conjunction` evaluates _expressions_ in order, and the value of the first _expression_
 that evaluates to a false value is returned: any remaining _expressions_ are not evaluated.
 
 ```
@@ -618,7 +626,7 @@ proc conjunction {exps env} {
 }
 ```
 
-__disjunction__ evaluates _expressions_ in order, and the value of the first _expression_
+`disjunction` evaluates _expressions_ in order, and the value of the first _expression_
 that evaluates to a true value is returned: any remaining _expressions_ are not evaluated.
 
 ```
@@ -636,16 +644,7 @@ proc disjunction {exps env} {
 }
 ```
         
-___if__ evaluates the first expression passed to it, and then conditionally evaluates
-either the second or third expression, returning that value.
-
-```
-proc _if {c t f} {
-    if {![string is false [uplevel $c]]} then {uplevel $t} else {uplevel $f}
-}
-```
-
-__edefine__ adds a symbol binding to the given environment, creating a variable.
+`edefine` adds a symbol binding to the given environment, creating a variable.
 
 ```
 proc edefine {id expr env} {
@@ -654,7 +653,7 @@ proc edefine {id expr env} {
 }
 ```
 
-__update!__ updates a variable by changing the value at the location of a symbol binding
+`update!` updates a variable by changing the value at the location of a symbol binding
 in the given environment or one of its outer environments.
 
 ```
@@ -665,7 +664,7 @@ proc update! {var expr env} {
 }
 ```
 
-__invoke__ calls a procedure, passing some arguments to it. The value of evaluating the
+`invoke` calls a procedure, passing some arguments to it. The value of evaluating the
 expression in the function body is returned. Handles the difference in calling convention
 between a Procedure object and a regular proc command.
 
@@ -758,7 +757,7 @@ Thtcl> (circle-area 10)
 314.1592653589793
 ```
 
-During a a call to the procedure `circle-area`, the symbol `r` is bound to the
+During a call to the procedure `circle-area`, the symbol `r` is bound to the
 value 10. But we don't want the binding to go into the global environment,
 possibly clobbering an earlier definition of `r`. The solution is to use
 separate (but linked) environments, making `r`'s binding a
