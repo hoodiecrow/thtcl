@@ -10,8 +10,8 @@ They differ somewhat from the standard ones in that the body or clause body must
 single form (use a __begin__ form for multiple steps of computation). The `for´ macros
 are incomplete.
 
-As of now, the `let` and `cond` macros simply rewrite the code as good macros, while
-case and for/* are computed and the result substituted in the code.
+As of now, the `let`, `cond` and `case` macros simply rewrite the code as good macros, while
+for/* are computed and the result substituted in the code.
 MD)
 
 CB
@@ -48,21 +48,21 @@ proc do-cond {clauses} {
     }
 }
 
-proc do-case {value clauses} {
+proc do-case {keyv clauses} {
     if {[llength $clauses] == 1} {
         lassign [lindex $clauses 0] keylist body
         if {$keylist eq "else"} {
             set keylist true
         } else {
-            set keylist [concat or [lmap key $keylist {list eqv? $value [list quote $key]}]]
+            set keylist [concat or [lmap key $keylist {list eqv? $keyv [list quote $key]}]]
         }
-        return [list if $keylist $body [do-case $value [lrange $clauses 1 end]]]
+        return [list if $keylist $body [do-case $keyv [lrange $clauses 1 end]]]
     } elseif {[llength $clauses] < 1} {
         return [list quote {}]
     } else {
         lassign [lindex $clauses 0] keylist body
-        set keylist [concat or [lmap key $keylist {list eqv? $value [list quote $key]}]]
-        return [list if $keylist $body [do-case $value [lrange $clauses 1 end]]]
+        set keylist [concat or [lmap key $keylist {list eqv? $keyv [list quote $key]}]]
+        return [list if $keylist $body [do-case $keyv [lrange $clauses 1 end]]]
     }
 }
 
@@ -81,9 +81,8 @@ proc expand-macro {n1 n2 env} {
             set args [lassign [do-cond $args] op]
         }
         case {
-            set clauses [lassign $args value]
-            set v [evaluate $value $env]
-            set args [lassign [do-case $value $clauses] op]
+            set clauses [lassign $args key]
+            set args [lassign [do-case [list quote [evaluate $key $env]] $clauses] op]
         }
         for {
             set iter 0
@@ -219,7 +218,7 @@ TT(
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
     expand-macro op args ::global_env
     printable [list $op {*}$args]
-} "(if (or (eqv? (* 2 3) (quote 2)) (eqv? (* 2 3) (quote 3)) (eqv? (* 2 3) (quote 5)) (eqv? (* 2 3) (quote 7))) (quote prime) (if (or (eqv? (* 2 3) (quote 1)) (eqv? (* 2 3) (quote 4)) (eqv? (* 2 3) (quote 6)) (eqv? (* 2 3) (quote 8)) (eqv? (* 2 3) (quote 9))) (quote composite) (quote ())))"
+} "(if (or (eqv? (quote 6) (quote 2)) (eqv? (quote 6) (quote 3)) (eqv? (quote 6) (quote 5)) (eqv? (quote 6) (quote 7))) (quote prime) (if (or (eqv? (quote 6) (quote 1)) (eqv? (quote 6) (quote 4)) (eqv? (quote 6) (quote 6)) (eqv? (quote 6) (quote 8)) (eqv? (quote 6) (quote 9))) (quote composite) (quote ())))"
 
 ::tcltest::test macro-3.1 {case macro} {
     printable [evaluate [parse "(case (* 2 3) ((2 3 5 7) (quote prime)) ((1 4 6 8 9) (quote composite)))"]]
@@ -232,7 +231,7 @@ TT(
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
     expand-macro op args ::global_env
     printable [list $op {*}$args]
-} "(if (or (eqv? (car (quote (c d))) (quote a)) (eqv? (car (quote (c d))) (quote e)) (eqv? (car (quote (c d))) (quote i)) (eqv? (car (quote (c d))) (quote o)) (eqv? (car (quote (c d))) (quote u))) (quote vowel) (if (or (eqv? (car (quote (c d))) (quote w)) (eqv? (car (quote (c d))) (quote y))) (quote semivowel) (if #t (quote consonant) (quote ()))))"
+} "(if (or (eqv? (quote c) (quote a)) (eqv? (quote c) (quote e)) (eqv? (quote c) (quote i)) (eqv? (quote c) (quote o)) (eqv? (quote c) (quote u))) (quote vowel) (if (or (eqv? (quote c) (quote w)) (eqv? (quote c) (quote y))) (quote semivowel) (if #t (quote consonant) (quote ()))))"
 
 ::tcltest::test macro-3.3 {case macro} {
     printable [evaluate [parse "(case (car (quote (c d))) ((a e i o u) (quote vowel)) ((w y) (quote semivowel)) (else (quote consonant)))"]]
