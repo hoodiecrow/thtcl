@@ -68,7 +68,7 @@ proc evaluate {exp {env ::standard_env}} {
     if {[::thtcl::atom? $exp]} {
         if {[::thtcl::symbol? $exp]} { # variable reference
             return [lookup $exp $env]
-        } elseif {[::thtcl::number? $exp] || [string is boolean $exp]} { # constant literal
+        } elseif {[::thtcl::number? $exp] || [::thtcl::boolean? $exp]} { # constant literal
             return $exp
         } else {
             error [format "cannot evaluate %s" $exp]
@@ -191,6 +191,7 @@ The following symbols make up the standard environment:
 | atan | ::tcl::mathfunc::atan | Returns the arc tangent of _arg_, in the range [-pi/2,pi/2] radians. |
 | atan2 | ::tcl::mathfunc::atan2 | Returns the arc tangent of _y_ / _x_, in the range [-pi,pi] radians. _x_ and _y_ cannot both be 0. If _x_ is greater than 0, this is equivalent to “atan _y_ / _x_”. |
 | atom? | ::thtcl::atom? | Takes an _obj_, returns true if _obj_ is not a list, otherwise returns false. |
+| boolean? | ::thtcl::boolean? | Takes an _obj_, returns true if _obj_ is a boolean, otherwise returns false. |
 | car | ::thtcl::car | Takes a list and returns the first item |
 | cdr | ::thtcl::cdr | Takes a list and returns it with the first item removed |
 | ceiling | ::tcl::mathfunc::ceil | Returns the smallest integral floating-point value (i.e. with a zero fractional part) not less than _arg_. The argument may be any numeric value. |
@@ -269,6 +270,8 @@ proc apply {proc args} { invoke $proc $args }
 
 proc atom? {exp} { boolexpr {[string index [string trim $exp] 0] ne "\{" && " " ni [split [string trim $exp] {}]} }
 
+proc boolean? {val} { boolexpr {[string is boolean $val]} }
+
 proc car {list} { if {$list eq {}} {error "PAIR expected (car '())"} ; lindex $list 0 }
 
 proc cdr {list} { if {$list eq {}} {error "PAIR expected (cdr '())"} ; lrange $list 1 end }
@@ -331,7 +334,7 @@ proc in-range {args} {
 
 }
 
-foreach func {> < >= <= = apply atom? car cdr cons deg->rad eq? eqv? equal?
+foreach func {> < >= <= = apply atom? boolean? car cdr cons deg->rad eq? eqv? equal?
     map not null? number? rad->deg symbol? zero? positive? negative? even? odd? display in-range} {
     dict set standard_env $func ::thtcl::$func
 }
@@ -515,7 +518,7 @@ proc evaluate {exp {env ::global_env}} {
     if {[::thtcl::atom? $exp]} {
         if {[::thtcl::symbol? $exp]} { # variable reference
             return [lookup $exp $env]
-        } elseif {[::thtcl::number? $exp] || [string is boolean $exp]} { # constant literal
+        } elseif {[::thtcl::number? $exp] || [::thtcl::boolean? $exp]} { # constant literal
             return $exp
         } else {
             error [format "cannot evaluate %s" $exp]

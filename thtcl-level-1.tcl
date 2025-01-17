@@ -4,7 +4,7 @@ proc evaluate {exp {env ::standard_env}} {
     if {[::thtcl::atom? $exp]} {
         if {[::thtcl::symbol? $exp]} { # variable reference
             return [lookup $exp $env]
-        } elseif {[::thtcl::number? $exp] || [string is boolean $exp]} { # constant literal
+        } elseif {[::thtcl::number? $exp] || [::thtcl::boolean? $exp]} { # constant literal
             return $exp
         } else {
             error [format "cannot evaluate %s" $exp]
@@ -93,6 +93,8 @@ proc apply {proc args} { invoke $proc $args }
 
 proc atom? {exp} { boolexpr {[string index [string trim $exp] 0] ne "\{" && " " ni [split [string trim $exp] {}]} }
 
+proc boolean? {val} { boolexpr {[string is boolean $val]} }
+
 proc car {list} { if {$list eq {}} {error "PAIR expected (car '())"} ; lindex $list 0 }
 
 proc cdr {list} { if {$list eq {}} {error "PAIR expected (cdr '())"} ; lrange $list 1 end }
@@ -155,7 +157,7 @@ proc in-range {args} {
 
 }
 
-foreach func {> < >= <= = apply atom? car cdr cons deg->rad eq? eqv? equal?
+foreach func {> < >= <= = apply atom? boolean? car cdr cons deg->rad eq? eqv? equal?
     map not null? number? rad->deg symbol? zero? positive? negative? even? odd? display in-range} {
     dict set standard_env $func ::thtcl::$func
 }
