@@ -217,6 +217,10 @@ source thtcl-level-1.tcl
     parse "''(foo bar)"
 } "{quote {quote {foo bar}}}"
 
+::tcltest::test repl-1.5 {expandquotes} -body {
+    parse "'(foo (bar"
+} -returnCodes error -result "missing 2 right parentheses/brackets"
+
 
 
 ::tcltest::cleanupTests

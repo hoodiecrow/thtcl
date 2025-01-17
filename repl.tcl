@@ -108,6 +108,8 @@ proc expandquotes {str} {
             for {set i 0} {$i < $qcount} {incr i} {
                 append res "\}"
             }
+        } elseif {$state eq "quoteb"} {
+            error "missing $bcount right parentheses/brackets"
         }
         return $res
     }
@@ -139,6 +141,10 @@ TT(
 ::tcltest::test repl-1.4 {expandquotes} {
     parse "''(foo bar)"
 } "{quote {quote {foo bar}}}"
+
+::tcltest::test repl-1.5 {expandquotes} -body {
+    parse "'(foo (bar"
+} -returnCodes error -result "missing 2 right parentheses/brackets"
 
 TT)
 

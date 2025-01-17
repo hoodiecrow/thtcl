@@ -385,6 +385,8 @@ proc expandquotes {str} {
             for {set i 0} {$i < $qcount} {incr i} {
                 append res "\}"
             }
+        } elseif {$state eq "quoteb"} {
+            error "missing $bcount right parentheses/brackets"
         }
         return $res
     }
@@ -414,29 +416,6 @@ proc pep {str} {
     printable [evaluate [parse $str]]
 }
 
-
-proc prepare-clauses {name env} {
-    upvar $name clauses
-    for {set i 0} {$i < [llength $clauses]} {incr i} {
-        if {[string is integer [lindex $clauses $i 1]]} {
-            lset clauses $i 1 [::thtcl::in-range [lindex $clauses $i 1]]
-        } else {
-            lset clauses $i 1 [evaluate [lindex $clauses $i 1] $env]
-        }
-    }
-}
-
-proc process-clauses {iter clauses env} {
-    foreach clause $clauses {
-        lassign $clause id seqval
-        if {$iter >= [llength $seqval]} {
-            return false
-        } else {
-            edefine $id [lindex $seqval $iter] $env
-        }
-    }
-    return true
-}
 
 proc do-cond {clauses} {
     if {[llength $clauses] < 1} {
@@ -485,71 +464,70 @@ proc expand-macro {n1 n2 env} {
             set args [lassign [do-case [list quote [evaluate $key $env]] $clauses] op]
         }
         for {
-            set iter 0
+            #single-clause
             lassign $args clauses body
-            prepare-clauses clauses $env
-            set loop true
-            while {$loop} {
-                set loop [process-clauses $iter $clauses $env]
-                if {$loop} {
-                    evaluate $body $env
-                    incr iter
-                }
+            lassign $clauses clause
+            lassign $clause id seq
+            if {[::thtcl::number? $seq]} {
+                set seq [::thtcl::in-range $seq]
+            } else {
+                set seq [evaluate $seq $env]
             }
-            set args [lassign [list quote {}] op]
+            set res {}
+            foreach v $seq {
+                lappend res [list begin [list define $id $v] $body]
+            }
+            lappend res [list quote {}]
+            set res [list begin {*}$res]
+            set args [lassign $res op]
         }
         for/list {
-            set iter 0
+            #single-clause
             lassign $args clauses body
-            prepare-clauses clauses $env
-            set result [list]
-            set loop true
-            while {$loop} {
-                set loop [process-clauses $iter $clauses $env]
-                if {$loop} {
-                    lappend result [evaluate $body $env]
-                    incr iter
-                }
+            lassign $clauses clause
+            lassign $clause id seq
+            if {[::thtcl::number? $seq]} {
+                set seq [::thtcl::in-range $seq]
+            } else {
+                set seq [evaluate $seq $env]
             }
-            set args [lassign [list quote $result] op]
+            set res {}
+            foreach v $seq {
+                lappend res [list begin [list define $id $v] [list set! res [list append res $body]]]
+            }
+            lappend res res
+            set res [list begin [list define res {}] {*}$res]
+            set args [lassign $res op]
         }
         for/and {
-            set iter 0
+            #single-clause
             lassign $args clauses body
-            prepare-clauses clauses $env
-            set result [list]
-            set loop true
-            while {$loop} {
-                set loop [process-clauses $iter $clauses $env]
-                if {$loop} {
-                    if {![set result [evaluate $body $env]]} {
-                        set args [lassign false op]
-                        return
-                    } else {
-                        set args [lassign [list quote $result] op]
-                    }
-                    incr iter
-                }
+            lassign $clauses clause
+            lassign $clause id seq
+            if {[::thtcl::number? $seq]} {
+                set seq [::thtcl::in-range $seq]
+            } else {
+                set seq [evaluate $seq $env]
             }
+            foreach v $seq {
+                lappend res [list begin [list define $id $v] $body]
+            }
+            set args [lassign [list and {*}$res] op]
         }
         for/or {
-            set iter 0
+            #single-clause
             lassign $args clauses body
-            prepare-clauses clauses $env
-            set result [list]
-            set loop true
-            while {$loop} {
-                set loop [process-clauses $iter $clauses $env]
-                if {$loop} {
-                    if {[set result [evaluate $body $env]]} {
-                        set args [lassign [list quote $result] op]
-                        return
-                    } else {
-                        set args [lassign [list quote $result] op]
-                    }
-                    incr iter
-                }
+            lassign $clauses clause
+            lassign $clause id seq
+            if {[::thtcl::number? $seq]} {
+                set seq [::thtcl::in-range $seq]
+            } else {
+                set seq [evaluate $seq $env]
             }
+            foreach v $seq {
+                lappend res [list begin [list define $id $v] $body]
+            }
+            set args [lassign [list or {*}$res] op]
         }
     }
 }

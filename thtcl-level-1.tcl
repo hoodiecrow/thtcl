@@ -267,6 +267,8 @@ proc expandquotes {str} {
             for {set i 0} {$i < $qcount} {incr i} {
                 append res "\}"
             }
+        } elseif {$state eq "quoteb"} {
+            error "missing $bcount right parentheses/brackets"
         }
         return $res
     }

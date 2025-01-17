@@ -8,36 +8,11 @@ in __expand-macro__ and they work by modifying _op_ and _args_ inside __evaluate
 Currently, the macros `let`, `cond`, `case`, `for`, `for/list`, `for/and`, and `for/or` are defined.
 They differ somewhat from the standard ones in that the body or clause body must be a
 single form (use a __begin__ form for multiple steps of computation). The `for´ macros
-are incomplete.
+are incomplete: for instance, they only take a single clause.
 
-As of now, the `let`, `cond` and `case` macros simply rewrite the code as good macros, while
-for/* are computed and the result substituted in the code.
 MD)
 
 CB
-proc prepare-clauses {name env} {
-    upvar $name clauses
-    for {set i 0} {$i < [llength $clauses]} {incr i} {
-        if {[string is integer [lindex $clauses $i 1]]} {
-            lset clauses $i 1 [::thtcl::in-range [lindex $clauses $i 1]]
-        } else {
-            lset clauses $i 1 [evaluate [lindex $clauses $i 1] $env]
-        }
-    }
-}
-
-proc process-clauses {iter clauses env} {
-    foreach clause $clauses {
-        lassign $clause id seqval
-        if {$iter >= [llength $seqval]} {
-            return false
-        } else {
-            edefine $id [lindex $seqval $iter] $env
-        }
-    }
-    return true
-}
-
 proc do-cond {clauses} {
     if {[llength $clauses] < 1} {
         return [list quote {}]
@@ -85,71 +60,70 @@ proc expand-macro {n1 n2 env} {
             set args [lassign [do-case [list quote [evaluate $key $env]] $clauses] op]
         }
         for {
-            set iter 0
+            #single-clause
             lassign $args clauses body
-            prepare-clauses clauses $env
-            set loop true
-            while {$loop} {
-                set loop [process-clauses $iter $clauses $env]
-                if {$loop} {
-                    evaluate $body $env
-                    incr iter
-                }
+            lassign $clauses clause
+            lassign $clause id seq
+            if {[::thtcl::number? $seq]} {
+                set seq [::thtcl::in-range $seq]
+            } else {
+                set seq [evaluate $seq $env]
             }
-            set args [lassign [list quote {}] op]
+            set res {}
+            foreach v $seq {
+                lappend res [list begin [list define $id $v] $body]
+            }
+            lappend res [list quote {}]
+            set res [list begin {*}$res]
+            set args [lassign $res op]
         }
         for/list {
-            set iter 0
+            #single-clause
             lassign $args clauses body
-            prepare-clauses clauses $env
-            set result [list]
-            set loop true
-            while {$loop} {
-                set loop [process-clauses $iter $clauses $env]
-                if {$loop} {
-                    lappend result [evaluate $body $env]
-                    incr iter
-                }
+            lassign $clauses clause
+            lassign $clause id seq
+            if {[::thtcl::number? $seq]} {
+                set seq [::thtcl::in-range $seq]
+            } else {
+                set seq [evaluate $seq $env]
             }
-            set args [lassign [list quote $result] op]
+            set res {}
+            foreach v $seq {
+                lappend res [list begin [list define $id $v] [list set! res [list append res $body]]]
+            }
+            lappend res res
+            set res [list begin [list define res {}] {*}$res]
+            set args [lassign $res op]
         }
         for/and {
-            set iter 0
+            #single-clause
             lassign $args clauses body
-            prepare-clauses clauses $env
-            set result [list]
-            set loop true
-            while {$loop} {
-                set loop [process-clauses $iter $clauses $env]
-                if {$loop} {
-                    if {![set result [evaluate $body $env]]} {
-                        set args [lassign false op]
-                        return
-                    } else {
-                        set args [lassign [list quote $result] op]
-                    }
-                    incr iter
-                }
+            lassign $clauses clause
+            lassign $clause id seq
+            if {[::thtcl::number? $seq]} {
+                set seq [::thtcl::in-range $seq]
+            } else {
+                set seq [evaluate $seq $env]
             }
+            foreach v $seq {
+                lappend res [list begin [list define $id $v] $body]
+            }
+            set args [lassign [list and {*}$res] op]
         }
         for/or {
-            set iter 0
+            #single-clause
             lassign $args clauses body
-            prepare-clauses clauses $env
-            set result [list]
-            set loop true
-            while {$loop} {
-                set loop [process-clauses $iter $clauses $env]
-                if {$loop} {
-                    if {[set result [evaluate $body $env]]} {
-                        set args [lassign [list quote $result] op]
-                        return
-                    } else {
-                        set args [lassign [list quote $result] op]
-                    }
-                    incr iter
-                }
+            lassign $clauses clause
+            lassign $clause id seq
+            if {[::thtcl::number? $seq]} {
+                set seq [::thtcl::in-range $seq]
+            } else {
+                set seq [evaluate $seq $env]
             }
+            foreach v $seq {
+                lappend res [list begin [list define $id $v] $body]
+            }
+            set args [lassign [list or {*}$res] op]
         }
     }
 }
@@ -247,16 +221,24 @@ TT(
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
     expand-macro op args ::global_env
     printable [list $op {*}$args]
-} -result "(quote ())" -output 123
+} -result "(begin (begin (define i 1) (display i)) (begin (define i 2) (display i)) (begin (define i 3) (display i)) (quote ()))"
 
 ::tcltest::test macro-4.1 {for macro} -body {
+    pep "(for ((i (quote (1 2 3)))) (display i))"
+} -result "" -output 123
+
+::tcltest::test macro-4.2 {for macro} -body {
     set exp [parse "(for ((i 4)) (display i))"]
     set args [lassign $exp op]
     # kludge to get around Tcl's list literal handling
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
     expand-macro op args ::global_env
     printable [list $op {*}$args]
-} -result "(quote ())" -output 0123
+} -result "(begin (begin (define i 0) (display i)) (begin (define i 1) (display i)) (begin (define i 2) (display i)) (begin (define i 3) (display i)) (quote ()))"
+
+::tcltest::test macro-4.3 {for macro} -body {
+    pep "(for ((i 4)) (display i))"
+} -result "" -output 0123
 
 TT)
 
@@ -269,16 +251,50 @@ TT(
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
     expand-macro op args ::global_env
     printable [list $op {*}$args]
-} -result "(quote (1 4 9))"
+} -result "(begin (define res ()) (begin (define i 1) (set! res (append res (* i i)))) (begin (define i 2) (set! res (append res (* i i)))) (begin (define i 3) (set! res (append res (* i i)))) res)"
 
 ::tcltest::test macro-5.1 {for/list macro} -body {
+    pep {(for/list ([i (quote (1 2 3))]) (* i i))}
+} -result "(1 4 9)"
+
+::tcltest::test macro-5.2 {for/list macro} -body {
     set exp [parse {(for/list ([i (in-range 1 4)]) (* i i))}]
     set args [lassign $exp op]
     # kludge to get around Tcl's list literal handling
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
     expand-macro op args ::global_env
     printable [list $op {*}$args]
-} -result "(quote (1 4 9))"
+} -result "(begin (define res ()) (begin (define i 1) (set! res (append res (* i i)))) (begin (define i 2) (set! res (append res (* i i)))) (begin (define i 3) (set! res (append res (* i i)))) res)"
+
+::tcltest::test macro-5.2 {for/list macro} -body {
+    pep {(for/list ([i (in-range 1 4)]) (* i i))}
+} -result "(1 4 9)"
+
+::tcltest::test macro-6.0 {for/and macro} -body {
+    set exp [parse {(for/and ([chapter '(1 2 3)]) (equal? chapter 1))}]
+    set args [lassign $exp op]
+    # kludge to get around Tcl's list literal handling
+    if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
+    expand-macro op args ::global_env
+    printable [list $op {*}$args]
+} -result "(and (begin (define chapter 1) (equal? chapter 1)) (begin (define chapter 2) (equal? chapter 1)) (begin (define chapter 3) (equal? chapter 1)))"
+
+::tcltest::test macro-6.1 {for/and macro} -body {
+    pep {(for/and ([chapter '(1 2 3)]) (equal? chapter 1))}
+} -result "#f"
+
+::tcltest::test macro-6.2 {for/or macro} -body {
+    set exp [parse {(for/or ([chapter '(1 2 3)]) (equal? chapter 1))}]
+    set args [lassign $exp op]
+    # kludge to get around Tcl's list literal handling
+    if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
+    expand-macro op args ::global_env
+    printable [list $op {*}$args]
+} -result "(or (begin (define chapter 1) (equal? chapter 1)) (begin (define chapter 2) (equal? chapter 1)) (begin (define chapter 3) (equal? chapter 1)))"
+
+::tcltest::test macro-6.3 {for/or macro} -body {
+    pep {(for/or ([chapter '(1 2 3)]) (equal? chapter 1))}
+} -result "#t"
 
 TT)
 
