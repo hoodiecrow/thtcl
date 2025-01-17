@@ -312,9 +312,95 @@ proc printable {val} {
 }
 
 
-proc parse {str} {
-    return [string map {( \{ ) \} [ \{ ] \} #t true #f false} $str]
+proc expandquotes {str} {
+    if {"'" in [split $str {}]} {
+        set res ""
+        # (foo bar 'qux)
+        # (foo '(bar qux))
+        # ''foo            ==> (quote 'foo)
+        #  '(foo 'bar)     ==> (quote (foo 'bar))
+        set state text
+        for {set p 0} {$p < [string length $str]} {incr p} {
+            switch $state {
+                text {
+                    set c [string index $str $p]
+                    if {$c eq "'"} {
+                        set state quote
+                        append res "(quote "
+                    } else {
+                        append res $c
+                    }
+                }
+                quote {
+                    set c [string index $str $p]
+                    if {$c eq "("} {
+                        set state quotep
+                        set pcount 1
+                        append res $c
+                    } elseif {$c eq "\["} {
+                        set state quoteb
+                        set bcount 1
+                        append res $c
+                    } else {
+                        set state quotew
+                        append res $c
+                    }
+                }
+                quotep {
+                    set c [string index $str $p]
+                    if {$c eq "("} {
+                        incr pcount
+                    } elseif {$c eq ")"} {
+                        incr pcount -1
+                        if {$pcount == 0} {
+                            append res $c )
+                            set state text
+                        }
+                    } else {
+                        append res $c
+                    }
+
+                }
+                quoteb {
+                    set c [string index $str $p]
+                    if {$c eq "\["} {
+                        incr bcount
+                    } elseif {$c eq "\]"} {
+                        incr bcount -1
+                        if {$pcount == 0} {
+                            append res $c )
+                            set state text
+                        }
+                    } else {
+                        append res $c
+                    }
+
+                }
+                quotew {
+                    set c [string index $str $p]
+                    if {[string is space $c]} {
+                        append res ) $c
+                        set state text
+                    } else {
+                        append res $c
+                    }
+                }
+                default {
+                }
+            }
+        }
+        if {$state eq "quotew"} {
+            append res )
+        }
+        return $res
+    }
+    return $str
 }
+
+proc parse {str} {
+    return [string map {( \{ ) \} [ \{ ] \} #t true #f false} [expandquotes $str]]
+}
+
 
 
 proc repl {{prompt "Thtcl> "}} {
@@ -364,21 +450,21 @@ proc do-cond {clauses} {
     }
 }
 
-proc do-case {value clauses} {
+proc do-case {keyv clauses} {
     if {[llength $clauses] == 1} {
         lassign [lindex $clauses 0] keylist body
         if {$keylist eq "else"} {
             set keylist true
         } else {
-            set keylist [concat or [lmap key $keylist {list eqv? $value [list quote $key]}]]
+            set keylist [concat or [lmap key $keylist {list eqv? $keyv [list quote $key]}]]
         }
-        return [list if $keylist $body [do-case $value [lrange $clauses 1 end]]]
+        return [list if $keylist $body [do-case $keyv [lrange $clauses 1 end]]]
     } elseif {[llength $clauses] < 1} {
         return [list quote {}]
     } else {
         lassign [lindex $clauses 0] keylist body
-        set keylist [concat or [lmap key $keylist {list eqv? $value [list quote $key]}]]
-        return [list if $keylist $body [do-case $value [lrange $clauses 1 end]]]
+        set keylist [concat or [lmap key $keylist {list eqv? $keyv [list quote $key]}]]
+        return [list if $keylist $body [do-case $keyv [lrange $clauses 1 end]]]
     }
 }
 
@@ -397,9 +483,8 @@ proc expand-macro {n1 n2 env} {
             set args [lassign [do-cond $args] op]
         }
         case {
-            set clauses [lassign $args value]
-            set v [evaluate $value $env]
-            set args [lassign [do-case $value $clauses] op]
+            set clauses [lassign $args key]
+            set args [lassign [do-case $key $clauses] op]
         }
         for {
             set iter 0

@@ -188,5 +188,18 @@ source thtcl-level-1.tcl
     printable [evaluate [parse "(list-ref (list 1 2 3) 1)"]]
 } "2"
 
+::tcltest::test repl-1.0 {expandquotes} {
+    parse "'foo"
+} "{quote foo}"
+
+::tcltest::test repl-1.1 {expandquotes} {
+    parse "'(foo bar)"
+} "{quote {foo bar}}"
+
+::tcltest::test repl-1.2 {expandquotes} {
+    parse "foo 'bar"
+} "foo {quote bar}"
+
+
 
 ::tcltest::cleanupTests
