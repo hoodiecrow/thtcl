@@ -31,7 +31,7 @@ proc evaluate {exp {env ::global_env}} {
     if {[::thtcl::atom? $exp]} {
         if {[::thtcl::symbol? $exp]} { # variable reference
             return [lookup $exp $env]
-        } elseif {[::thtcl::number? $exp] || [string is true $exp] || [string is false $exp] || $exp in {#f #t}} { # constant literal
+        } elseif {[::thtcl::number? $exp] || [string is boolean $exp]} { # constant literal
             return $exp
         } else {
             error [format "cannot evaluate %s" $exp]

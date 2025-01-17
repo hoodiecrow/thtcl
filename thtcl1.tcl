@@ -54,7 +54,7 @@ proc evaluate {exp {env ::standard_env}} {
     if {[::thtcl::atom? $exp]} {
         if {[::thtcl::symbol? $exp]} { # variable reference
             return [lookup $exp $env]
-        } elseif {[::thtcl::number? $exp] || [string is true $exp] || [string is false $exp] || $exp in {#f #t}} { # constant literal
+        } elseif {[::thtcl::number? $exp] || [string is boolean $exp]} { # constant literal
             return $exp
         } else {
             error [format "cannot evaluate %s" $exp]
@@ -86,6 +86,15 @@ TT(
 ::tcltest::test thtcl1-1.0 {calculate circle area} {
     printable [evaluate [parse "(begin (define r 10) (* pi (* r r)))"]]
 } 314.1592653589793
+
+::tcltest::test thtcl1-1.1 {boolean literals} {
+    printable [evaluate [parse "#t"]]
+} "#t"
+
+::tcltest::test thtcl1-1.2 {boolean literals} {
+    printable [evaluate [parse "#f"]]
+} "#f"
+
 TT)
 
 MD(
