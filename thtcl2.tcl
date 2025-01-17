@@ -338,16 +338,6 @@ MD(
 #### Foo
 
 2025-01-17: code passes 100 tests. Go me.
-
-#### Benchmark
-
-On my slow computer, the following takes 0.012 seconds to run. Lispy does it in 0.003
-seconds on Norvig's probably significantly faster machine. If anyone would care to
-compare this version with the Python one I'm all ears (plewerin x gmail com).
-
-```
-evaluate [parse "(define fact (lambda (n) (if (<= n 1) 1 (* n (fact (- n 1))))))"]
-time {evaluate [parse "(fact 100)"]} 10
-```
 MD)
+
 

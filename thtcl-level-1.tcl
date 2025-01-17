@@ -1,5 +1,6 @@
 
 
+
 proc evaluate {exp {env ::standard_env}} {
     if {[::thtcl::atom? $exp]} {
         if {[::thtcl::symbol? $exp]} { # variable reference

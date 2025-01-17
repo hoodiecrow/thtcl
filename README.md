@@ -15,6 +15,17 @@ or __thtcl-level-2.tcl__. Use the __repl__ command to run a dialog loop with the
 
 For A.
 
+#### Benchmark
+
+On my cheap computer, the following code takes 0.012 seconds to run. Lispy does it in 0.003
+seconds on Norvig's probably significantly faster machine. If anyone would care to
+compare this code with the Python one I'm all ears (plewerin x gmail com).
+
+```
+evaluate [parse "(define fact (lambda (n) (if (<= n 1) 1 (* n (fact (- n 1))))))"]
+time {evaluate [parse "(fact 100)"]} 10
+```
+
 ## Level 1 Thtcl Calculator
 
 The first level of the interpreter has a reduced set of syntactic forms and a single
@@ -680,16 +691,6 @@ proc invoke {op vals} {
 
 2025-01-17: code passes 100 tests. Go me.
 
-#### Benchmark
-
-On my slow computer, the following takes 0.012 seconds to run. Lispy does it in 0.003
-seconds on Norvig's probably significantly faster machine. If anyone would care to
-compare this version with the Python one I'm all ears (plewerin x gmail com).
-
-```
-evaluate [parse "(define fact (lambda (n) (if (<= n 1) 1 (* n (fact (- n 1))))))"]
-time {evaluate [parse "(fact 100)"]} 10
-```
 
 
 ### Environment class and objects
