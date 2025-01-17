@@ -3,9 +3,8 @@
 proc evaluate {exp {env ::global_env}} {
     if {[::thtcl::atom? $exp]} {
         if {[::thtcl::symbol? $exp]} { # variable reference
-
             return [lookup $exp $env]
-        } elseif {[::thtcl::number? $exp]} { # constant literal
+        } elseif {[::thtcl::number? $exp] || [string is true $exp] || [string is false $exp] || $exp in {#f #t}} { # constant literal
             return $exp
         } else {
             error [format "cannot evaluate %s" $exp]
@@ -161,7 +160,7 @@ proc deg->rad {arg} { expr {$arg * 3.1415926535897931 / 180} }
 
 proc eq? {a b} { boolexpr {$a eq $b} }
 
-proc eqv? {a b} { boolexpr {$a && $b || !$a && !$b || ([string is double $a] && [string is double $b]) && $a == $b} || $a eq $b || $a eq "" && $b eq "" }
+proc eqv? {a b} { boolexpr {([string is double $a] && [string is double $b]) && $a == $b || $a eq $b || $a eq "" && $b eq ""} }
 
 proc equal? {a b} { boolexpr {[printable $a] eq [printable $b]} }
 
@@ -175,7 +174,7 @@ proc number? {val} { boolexpr {[string is double $val]} }
 
 proc rad->deg {arg} { expr {$arg * 180 / 3.1415926535897931} }
 
-proc symbol? {exp} { boolexpr {[atom? $exp] && ![string is double $exp]} }
+proc symbol? {exp} { boolexpr {[atom? $exp] && ![string is double $exp] && $exp ni {#t #f true false}} }
 
 proc zero? {val} { if {![string is double $val]} {error "NUMBER expected (zero? [printable $val])"} ; boolexpr {$val == 0} }
 
@@ -314,7 +313,7 @@ proc printable {val} {
 
 
 proc parse {str} {
-    return [string map {( \{ ) \} [ \{ ] \}} $str]
+    return [string map {( \{ ) \} [ \{ ] \} #t true #f false} $str]
 }
 
 
@@ -365,6 +364,24 @@ proc do-cond {clauses} {
     }
 }
 
+proc do-case {value clauses} {
+    if {[llength $clauses] == 1} {
+        lassign [lindex $clauses 0] keylist body
+        if {$keylist eq "else"} {
+            set keylist true
+        } else {
+            set keylist [concat or [lmap key $keylist {list eqv? $value [list quote $key]}]]
+        }
+        return [list if $keylist $body [do-case $value [lrange $clauses 1 end]]]
+    } elseif {[llength $clauses] < 1} {
+        return [list quote {}]
+    } else {
+        lassign [lindex $clauses 0] keylist body
+        set keylist [concat or [lmap key $keylist {list eqv? $value [list quote $key]}]]
+        return [list if $keylist $body [do-case $value [lrange $clauses 1 end]]]
+    }
+}
+
 proc expand-macro {n1 n2 env} {
     upvar $n1 op $n2 args
     switch $op {
@@ -380,26 +397,9 @@ proc expand-macro {n1 n2 env} {
             set args [lassign [do-cond $args] op]
         }
         case {
-            set clauses [lassign $args keyform]
-            set testkey [evaluate $keyform $env]
-            foreach clause [lrange $clauses 0 end-1] {
-                lassign $clause keylist body
-                if {$testkey in $keylist} {
-                    set args [lassign $body op]
-                    return
-                }
-            }
-            set clause [lindex $clauses end]
-            lassign $clause keylist body
-            if {$keylist eq "else"} {
-                set args [lassign $body op]
-            } else {
-                if {$testkey in $keylist} {
-                    set args [lassign $body op]
-                } else {
-                    set args [lassign list op]
-                }
-            }
+            set clauses [lassign $args value]
+            set v [evaluate $value $env]
+            set args [lassign [do-case $value $clauses] op]
         }
         for {
             set iter 0

@@ -25,7 +25,7 @@ processes the following syntactic forms:
 | Syntactic form | Syntax | Semantics |
 |----------------|--------|-----------|
 | [variable reference](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.1) | _variable_ | An expression consisting of a identifier is a variable reference. It evaluates to the value the identifier is bound to. An unbound identifier can't be evaluated. Example: `r` ⇒ 10 if _r_ is bound to 10 |
-| [constant literal](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.2) | _number_ | Numerical constants evaluate to themselves. Example: `99` ⇒ 99 |
+| [constant literal](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.2) | _number_ or _boolean_ | Numerical and boolean constants evaluate to themselves. Example: `99` ⇒ 99 |
 | [sequence](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.2.3) | __begin__ _expression_... | The _expressions_ are evaluated sequentially, and the value of the last <expression> is returned. Example: `(begin (define r 10) (* r r))` ⇒ the square of 10 |
 | [conditional](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.5) | __if__ _test_ _conseq_ _alt_ | An __if__ expression is evaluated like this: first, _test_ is evaluated. If it yields a true value, then _conseq_ is evaluated and its value is returned. Otherwise _alt_ is evaluated and its value is returned. Example: `(if (> 99 100) (* 2 2) (+ 2 4))` ⇒ 6 |
 | [definition](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-8.html#%_sec_5.2) | __define__ _identifier_ _expression_ | A definition binds the _identifier_ to the value of the _expression_. A definition does not evaluate to anything. Example: `(define r 10)` ⇒ |
@@ -68,7 +68,7 @@ proc evaluate {exp {env ::standard_env}} {
     if {[::thtcl::atom? $exp]} {
         if {[::thtcl::symbol? $exp]} { # variable reference
             return [lookup $exp $env]
-        } elseif {[::thtcl::number? $exp]} { # constant literal
+        } elseif {[::thtcl::number? $exp] || [string is true $exp] || [string is false $exp] || $exp in {#f #t}} { # constant literal
             return $exp
         } else {
             error [format "cannot evaluate %s" $exp]
@@ -279,7 +279,7 @@ proc deg->rad {arg} { expr {$arg * 3.1415926535897931 / 180} }
 
 proc eq? {a b} { boolexpr {$a eq $b} }
 
-proc eqv? {a b} { boolexpr {$a && $b || !$a && !$b || ([string is double $a] && [string is double $b]) && $a == $b} || $a eq $b || $a eq "" && $b eq "" }
+proc eqv? {a b} { boolexpr {([string is double $a] && [string is double $b]) && $a == $b || $a eq $b || $a eq "" && $b eq ""} }
 
 proc equal? {a b} { boolexpr {[printable $a] eq [printable $b]} }
 
@@ -293,7 +293,7 @@ proc number? {val} { boolexpr {[string is double $val]} }
 
 proc rad->deg {arg} { expr {$arg * 180 / 3.1415926535897931} }
 
-proc symbol? {exp} { boolexpr {[atom? $exp] && ![string is double $exp]} }
+proc symbol? {exp} { boolexpr {[atom? $exp] && ![string is double $exp] && $exp ni {#t #f true false}} }
 
 proc zero? {val} { if {![string is double $val]} {error "NUMBER expected (zero? [printable $val])"} ; boolexpr {$val == 0} }
 
@@ -382,11 +382,11 @@ proc printable {val} {
 }
 ```
 
-__parse__ simply exchanges parentheses (and square brackets) for braces.
+__parse__ simply exchanges parentheses (and square brackets) for braces and the Scheme boolean constant for Tcl's.
 
 ```
 proc parse {str} {
-    return [string map {( \{ ) \} [ \{ ] \}} $str]
+    return [string map {( \{ ) \} [ \{ ] \} #t true #f false} $str]
 }
 ```
 
@@ -419,7 +419,7 @@ __thtcl-level-2.tcl__, and recognizes and processes the following syntactic form
 | Syntactic form | Syntax | Semantics |
 |----------------|--------|-----------|
 | [variable reference](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.1) | _variable_ | An expression consisting of a identifier is a variable reference. It evaluates to the value the identifier is bound to. An unbound identifier can't be evaluated. Example: `r` ⇒ 10 if _r_ is bound to 10 |
-| [constant literal](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.2) | _number_ | Numerical constants evaluate to themselves. Example: `99` ⇒ 99 |
+| [constant literal](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.2) | _number_ or _boolean_ | Numerical and boolean constants evaluate to themselves. Example: `99` ⇒ 99 |
 | [quotation](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.2) | __quote__ _datum_ | (__quote__ _datum_) evaluates to _datum_, making it a constant. Example: `(quote r)` ⇒ r
 | [sequence](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.2.3) | __begin__ _expression_... | The _expression_ s are evaluated sequentially, and the value of the last <expression> is returned. Example: `(begin (define r 10) (* r r))` ⇒ the square of 10 |
 | [conditional](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.5) | __if__ _test_ _conseq_ _alt_ | An __if__ expression is evaluated like this: first, _test_ is evaluated. If it yields a true value, then _conseq_ is evaluated and its value is returned. Otherwise _alt_ is evaluated and its value is returned. Example: `(if (> 99 100) (* 2 2) (+ 2 4))` ⇒ 6 |
@@ -437,9 +437,8 @@ See the part about macros below.
 proc evaluate {exp {env ::global_env}} {
     if {[::thtcl::atom? $exp]} {
         if {[::thtcl::symbol? $exp]} { # variable reference
-
             return [lookup $exp $env]
-        } elseif {[::thtcl::number? $exp]} { # constant literal
+        } elseif {[::thtcl::number? $exp] || [string is true $exp] || [string is false $exp] || $exp in {#f #t}} { # constant literal
             return $exp
         } else {
             error [format "cannot evaluate %s" $exp]
@@ -780,6 +779,24 @@ proc do-cond {clauses} {
     }
 }
 
+proc do-case {value clauses} {
+    if {[llength $clauses] == 1} {
+        lassign [lindex $clauses 0] keylist body
+        if {$keylist eq "else"} {
+            set keylist true
+        } else {
+            set keylist [concat or [lmap key $keylist {list eqv? $value [list quote $key]}]]
+        }
+        return [list if $keylist $body [do-case $value [lrange $clauses 1 end]]]
+    } elseif {[llength $clauses] < 1} {
+        return [list quote {}]
+    } else {
+        lassign [lindex $clauses 0] keylist body
+        set keylist [concat or [lmap key $keylist {list eqv? $value [list quote $key]}]]
+        return [list if $keylist $body [do-case $value [lrange $clauses 1 end]]]
+    }
+}
+
 proc expand-macro {n1 n2 env} {
     upvar $n1 op $n2 args
     switch $op {
@@ -795,26 +812,9 @@ proc expand-macro {n1 n2 env} {
             set args [lassign [do-cond $args] op]
         }
         case {
-            set clauses [lassign $args keyform]
-            set testkey [evaluate $keyform $env]
-            foreach clause [lrange $clauses 0 end-1] {
-                lassign $clause keylist body
-                if {$testkey in $keylist} {
-                    set args [lassign $body op]
-                    return
-                }
-            }
-            set clause [lindex $clauses end]
-            lassign $clause keylist body
-            if {$keylist eq "else"} {
-                set args [lassign $body op]
-            } else {
-                if {$testkey in $keylist} {
-                    set args [lassign $body op]
-                } else {
-                    set args [lassign list op]
-                }
-            }
+            set clauses [lassign $args value]
+            set v [evaluate $value $env]
+            set args [lassign [do-case $value $clauses] op]
         }
         for {
             set iter 0

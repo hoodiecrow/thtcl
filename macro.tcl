@@ -48,6 +48,24 @@ proc do-cond {clauses} {
     }
 }
 
+proc do-case {value clauses} {
+    if {[llength $clauses] == 1} {
+        lassign [lindex $clauses 0] keylist body
+        if {$keylist eq "else"} {
+            set keylist true
+        } else {
+            set keylist [concat or [lmap key $keylist {list eqv? $value [list quote $key]}]]
+        }
+        return [list if $keylist $body [do-case $value [lrange $clauses 1 end]]]
+    } elseif {[llength $clauses] < 1} {
+        return [list quote {}]
+    } else {
+        lassign [lindex $clauses 0] keylist body
+        set keylist [concat or [lmap key $keylist {list eqv? $value [list quote $key]}]]
+        return [list if $keylist $body [do-case $value [lrange $clauses 1 end]]]
+    }
+}
+
 proc expand-macro {n1 n2 env} {
     upvar $n1 op $n2 args
     switch $op {
@@ -63,26 +81,9 @@ proc expand-macro {n1 n2 env} {
             set args [lassign [do-cond $args] op]
         }
         case {
-            set clauses [lassign $args keyform]
-            set testkey [evaluate $keyform $env]
-            foreach clause [lrange $clauses 0 end-1] {
-                lassign $clause keylist body
-                if {$testkey in $keylist} {
-                    set args [lassign $body op]
-                    return
-                }
-            }
-            set clause [lindex $clauses end]
-            lassign $clause keylist body
-            if {$keylist eq "else"} {
-                set args [lassign $body op]
-            } else {
-                if {$testkey in $keylist} {
-                    set args [lassign $body op]
-                } else {
-                    set args [lassign list op]
-                }
-            }
+            set clauses [lassign $args value]
+            set v [evaluate $value $env]
+            set args [lassign [do-case $value $clauses] op]
         }
         for {
             set iter 0
@@ -218,16 +219,24 @@ TT(
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
     expand-macro op args ::global_env
     printable [list $op {*}$args]
-} "(quote composite)"
+} "(if (or (eqv? (* 2 3) (quote 2)) (eqv? (* 2 3) (quote 3)) (eqv? (* 2 3) (quote 5)) (eqv? (* 2 3) (quote 7))) (quote prime) (if (or (eqv? (* 2 3) (quote 1)) (eqv? (* 2 3) (quote 4)) (eqv? (* 2 3) (quote 6)) (eqv? (* 2 3) (quote 8)) (eqv? (* 2 3) (quote 9))) (quote composite) (quote ())))"
 
 ::tcltest::test macro-3.1 {case macro} {
+    printable [evaluate [parse "(case (* 2 3) ((2 3 5 7) (quote prime)) ((1 4 6 8 9) (quote composite)))"]]
+} "composite"
+
+::tcltest::test macro-3.2 {case macro} {
     set exp [parse "(case (car (quote (c d))) ((a e i o u) (quote vowel)) ((w y) (quote semivowel)) (else (quote consonant)))"]
     set args [lassign $exp op]
     # kludge to get around Tcl's list literal handling
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
     expand-macro op args ::global_env
     printable [list $op {*}$args]
-} "(quote consonant)"
+} "(if (or (eqv? (car (quote (c d))) (quote a)) (eqv? (car (quote (c d))) (quote e)) (eqv? (car (quote (c d))) (quote i)) (eqv? (car (quote (c d))) (quote o)) (eqv? (car (quote (c d))) (quote u))) (quote vowel) (if (or (eqv? (car (quote (c d))) (quote w)) (eqv? (car (quote (c d))) (quote y))) (quote semivowel) (if #t (quote consonant) (quote ()))))"
+
+::tcltest::test macro-3.3 {case macro} {
+    printable [evaluate [parse "(case (car (quote (c d))) ((a e i o u) (quote vowel)) ((w y) (quote semivowel)) (else (quote consonant)))"]]
+} "consonant"
 TT)
 
 TT(

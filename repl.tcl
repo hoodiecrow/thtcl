@@ -34,12 +34,12 @@ proc printable {val} {
 CB
 
 MD(
-__parse__ simply exchanges parentheses (and square brackets) for braces.
+__parse__ simply exchanges parentheses (and square brackets) for braces and the Scheme boolean constant for Tcl's.
 MD)
 
 CB
 proc parse {str} {
-    return [string map {( \{ ) \} [ \{ ] \}} $str]
+    return [string map {( \{ ) \} [ \{ ] \} #t true #f false} $str]
 }
 CB
 

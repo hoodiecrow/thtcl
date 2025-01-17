@@ -186,16 +186,24 @@ source thtcl-level-2.tcl
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
     expand-macro op args ::global_env
     printable [list $op {*}$args]
-} "(quote composite)"
+} "(if (or (eqv? (* 2 3) (quote 2)) (eqv? (* 2 3) (quote 3)) (eqv? (* 2 3) (quote 5)) (eqv? (* 2 3) (quote 7))) (quote prime) (if (or (eqv? (* 2 3) (quote 1)) (eqv? (* 2 3) (quote 4)) (eqv? (* 2 3) (quote 6)) (eqv? (* 2 3) (quote 8)) (eqv? (* 2 3) (quote 9))) (quote composite) (quote ())))"
 
 ::tcltest::test macro-3.1 {case macro} {
+    printable [evaluate [parse "(case (* 2 3) ((2 3 5 7) (quote prime)) ((1 4 6 8 9) (quote composite)))"]]
+} "composite"
+
+::tcltest::test macro-3.2 {case macro} {
     set exp [parse "(case (car (quote (c d))) ((a e i o u) (quote vowel)) ((w y) (quote semivowel)) (else (quote consonant)))"]
     set args [lassign $exp op]
     # kludge to get around Tcl's list literal handling
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
     expand-macro op args ::global_env
     printable [list $op {*}$args]
-} "(quote consonant)"
+} "(if (or (eqv? (car (quote (c d))) (quote a)) (eqv? (car (quote (c d))) (quote e)) (eqv? (car (quote (c d))) (quote i)) (eqv? (car (quote (c d))) (quote o)) (eqv? (car (quote (c d))) (quote u))) (quote vowel) (if (or (eqv? (car (quote (c d))) (quote w)) (eqv? (car (quote (c d))) (quote y))) (quote semivowel) (if #t (quote consonant) (quote ()))))"
+
+::tcltest::test macro-3.3 {case macro} {
+    printable [evaluate [parse "(case (car (quote (c d))) ((a e i o u) (quote vowel)) ((w y) (quote semivowel)) (else (quote consonant)))"]]
+} "consonant"
 
 
 ::tcltest::test macro-4.0 {for macro} -body {

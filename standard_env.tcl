@@ -124,7 +124,7 @@ proc deg->rad {arg} { expr {$arg * 3.1415926535897931 / 180} }
 
 proc eq? {a b} { boolexpr {$a eq $b} }
 
-proc eqv? {a b} { boolexpr {$a && $b || !$a && !$b || ([string is double $a] && [string is double $b]) && $a == $b} || $a eq $b || $a eq "" && $b eq "" }
+proc eqv? {a b} { boolexpr {([string is double $a] && [string is double $b]) && $a == $b || $a eq $b || $a eq "" && $b eq ""} }
 
 proc equal? {a b} { boolexpr {[printable $a] eq [printable $b]} }
 
@@ -138,7 +138,7 @@ proc number? {val} { boolexpr {[string is double $val]} }
 
 proc rad->deg {arg} { expr {$arg * 180 / 3.1415926535897931} }
 
-proc symbol? {exp} { boolexpr {[atom? $exp] && ![string is double $exp]} }
+proc symbol? {exp} { boolexpr {[atom? $exp] && ![string is double $exp] && $exp ni {#t #f true false}} }
 
 proc zero? {val} { if {![string is double $val]} {error "NUMBER expected (zero? [printable $val])"} ; boolexpr {$val == 0} }
 
