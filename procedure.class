@@ -22,7 +22,12 @@ oo::class create Procedure {
 	if {[llength $parms] != [llength $args]} {
 	    error "Wrong number of arguments passed to procedure"
 	}
-        evaluate $body [Environment new $parms $args $env]
+	set newenv [Environment new $parms $args $env]
+	set res {}
+	foreach expr $body {
+            set res [evaluate $expr $newenv]
+	}
+	return $res
     }
 }
 CB

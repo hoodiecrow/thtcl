@@ -40,8 +40,8 @@ proc evaluate {exp {env ::global_env}} {
             return [update! $var [evaluate $expr $env] $env]
         }
         lambda { # procedure definition
-            lassign $args formals expr
-            return [Procedure new $formals $expr $env]
+            set body [lassign $args formals]
+            return [Procedure new $formals $body $env]
         }
         default { # procedure invocation
             return [invoke [evaluate $op $env] [lmap arg $args {evaluate $arg $env}]]
@@ -278,7 +278,12 @@ oo::class create Procedure {
 	if {[llength $parms] != [llength $args]} {
 	    error "Wrong number of arguments passed to procedure"
 	}
-        evaluate $body [Environment new $parms $args $env]
+	set newenv [Environment new $parms $args $env]
+	set res {}
+	foreach expr $body {
+            set res [evaluate $expr $newenv]
+	}
+	return $res
     }
 }
 
@@ -405,27 +410,27 @@ proc do-cond {clauses} {
     if {[llength $clauses] < 1} {
         return [list quote {}]
     } else {
-        lassign [lindex $clauses 0] pred body
+        set body [lassign [lindex $clauses 0] pred]
         if {$body eq {}} {set body $pred}
-        return [list if $pred $body [do-cond [lrange $clauses 1 end]]]
+        return [list if $pred [list begin {*}$body] [do-cond [lrange $clauses 1 end]]]
     }
 }
 
 proc do-case {keyv clauses} {
     if {[llength $clauses] == 1} {
-        lassign [lindex $clauses 0] keylist body
+        set body [lassign [lindex $clauses 0] keylist]
         if {$keylist eq "else"} {
             set keylist true
         } else {
             set keylist [concat or [lmap key $keylist {list eqv? $keyv [list quote $key]}]]
         }
-        return [list if $keylist $body [do-case $keyv [lrange $clauses 1 end]]]
+        return [list if $keylist [list begin {*}$body] [do-case $keyv [lrange $clauses 1 end]]]
     } elseif {[llength $clauses] < 1} {
         return [list quote {}]
     } else {
-        lassign [lindex $clauses 0] keylist body
+        set body [lassign [lindex $clauses 0] keylist]
         set keylist [concat or [lmap key $keylist {list eqv? $keyv [list quote $key]}]]
-        return [list if $keylist $body [do-case $keyv [lrange $clauses 1 end]]]
+        return [list if $keylist [list begin {*}$body] [do-case $keyv [lrange $clauses 1 end]]]
     }
 }
 
@@ -433,11 +438,11 @@ proc expand-macro {n1 n2 env} {
     upvar $n1 op $n2 args
     switch $op {
         let {
-            lassign $args bindings body
+            set body [lassign $args bindings]
             foreach binding $bindings {
                 dict set vars {*}$binding
             }
-            set op [list lambda [dict keys $vars] $body]
+            set op [list lambda [dict keys $vars] {*}$body]
             set args [dict values $vars]
         }
         cond {
@@ -449,7 +454,7 @@ proc expand-macro {n1 n2 env} {
         }
         for {
             #single-clause
-            lassign $args clauses body
+            set body [lassign $args clauses]
             lassign $clauses clause
             lassign $clause id seq
             if {[::thtcl::number? $seq]} {
@@ -459,14 +464,14 @@ proc expand-macro {n1 n2 env} {
             }
             set res {}
             foreach v $seq {
-                lappend res [list begin [list define $id $v] $body]
+                lappend res [list begin [list define $id $v] {*}$body]
             }
             lappend res [list quote {}]
             set args [lassign [list begin {*}$res] op]
         }
         for/list {
             #single-clause
-            lassign $args clauses body
+            set body [lassign $args clauses]
             lassign $clauses clause
             lassign $clause id seq
             if {[::thtcl::number? $seq]} {
@@ -476,14 +481,14 @@ proc expand-macro {n1 n2 env} {
             }
             set res {}
             foreach v $seq {
-                lappend res [list begin [list define $id $v] [list set! res [list append res $body]]]
+                lappend res [list begin [list define $id $v] [list set! res [list append res [list begin {*}$body]]]]
             }
             lappend res res
             set args [lassign [list begin [list define res {}] {*}$res] op]
         }
         for/and {
             #single-clause
-            lassign $args clauses body
+            set body [lassign $args clauses]
             lassign $clauses clause
             lassign $clause id seq
             if {[::thtcl::number? $seq]} {
@@ -492,13 +497,13 @@ proc expand-macro {n1 n2 env} {
                 set seq [evaluate $seq $env]
             }
             foreach v $seq {
-                lappend res [list begin [list define $id $v] $body]
+                lappend res [list begin [list define $id $v] [list begin {*}$body]]
             }
             set args [lassign [list and {*}$res] op]
         }
         for/or {
             #single-clause
-            lassign $args clauses body
+            set body [lassign $args clauses]
             lassign $clauses clause
             lassign $clause id seq
             if {[::thtcl::number? $seq]} {
@@ -507,7 +512,7 @@ proc expand-macro {n1 n2 env} {
                 set seq [evaluate $seq $env]
             }
             foreach v $seq {
-                lappend res [list begin [list define $id $v] $body]
+                lappend res [list begin [list define $id $v] [list begin {*}$body]]
             }
             set args [lassign [list or {*}$res] op]
         }

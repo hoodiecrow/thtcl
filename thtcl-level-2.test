@@ -90,12 +90,17 @@ source thtcl-level-2.tcl
     pep "(lambda (r) (* r r))"
 } -match regexp -result "::oo::Obj\\d+"
 
+::tcltest::test thtcl2-8.1 {procedure with two expressions} -body {
+    pep "(define f (lambda () (define r 20) (* r r)))"
+    pep "(f)"
+} -match regexp -result "400"
+
 ::tcltest::test thtcl2-9.0 {symbol?} {
     pep "(symbol? (quote foo99))"
 } "#t"
 
 ::tcltest::test thtcl2-10.0 {shadowing} {
-    pep "(begin (define r 10) (define f (lambda (r) set! r 20)) r)"
+    pep "(begin (define r 10) (define f (lambda (r) (set! r 20))) (f 30) r)"
 } "10"
 
 #-constraints knownBug 
@@ -157,6 +162,23 @@ source thtcl-level-2.tcl
     printable [list $op {*}$args]
 } "((lambda (a b) (+ a 2)) 4 5)"
 
+::tcltest::test macro-1.1 {let macro} {
+    pep "(let ((a 4) (b 5)) (+ a 2))"
+} "6"
+
+::tcltest::test macro-1.2 {let macro} {
+    set exp [parse "(let ((a 4) (b 5)) (+ a 2) (- 10 b))"]
+    set args [lassign $exp op]
+    # kludge to get around Tcl's list literal handling
+    if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
+    expand-macro op args ::global_env
+    printable [list $op {*}$args]
+} "((lambda (a b) (+ a 2) (- 10 b)) 4 5)"
+
+::tcltest::test macro-1.3 {let macro} {
+    pep "(let ((a 4) (b 5)) (+ a 2) (- 10 b))"
+} "5"
+
 ::tcltest::test macro-2.0 {cond macro} {
     set exp [parse "(cond ((> 3 4) (+ 4 2)) ((> 1 2) (+ 5 5)) (#t (- 8 5)))"]
     set args [lassign $exp op]
@@ -164,7 +186,7 @@ source thtcl-level-2.tcl
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
     expand-macro op args ::global_env
     printable [list $op {*}$args]
-} "(if (> 3 4) (+ 4 2) (if (> 1 2) (+ 5 5) (if #t (- 8 5) (quote ()))))"
+} "(if (> 3 4) (begin (+ 4 2)) (if (> 1 2) (begin (+ 5 5)) (if #t (begin (- 8 5)) (quote ()))))"
 
 ::tcltest::test macro-2.1 {cond macro} {
     pep "(cond ((> 3 4) (+ 4 2)) ((> 1 2) (+ 5 5)) (#t (- 8 5)))"
@@ -177,11 +199,21 @@ source thtcl-level-2.tcl
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
     expand-macro op args ::global_env
     printable [list $op {*}$args]
-} "(if (> 3 4) (+ 4 2) (if (> 1 2) (+ 5 5) (quote ())))"
+} "(if (> 3 4) (begin (+ 4 2)) (if (> 1 2) (begin (+ 5 5)) (quote ())))"
 
 ::tcltest::test macro-2.3 {cond macro} {
     pep "(cond ((> 3 4) (+ 4 2)) ((> 1 2) (+ 5 5)))"
 } ""
+
+::tcltest::test macro-2.4 {cond macro} {
+    set exp [parse "(cond ((> 3 4) (+ 4 2) (+ 3 5)) ((> 1 2) (+ 5 5)))"]
+    set args [lassign $exp op]
+    # kludge to get around Tcl's list literal handling
+    if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
+    expand-macro op args ::global_env
+    printable [list $op {*}$args]
+} "(if (> 3 4) (begin (+ 4 2) (+ 3 5)) (if (> 1 2) (begin (+ 5 5)) (quote ())))"
+
 
 ::tcltest::test macro-3.0 {case macro} {
     set exp [parse "(case (* 2 3) ((2 3 5 7) (quote prime)) ((1 4 6 8 9) (quote composite)))"]
@@ -190,7 +222,7 @@ source thtcl-level-2.tcl
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
     expand-macro op args ::global_env
     printable [list $op {*}$args]
-} "(if (or (eqv? (quote 6) (quote 2)) (eqv? (quote 6) (quote 3)) (eqv? (quote 6) (quote 5)) (eqv? (quote 6) (quote 7))) (quote prime) (if (or (eqv? (quote 6) (quote 1)) (eqv? (quote 6) (quote 4)) (eqv? (quote 6) (quote 6)) (eqv? (quote 6) (quote 8)) (eqv? (quote 6) (quote 9))) (quote composite) (quote ())))"
+} "(if (or (eqv? (quote 6) (quote 2)) (eqv? (quote 6) (quote 3)) (eqv? (quote 6) (quote 5)) (eqv? (quote 6) (quote 7))) (begin (quote prime)) (if (or (eqv? (quote 6) (quote 1)) (eqv? (quote 6) (quote 4)) (eqv? (quote 6) (quote 6)) (eqv? (quote 6) (quote 8)) (eqv? (quote 6) (quote 9))) (begin (quote composite)) (quote ())))"
 
 ::tcltest::test macro-3.1 {case macro} {
     pep "(case (* 2 3) ((2 3 5 7) (quote prime)) ((1 4 6 8 9) (quote composite)))"
@@ -203,7 +235,7 @@ source thtcl-level-2.tcl
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
     expand-macro op args ::global_env
     printable [list $op {*}$args]
-} "(if (or (eqv? (quote c) (quote a)) (eqv? (quote c) (quote e)) (eqv? (quote c) (quote i)) (eqv? (quote c) (quote o)) (eqv? (quote c) (quote u))) (quote vowel) (if (or (eqv? (quote c) (quote w)) (eqv? (quote c) (quote y))) (quote semivowel) (if #t (quote consonant) (quote ()))))"
+} "(if (or (eqv? (quote c) (quote a)) (eqv? (quote c) (quote e)) (eqv? (quote c) (quote i)) (eqv? (quote c) (quote o)) (eqv? (quote c) (quote u))) (begin (quote vowel)) (if (or (eqv? (quote c) (quote w)) (eqv? (quote c) (quote y))) (begin (quote semivowel)) (if #t (begin (quote consonant)) (quote ()))))"
 
 ::tcltest::test macro-3.3 {case macro} {
     pep "(case (car (quote (c d))) ((a e i o u) (quote vowel)) ((w y) (quote semivowel)) (else (quote consonant)))"
@@ -245,7 +277,7 @@ source thtcl-level-2.tcl
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
     expand-macro op args ::global_env
     printable [list $op {*}$args]
-} -result "(begin (define res ()) (begin (define i 1) (set! res (append res (* i i)))) (begin (define i 2) (set! res (append res (* i i)))) (begin (define i 3) (set! res (append res (* i i)))) res)"
+} -result "(begin (define res ()) (begin (define i 1) (set! res (append res (begin (* i i))))) (begin (define i 2) (set! res (append res (begin (* i i))))) (begin (define i 3) (set! res (append res (begin (* i i))))) res)"
 
 ::tcltest::test macro-5.1 {for/list macro} -body {
     pep {(for/list ([i (quote (1 2 3))]) (* i i))}
@@ -258,7 +290,7 @@ source thtcl-level-2.tcl
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
     expand-macro op args ::global_env
     printable [list $op {*}$args]
-} -result "(begin (define res ()) (begin (define i 1) (set! res (append res (* i i)))) (begin (define i 2) (set! res (append res (* i i)))) (begin (define i 3) (set! res (append res (* i i)))) res)"
+} -result "(begin (define res ()) (begin (define i 1) (set! res (append res (begin (* i i))))) (begin (define i 2) (set! res (append res (begin (* i i))))) (begin (define i 3) (set! res (append res (begin (* i i))))) res)"
 
 ::tcltest::test macro-5.2 {for/list macro} -body {
     pep {(for/list ([i (in-range 1 4)]) (* i i))}
@@ -271,7 +303,7 @@ source thtcl-level-2.tcl
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
     expand-macro op args ::global_env
     printable [list $op {*}$args]
-} -result "(and (begin (define chapter 1) (equal? chapter 1)) (begin (define chapter 2) (equal? chapter 1)) (begin (define chapter 3) (equal? chapter 1)))"
+} -result "(and (begin (define chapter 1) (begin (equal? chapter 1))) (begin (define chapter 2) (begin (equal? chapter 1))) (begin (define chapter 3) (begin (equal? chapter 1))))"
 
 ::tcltest::test macro-6.1 {for/and macro} -body {
     pep {(for/and ([chapter '(1 2 3)]) (equal? chapter 1))}
@@ -284,7 +316,7 @@ source thtcl-level-2.tcl
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
     expand-macro op args ::global_env
     printable [list $op {*}$args]
-} -result "(or (begin (define chapter 1) (equal? chapter 1)) (begin (define chapter 2) (equal? chapter 1)) (begin (define chapter 3) (equal? chapter 1)))"
+} -result "(or (begin (define chapter 1) (begin (equal? chapter 1))) (begin (define chapter 2) (begin (equal? chapter 1))) (begin (define chapter 3) (begin (equal? chapter 1))))"
 
 ::tcltest::test macro-6.3 {for/or macro} -body {
     pep {(for/or ([chapter '(1 2 3)]) (equal? chapter 1))}

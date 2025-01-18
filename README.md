@@ -515,10 +515,11 @@ __thtcl-level-2.tcl__, and recognizes and processes the following syntactic form
 | [sequence](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.2.3) | __begin__ _expression_... | The _expression_ s are evaluated sequentially, and the value of the last <expression> is returned. Example: `(begin (define r 10) (* r r))` ⇒ the square of 10 |
 | [conditional](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.5) | __if__ _test_ _conseq_ _alt_ | An __if__ expression is evaluated like this: first, _test_ is evaluated. If it yields a true value, then _conseq_ is evaluated and its value is returned. Otherwise _alt_ is evaluated and its value is returned. Example: `(if (> 99 100) (* 2 2) (+ 2 4))` ⇒ 6 |
 | conditional | __and__ _expression_... | (Not in Lispy) The _expressions_ are evaluated in order, and the value of the first _expression_ that evaluates to a false value is returned: any remaining expressions are not evaluated. Example `(and (= 99 99) (> 99 100) foo)` ⇒ #f
-| conditional | __or__ _expression_... | (Not in Lispy) The _expressions_ are evaluated in order, and the value of the first _expression_ that evaluates to a true value is returned: any remaining expressions are not evaluated. Example `(or (= 99 100) (< 99 100) foo)` ⇒ #t
+| conditional | __or__ _expression_... | (Not in Lispy) The _expressions_ are evaluated in order, and the value of the first _expression_ that evaluates to a non-false value is returned: any remaining expressions are not evaluated. Example `(or (= 99 100) (< 99 100) foo)` ⇒ #t
 | [definition](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-8.html#%_sec_5.2) | __define__ _identifier_ _expression_ | A definition binds the _identifier_ to the value of the _expression_. A definition does not evaluate to anything. Example: `(define r 10)` ⇒ |
 | [assignment](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.6) | __set!__ _variable_ _expression_ | _Expression_ is evaluated, and the resulting value is stored in the location to which _variable_ is bound. It is an error to assign to an unbound _identifier_. Example: `(set! r 20)` ⇒ 20 |
-| [procedure definition](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.4) | __lambda__ _formals_ _expression_ | _Formals_ should be a list of identifiers. A __lambda__ expression evaluates to a procedure. The environment in effect when the lambda expression was evaluated is remembered as part of the procedure. When the procedure is later called with some actual arguments, the environment in which the lambda expression was evaluated will be extended by binding the symbols in the formal argument list to fresh locations, the corresponding actual argument values will be stored in those locations, and the _expression_ in the body of the __lambda__ expression will be evaluated in the extended environment. Use __begin__ to have a body with more than one expression. The result of the _expression_ will be returned as the result of the procedure call. Example: `(lambda (r) (* r r))` ⇒ ::oo::Obj36010 |
+| [procedure definition](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.4) | __lambda__ _formals_ _body_ | _Formals_ is a list of identifiers. _Body_ is zero or more expressions. A __lambda__
+expression evaluates to a Procedure object. Example: `(lambda (r) (* r r))` ⇒ ::oo::Obj36010 |
 | [procedure call](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.3) | _operator_ _operand_... | If _operator_ is anything other than __quote__, __begin__, __if__, __and__, __or__, __define__, __set!__, or __lambda__, it is treated as a procedure. Evaluate _operator_ and all the _operands_, and then the resulting procedure is applied to the resulting list of argument values. Example: `(sqrt (+ 4 12))` ⇒ 4.0 |
 
 The evaluator also does a simple form of macro expansion on `op` and `args` before processing them in the big `switch`. 
@@ -565,8 +566,8 @@ proc evaluate {exp {env ::global_env}} {
             return [update! $var [evaluate $expr $env] $env]
         }
         lambda { # procedure definition
-            lassign $args formals expr
-            return [Procedure new $formals $expr $env]
+            set body [lassign $args formals]
+            return [Procedure new $formals $body $env]
         }
         default { # procedure invocation
             return [invoke [evaluate $op $env] [lmap arg $args {evaluate $arg $env}]]
@@ -623,7 +624,7 @@ proc conjunction {exps env} {
 ```
 
 `disjunction` evaluates _expressions_ in order, and the value of the first _expression_
-that evaluates to a true value is returned: any remaining _expressions_ are not evaluated.
+that evaluates to a non-false value is returned: any remaining _expressions_ are not evaluated.
 
 ```
 proc disjunction {exps env} {
@@ -798,7 +799,12 @@ oo::class create Procedure {
 	if {[llength $parms] != [llength $args]} {
 	    error "Wrong number of arguments passed to procedure"
 	}
-        evaluate $body [Environment new $parms $args $env]
+	set newenv [Environment new $parms $args $env]
+	set res {}
+	foreach expr $body {
+            set res [evaluate $expr $newenv]
+	}
+	return $res
     }
 }
 ```
@@ -809,13 +815,13 @@ goes to the closure environment.
 
 ### Macros
 
-Here's some percentage of a macro facility: macros are defined, in Tcl, in switch cases
-in __expand-macro__ and they work by modifying _op_ and _args_ inside __evaluate__.
+Here's some percentage of a macro facility: macros are defined, in Tcl, in switch cases in
+`expand-macro`. The macros take a form by looking at `op` and `args` inside `evaluate`, and
+then rewriting those variables with a new derived form.
 
-Currently, the macros `let`, `cond`, `case`, `for`, `for/list`, `for/and`, and `for/or` are defined.
-They differ somewhat from the standard ones in that the body or clause body must be a
-single form (use a __begin__ form for multiple steps of computation). The `for´ macros
-are incomplete: for instance, they only take a single clause.
+Currently, the macros `let`, `cond`, `case`, `for`, `for/list`, `for/and`, and `for/or` are
+defined.  They differ somewhat from the standard ones. The `for´ macros are incomplete: for
+instance, they only take a single clause.
 
 
 ```
@@ -823,27 +829,27 @@ proc do-cond {clauses} {
     if {[llength $clauses] < 1} {
         return [list quote {}]
     } else {
-        lassign [lindex $clauses 0] pred body
+        set body [lassign [lindex $clauses 0] pred]
         if {$body eq {}} {set body $pred}
-        return [list if $pred $body [do-cond [lrange $clauses 1 end]]]
+        return [list if $pred [list begin {*}$body] [do-cond [lrange $clauses 1 end]]]
     }
 }
 
 proc do-case {keyv clauses} {
     if {[llength $clauses] == 1} {
-        lassign [lindex $clauses 0] keylist body
+        set body [lassign [lindex $clauses 0] keylist]
         if {$keylist eq "else"} {
             set keylist true
         } else {
             set keylist [concat or [lmap key $keylist {list eqv? $keyv [list quote $key]}]]
         }
-        return [list if $keylist $body [do-case $keyv [lrange $clauses 1 end]]]
+        return [list if $keylist [list begin {*}$body] [do-case $keyv [lrange $clauses 1 end]]]
     } elseif {[llength $clauses] < 1} {
         return [list quote {}]
     } else {
-        lassign [lindex $clauses 0] keylist body
+        set body [lassign [lindex $clauses 0] keylist]
         set keylist [concat or [lmap key $keylist {list eqv? $keyv [list quote $key]}]]
-        return [list if $keylist $body [do-case $keyv [lrange $clauses 1 end]]]
+        return [list if $keylist [list begin {*}$body] [do-case $keyv [lrange $clauses 1 end]]]
     }
 }
 
@@ -851,11 +857,11 @@ proc expand-macro {n1 n2 env} {
     upvar $n1 op $n2 args
     switch $op {
         let {
-            lassign $args bindings body
+            set body [lassign $args bindings]
             foreach binding $bindings {
                 dict set vars {*}$binding
             }
-            set op [list lambda [dict keys $vars] $body]
+            set op [list lambda [dict keys $vars] {*}$body]
             set args [dict values $vars]
         }
         cond {
@@ -867,7 +873,7 @@ proc expand-macro {n1 n2 env} {
         }
         for {
             #single-clause
-            lassign $args clauses body
+            set body [lassign $args clauses]
             lassign $clauses clause
             lassign $clause id seq
             if {[::thtcl::number? $seq]} {
@@ -877,14 +883,14 @@ proc expand-macro {n1 n2 env} {
             }
             set res {}
             foreach v $seq {
-                lappend res [list begin [list define $id $v] $body]
+                lappend res [list begin [list define $id $v] {*}$body]
             }
             lappend res [list quote {}]
             set args [lassign [list begin {*}$res] op]
         }
         for/list {
             #single-clause
-            lassign $args clauses body
+            set body [lassign $args clauses]
             lassign $clauses clause
             lassign $clause id seq
             if {[::thtcl::number? $seq]} {
@@ -894,14 +900,14 @@ proc expand-macro {n1 n2 env} {
             }
             set res {}
             foreach v $seq {
-                lappend res [list begin [list define $id $v] [list set! res [list append res $body]]]
+                lappend res [list begin [list define $id $v] [list set! res [list append res [list begin {*}$body]]]]
             }
             lappend res res
             set args [lassign [list begin [list define res {}] {*}$res] op]
         }
         for/and {
             #single-clause
-            lassign $args clauses body
+            set body [lassign $args clauses]
             lassign $clauses clause
             lassign $clause id seq
             if {[::thtcl::number? $seq]} {
@@ -910,13 +916,13 @@ proc expand-macro {n1 n2 env} {
                 set seq [evaluate $seq $env]
             }
             foreach v $seq {
-                lappend res [list begin [list define $id $v] $body]
+                lappend res [list begin [list define $id $v] [list begin {*}$body]]
             }
             set args [lassign [list and {*}$res] op]
         }
         for/or {
             #single-clause
-            lassign $args clauses body
+            set body [lassign $args clauses]
             lassign $clauses clause
             lassign $clause id seq
             if {[::thtcl::number? $seq]} {
@@ -925,7 +931,7 @@ proc expand-macro {n1 n2 env} {
                 set seq [evaluate $seq $env]
             }
             foreach v $seq {
-                lappend res [list begin [list define $id $v] $body]
+                lappend res [list begin [list define $id $v] [list begin {*}$body]]
             }
             set args [lassign [list or {*}$res] op]
         }
