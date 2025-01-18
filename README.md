@@ -788,6 +788,33 @@ Currently, the macros `let`, `cond`, `case`, `and`, `or`, `for`, `for/list`, `fo
 defined.  They differ somewhat from the standard ones. The `for` macros are incomplete: for
 instance, they only take a single clause.
 
+`let` evaluates its body in an environment enriched by the symbols and values in the
+clauses. Expands to a `lambda` call.
+
+`cond` tests a series of predicates and evaluates the corresponding body if a predicate is
+true. Expands to a nested `if` construct with one level per clause, with the clause's
+predicate as condition and the clause's body as consequent, and the next if construct as
+alternate.
+
+`case` compares a key value to members of lists, evaluating the corresponding body if a 
+match is found. Expands to a similar construct as `cond`.
+
+`and` evaluates a series of expressions in order, stopping if one is false. Expands to
+nested if constructs.
+
+`or` evaluates a series of expressions in order, stopping if one is true. Expands to
+nested if constructs.
+
+`for` evaluates a body once for every member in a sequence. Expands to a series of
+begin constructs, joined by a begin.
+
+`for/list`: like `for`, but collects the results of the iteration in a list.
+
+`for/and` iterates over a sequence, stopping when the body evaluates to #f. Expands to
+a series of begin constructs, joined by the and macro.
+
+`for/or` iterates over a sequence, stopping when the body evaluates to #t. Expands to
+a series of begin constructs, joined by the or macro.
 
 ```
 proc do-cond {clauses} {
