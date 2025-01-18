@@ -36,7 +36,7 @@ proc idcheck {sym} {
             error "Macro name can't be used as a variable: $sym"
         }
     }
-    return $sym
+    set sym
 }
 CB
 

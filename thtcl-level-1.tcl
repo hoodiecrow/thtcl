@@ -35,7 +35,7 @@ proc evaluate {exp {env ::standard_env}} {
 
 
 proc lookup {var env} {
-    return [dict get [set $env] $var]
+    dict get [set $env] $var
 }
 
 
@@ -44,7 +44,7 @@ proc ebegin {exps env} {
     foreach exp $exps {
         set v [evaluate $exp $env]
     }
-    return $v
+    set v
 }
 
 
@@ -61,7 +61,7 @@ proc edefine {id expr env} {
 
 
 proc invoke {op vals} {
-    return [$op {*}$vals]
+    $op {*}$vals
 }
 
 
@@ -179,7 +179,7 @@ foreach {func impl} {append concat length llength list list print puts reverse l
 
 proc input {prompt} {
     puts -nonewline $prompt
-    return [gets stdin]
+    gets stdin
 }
 
 
@@ -187,7 +187,7 @@ proc printable {val} {
     if {[llength $val] > 1} {
         set val "($val)"
     }
-    return [string map {\{ ( \} ) true #t false #f} $val]
+    string map {\{ ( \} ) true #t false #f} $val
 }
 
 
@@ -270,7 +270,7 @@ proc expandquotes {str} {
 }
 
 proc parse {str} {
-    return [expandquotes [string map {( \{ ) \} [ \{ ] \} #t true #f false} $str]]
+    expandquotes [string map {( \{ ) \} [ \{ ] \} #t true #f false} $str]
 }
 
 
@@ -319,6 +319,6 @@ proc idcheck {sym} {
             error "Macro name can't be used as a variable: $sym"
         }
     }
-    return $sym
+    set sym
 }
 

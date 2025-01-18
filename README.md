@@ -116,7 +116,7 @@ On this level, the environment is expected to be given as a dict variable name (
 
 ```
 proc lookup {var env} {
-    return [dict get [set $env] $var]
+    dict get [set $env] $var
 }
 ```
 
@@ -130,7 +130,7 @@ proc ebegin {exps env} {
     foreach exp $exps {
         set v [evaluate $exp $env]
     }
-    return $v
+    set v
 }
 ```
 
@@ -161,7 +161,7 @@ typically returns a value.
 
 ```
 proc invoke {op vals} {
-    return [$op {*}$vals]
+    $op {*}$vals
 }
 ```
 
@@ -373,7 +373,7 @@ level's `evaluate`, and _prints_ the result after filtering it through `printabl
 ```
 proc input {prompt} {
     puts -nonewline $prompt
-    return [gets stdin]
+    gets stdin
 }
 ```
 
@@ -384,7 +384,7 @@ proc printable {val} {
     if {[llength $val] > 1} {
         set val "($val)"
     }
-    return [string map {\{ ( \} ) true #t false #f} $val]
+    string map {\{ ( \} ) true #t false #f} $val
 }
 ```
 
@@ -470,7 +470,7 @@ proc expandquotes {str} {
 }
 
 proc parse {str} {
-    return [expandquotes [string map {( \{ ) \} [ \{ ] \} #t true #f false} $str]]
+    expandquotes [string map {( \{ ) \} [ \{ ] \} #t true #f false} $str]
 }
 ```
 
@@ -582,7 +582,7 @@ or one of its outer environments.
 
 ```
 proc lookup {var env} {
-    return [[$env find $var] get $var]
+    [$env find $var] get $var
 }
 ```
 
@@ -595,7 +595,7 @@ proc ebegin {exps env} {
     foreach exp $exps {
         set v [evaluate $exp $env]
     }
-    return $v
+    set v
 }
 ```
 
@@ -618,7 +618,7 @@ proc conjunction {exps env} {
         set v [evaluate $exp $env]
         if {$v eq false} {break}
     }
-    return $v
+    set v
 }
 ```
 
@@ -632,7 +632,7 @@ proc disjunction {exps env} {
         set v [evaluate $exp $env]
         if {$v ne false} {break}
     }
-    return $v
+    set v
 }
 ```
         
@@ -652,7 +652,7 @@ in the given environment or one of its outer environments.
 proc update! {var expr env} {
     set var [idcheck $var]
     [$env find $var] set $var $expr
-    return $expr
+    set expr
 }
 ```
 
@@ -663,9 +663,9 @@ between a Procedure object and a regular proc command.
 ```
 proc invoke {op vals} {
     if {[info object isa typeof $op Procedure]} {
-        return [$op call {*}$vals]
+        $op call {*}$vals
     } else {
-        return [$op {*}$vals]
+        $op {*}$vals
     }
 }
 ```
@@ -698,9 +698,9 @@ oo::class create Environment {
     }
     method find {sym} {
         if {$sym in [dict keys $bindings]} {
-            return [self]
+            self
         } else {
-            return [$outer_env find $sym]
+            $outer_env find $sym
         }
     }
     method get {sym} {
@@ -722,7 +722,7 @@ Make __null_env__ empty and unresponsive: this is where searches for unbound sym
 Environment create null_env {} {}
 
 oo::objdefine null_env {
-    method find {sym} {return [self]}
+    method find {sym} {self}
     method get {sym} {error "Unbound variable: $sym"}
     method set {sym val} {error "Unbound variable: $sym"}
 }
@@ -803,7 +803,7 @@ oo::class create Procedure {
 	foreach expr $body {
             set res [evaluate $expr $newenv]
 	}
-	return $res
+	set res
     }
 }
 ```
@@ -819,7 +819,7 @@ Here's some percentage of a macro facility: macros are defined, in Tcl, in switc
 then rewriting those variables with a new derived form.
 
 Currently, the macros `let`, `cond`, `case`, `for`, `for/list`, `for/and`, and `for/or` are
-defined.  They differ somewhat from the standard ones. The `for´ macros are incomplete: for
+defined.  They differ somewhat from the standard ones. The `for` macros are incomplete: for
 instance, they only take a single clause.
 
 
@@ -1004,7 +1004,7 @@ proc idcheck {sym} {
             error "Macro name can't be used as a variable: $sym"
         }
     }
-    return $sym
+    set sym
 }
 ```
 

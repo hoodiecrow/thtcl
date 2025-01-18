@@ -16,7 +16,7 @@ MD)
 CB
 proc input {prompt} {
     puts -nonewline $prompt
-    return [gets stdin]
+    gets stdin
 }
 CB
 
@@ -29,7 +29,7 @@ proc printable {val} {
     if {[llength $val] > 1} {
         set val "($val)"
     }
-    return [string map {\{ ( \} ) true #t false #f} $val]
+    string map {\{ ( \} ) true #t false #f} $val
 }
 CB
 
@@ -117,7 +117,7 @@ proc expandquotes {str} {
 }
 
 proc parse {str} {
-    return [expandquotes [string map {( \{ ) \} [ \{ ] \} #t true #f false} $str]]
+    expandquotes [string map {( \{ ) \} [ \{ ] \} #t true #f false} $str]
 }
 CB
 

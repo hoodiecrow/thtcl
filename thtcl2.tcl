@@ -86,7 +86,7 @@ MD)
 
 CB
 proc lookup {var env} {
-    return [[$env find $var] get $var]
+    [$env find $var] get $var
 }
 CB
 
@@ -101,7 +101,7 @@ proc ebegin {exps env} {
     foreach exp $exps {
         set v [evaluate $exp $env]
     }
-    return $v
+    set v
 }
 CB
 
@@ -128,7 +128,7 @@ proc conjunction {exps env} {
         set v [evaluate $exp $env]
         if {$v eq false} {break}
     }
-    return $v
+    set v
 }
 CB
 
@@ -144,7 +144,7 @@ proc disjunction {exps env} {
         set v [evaluate $exp $env]
         if {$v ne false} {break}
     }
-    return $v
+    set v
 }
 CB
         
@@ -168,7 +168,7 @@ CB
 proc update! {var expr env} {
     set var [idcheck $var]
     [$env find $var] set $var $expr
-    return $expr
+    set expr
 }
 CB
 
@@ -181,9 +181,9 @@ MD)
 CB
 proc invoke {op vals} {
     if {[info object isa typeof $op Procedure]} {
-        return [$op call {*}$vals]
+        $op call {*}$vals
     } else {
-        return [$op {*}$vals]
+        $op {*}$vals
     }
 }
 CB

@@ -27,7 +27,7 @@ oo::class create Procedure {
 	foreach expr $body {
             set res [evaluate $expr $newenv]
 	}
-	return $res
+	set res
     }
 }
 CB

@@ -7,7 +7,7 @@ Here's some percentage of a macro facility: macros are defined, in Tcl, in switc
 then rewriting those variables with a new derived form.
 
 Currently, the macros `let`, `cond`, `case`, `for`, `for/list`, `for/and`, and `for/or` are
-defined.  They differ somewhat from the standard ones. The `for´ macros are incomplete: for
+defined.  They differ somewhat from the standard ones. The `for` macros are incomplete: for
 instance, they only take a single clause.
 
 MD)

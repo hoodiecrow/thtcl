@@ -120,7 +120,7 @@ MD)
 
 CB
 proc lookup {var env} {
-    return [dict get [set $env] $var]
+    dict get [set $env] $var
 }
 CB
 
@@ -136,7 +136,7 @@ proc ebegin {exps env} {
     foreach exp $exps {
         set v [evaluate $exp $env]
     }
-    return $v
+    set v
 }
 CB
 
@@ -187,7 +187,7 @@ MD)
 
 CB
 proc invoke {op vals} {
-    return [$op {*}$vals]
+    $op {*}$vals
 }
 CB
 

@@ -10,7 +10,7 @@ CB
 Environment create null_env {} {}
 
 oo::objdefine null_env {
-    method find {sym} {return [self]}
+    method find {sym} {self}
     method get {sym} {error "Unbound variable: $sym"}
     method set {sym val} {error "Unbound variable: $sym"}
 }

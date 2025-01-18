@@ -51,7 +51,7 @@ proc evaluate {exp {env ::global_env}} {
 
 
 proc lookup {var env} {
-    return [[$env find $var] get $var]
+    [$env find $var] get $var
 }
 
 
@@ -60,7 +60,7 @@ proc ebegin {exps env} {
     foreach exp $exps {
         set v [evaluate $exp $env]
     }
-    return $v
+    set v
 }
 
 
@@ -75,7 +75,7 @@ proc conjunction {exps env} {
         set v [evaluate $exp $env]
         if {$v eq false} {break}
     }
-    return $v
+    set v
 }
 
 
@@ -85,7 +85,7 @@ proc disjunction {exps env} {
         set v [evaluate $exp $env]
         if {$v ne false} {break}
     }
-    return $v
+    set v
 }
         
 
@@ -98,15 +98,15 @@ proc edefine {id expr env} {
 proc update! {var expr env} {
     set var [idcheck $var]
     [$env find $var] set $var $expr
-    return $expr
+    set expr
 }
 
 
 proc invoke {op vals} {
     if {[info object isa typeof $op Procedure]} {
-        return [$op call {*}$vals]
+        $op call {*}$vals
     } else {
-        return [$op {*}$vals]
+        $op {*}$vals
     }
 }
 
@@ -235,9 +235,9 @@ oo::class create Environment {
     }
     method find {sym} {
         if {$sym in [dict keys $bindings]} {
-            return [self]
+            self
         } else {
-            return [$outer_env find $sym]
+            $outer_env find $sym
         }
     }
     method get {sym} {
@@ -253,7 +253,7 @@ oo::class create Environment {
 Environment create null_env {} {}
 
 oo::objdefine null_env {
-    method find {sym} {return [self]}
+    method find {sym} {self}
     method get {sym} {error "Unbound variable: $sym"}
     method set {sym val} {error "Unbound variable: $sym"}
 }
@@ -283,7 +283,7 @@ oo::class create Procedure {
 	foreach expr $body {
             set res [evaluate $expr $newenv]
 	}
-	return $res
+	set res
     }
 }
 
@@ -293,7 +293,7 @@ oo::class create Procedure {
 
 proc input {prompt} {
     puts -nonewline $prompt
-    return [gets stdin]
+    gets stdin
 }
 
 
@@ -301,7 +301,7 @@ proc printable {val} {
     if {[llength $val] > 1} {
         set val "($val)"
     }
-    return [string map {\{ ( \} ) true #t false #f} $val]
+    string map {\{ ( \} ) true #t false #f} $val
 }
 
 
@@ -384,7 +384,7 @@ proc expandquotes {str} {
 }
 
 proc parse {str} {
-    return [expandquotes [string map {( \{ ) \} [ \{ ] \} #t true #f false} $str]]
+    expandquotes [string map {( \{ ) \} [ \{ ] \} #t true #f false} $str]
 }
 
 
@@ -565,6 +565,6 @@ proc idcheck {sym} {
             error "Macro name can't be used as a variable: $sym"
         }
     }
-    return $sym
+    set sym
 }
 

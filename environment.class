@@ -22,9 +22,9 @@ oo::class create Environment {
     }
     method find {sym} {
         if {$sym in [dict keys $bindings]} {
-            return [self]
+            self
         } else {
-            return [$outer_env find $sym]
+            $outer_env find $sym
         }
     }
     method get {sym} {
