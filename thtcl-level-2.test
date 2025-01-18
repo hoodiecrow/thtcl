@@ -179,6 +179,15 @@ source thtcl-level-2.tcl
     pep "(let ((a 4) (b 5)) (+ a 2) (- 10 b))"
 } "5"
 
+::tcltest::test macro-1.4 {let macro with repeated var} -body {
+    set exp [parse "(let ((a 4) (b 5) (a 8)) (+ a 2) (- 10 b))"]
+    set args [lassign $exp op]
+    # kludge to get around Tcl's list literal handling
+    if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
+    expand-macro op args ::global_env
+    printable [list $op {*}$args]
+} -returnCodes error -result "variable 'a' occurs more than once in let construct"
+
 ::tcltest::test macro-2.0 {cond macro} {
     set exp [parse "(cond ((> 3 4) (+ 4 2)) ((> 1 2) (+ 5 5)) (#t (- 8 5)))"]
     set args [lassign $exp op]

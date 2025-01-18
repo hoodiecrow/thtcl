@@ -112,7 +112,7 @@ The `evaluate` procedure relies on some sub-procedures for processing forms:
 
 `lookup` dereferences a symbol, returning the value bound to it in the given environment.
 On this level, the environment is expected to be given as a dict variable name (to wit:
-`::standard_env`). On level 2, `lookup` will use an environment object instead.
+`::standard_env`). On level 2, `lookup` will use an [Environment](https://github.com/hoodiecrow/thtcl?tab=readme-ov-file#environment-class-and-objects) object instead.
 
 ```
 proc lookup {var env} {
@@ -522,7 +522,7 @@ __thtcl-level-2.tcl__, and recognizes and processes the following syntactic form
 | [procedure call](http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-7.html#%_sec_4.1.3) | _operator_ _operand_... | If _operator_ is anything other than __quote__, __begin__, __if__, __and__, __or__, __define__, __set!__, or __lambda__, it is treated as a procedure. Evaluate _operator_ and all the _operands_, and then the resulting procedure is applied to the resulting list of argument values. Example: `(sqrt (+ 4 12))` ⇒ 4.0 |
 
 The evaluator also does a simple form of macro expansion on `op` and `args` before processing them in the big `switch`. 
-See the part about macros below.
+See the part about [macros](https://github.com/hoodiecrow/thtcl?tab=readme-ov-file#macros) below.
 
 ```
 proc evaluate {exp {env ::global_env}} {
@@ -857,8 +857,11 @@ proc expand-macro {n1 n2 env} {
     switch $op {
         let {
             set body [lassign $args bindings]
+            set vars [dict create]
             foreach binding $bindings {
-                dict set vars {*}$binding
+                lassign $binding var val
+                if {$var in [dict keys $vars]} {error "variable '$var' occurs more than once in let construct"}
+                dict set vars $var $val
             }
             set op [list lambda [dict keys $vars] {*}$body]
             set args [dict values $vars]

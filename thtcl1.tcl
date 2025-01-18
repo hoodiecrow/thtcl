@@ -115,7 +115,7 @@ The `evaluate` procedure relies on some sub-procedures for processing forms:
 
 `lookup` dereferences a symbol, returning the value bound to it in the given environment.
 On this level, the environment is expected to be given as a dict variable name (to wit:
-`::standard_env`). On level 2, `lookup` will use an environment object instead.
+`::standard_env`). On level 2, `lookup` will use an [Environment](https://github.com/hoodiecrow/thtcl?tab=readme-ov-file#environment-class-and-objects) object instead.
 MD)
 
 CB

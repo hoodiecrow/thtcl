@@ -46,8 +46,11 @@ proc expand-macro {n1 n2 env} {
     switch $op {
         let {
             set body [lassign $args bindings]
+            set vars [dict create]
             foreach binding $bindings {
-                dict set vars {*}$binding
+                lassign $binding var val
+                if {$var in [dict keys $vars]} {error "variable '$var' occurs more than once in let construct"}
+                dict set vars $var $val
             }
             set op [list lambda [dict keys $vars] {*}$body]
             set args [dict values $vars]
@@ -169,6 +172,15 @@ TT(
 ::tcltest::test macro-1.3 {let macro} {
     pep "(let ((a 4) (b 5)) (+ a 2) (- 10 b))"
 } "5"
+
+::tcltest::test macro-1.4 {let macro with repeated var} -body {
+    set exp [parse "(let ((a 4) (b 5) (a 8)) (+ a 2) (- 10 b))"]
+    set args [lassign $exp op]
+    # kludge to get around Tcl's list literal handling
+    if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
+    expand-macro op args ::global_env
+    printable [list $op {*}$args]
+} -returnCodes error -result "variable 'a' occurs more than once in let construct"
 TT)
 
 TT(

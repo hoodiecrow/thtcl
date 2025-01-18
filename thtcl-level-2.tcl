@@ -439,8 +439,11 @@ proc expand-macro {n1 n2 env} {
     switch $op {
         let {
             set body [lassign $args bindings]
+            set vars [dict create]
             foreach binding $bindings {
-                dict set vars {*}$binding
+                lassign $binding var val
+                if {$var in [dict keys $vars]} {error "variable '$var' occurs more than once in let construct"}
+                dict set vars $var $val
             }
             set op [list lambda [dict keys $vars] {*}$body]
             set args [dict values $vars]

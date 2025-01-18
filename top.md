@@ -13,4 +13,4 @@ To use, place the compound source files (__thtcl-level-1.tcl__ and __thtcl-level
 in a directory. Start __tkcon__ and navigate to the directory. Source either __thtcl-level-1.tcl__
 or __thtcl-level-2.tcl__. Use the __repl__ command to run a dialog loop with the interpreter.
 
-For A.
+For A. 🐈
