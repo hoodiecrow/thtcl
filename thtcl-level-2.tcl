@@ -407,7 +407,13 @@ proc pep {str} {
 
 
 proc do-cond {clauses} {
-    if {[llength $clauses] < 1} {
+    if {[llength $clauses] == 1} {
+        set body [lassign [lindex $clauses 0] pred]
+        if {$pred eq "else"} {
+            set pred true
+        }
+        return [list if $pred [list begin {*}$body] [do-cond [lrange $clauses 1 end]]]
+    } elseif {[llength $clauses] < 1} {
         return [list quote {}]
     } else {
         set body [lassign [lindex $clauses 0] pred]
@@ -499,6 +505,7 @@ proc expand-macro {n1 n2 env} {
             } else {
                 set seq [evaluate $seq $env]
             }
+            set res {}
             foreach v $seq {
                 lappend res [list begin [list define $id $v] [list begin {*}$body]]
             }
@@ -514,6 +521,7 @@ proc expand-macro {n1 n2 env} {
             } else {
                 set seq [evaluate $seq $env]
             }
+            set res {}
             foreach v $seq {
                 lappend res [list begin [list define $id $v] [list begin {*}$body]]
             }

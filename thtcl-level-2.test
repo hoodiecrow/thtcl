@@ -189,7 +189,7 @@ source thtcl-level-2.tcl
 } -returnCodes error -result "variable 'a' occurs more than once in let construct"
 
 ::tcltest::test macro-2.0 {cond macro} {
-    set exp [parse "(cond ((> 3 4) (+ 4 2)) ((> 1 2) (+ 5 5)) (#t (- 8 5)))"]
+    set exp [parse "(cond ((> 3 4) (+ 4 2)) ((> 1 2) (+ 5 5)) (else (- 8 5)))"]
     set args [lassign $exp op]
     # kludge to get around Tcl's list literal handling
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
@@ -198,7 +198,7 @@ source thtcl-level-2.tcl
 } "(if (> 3 4) (begin (+ 4 2)) (if (> 1 2) (begin (+ 5 5)) (if #t (begin (- 8 5)) (quote ()))))"
 
 ::tcltest::test macro-2.1 {cond macro} {
-    pep "(cond ((> 3 4) (+ 4 2)) ((> 1 2) (+ 5 5)) (#t (- 8 5)))"
+    pep "(cond ((> 3 4) (+ 4 2)) ((> 1 2) (+ 5 5)) (else (- 8 5)))"
 } "3"
 
 ::tcltest::test macro-2.2 {cond macro} {

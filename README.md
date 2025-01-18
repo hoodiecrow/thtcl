@@ -825,7 +825,13 @@ instance, they only take a single clause.
 
 ```
 proc do-cond {clauses} {
-    if {[llength $clauses] < 1} {
+    if {[llength $clauses] == 1} {
+        set body [lassign [lindex $clauses 0] pred]
+        if {$pred eq "else"} {
+            set pred true
+        }
+        return [list if $pred [list begin {*}$body] [do-cond [lrange $clauses 1 end]]]
+    } elseif {[llength $clauses] < 1} {
         return [list quote {}]
     } else {
         set body [lassign [lindex $clauses 0] pred]
@@ -917,6 +923,7 @@ proc expand-macro {n1 n2 env} {
             } else {
                 set seq [evaluate $seq $env]
             }
+            set res {}
             foreach v $seq {
                 lappend res [list begin [list define $id $v] [list begin {*}$body]]
             }
@@ -932,6 +939,7 @@ proc expand-macro {n1 n2 env} {
             } else {
                 set seq [evaluate $seq $env]
             }
+            set res {}
             foreach v $seq {
                 lappend res [list begin [list define $id $v] [list begin {*}$body]]
             }
@@ -945,7 +953,7 @@ Examples:
 ```
 Thtcl> (let ((a 4) (b 5)) (+ a 2))
 6
-Thtcl> (cond ((> 3 4) (+ 4 2)) ((> 1 2) (+ 5 5)) (#t (- 8 5)))
+Thtcl> (cond ((> 3 4) (+ 4 2)) ((> 1 2) (+ 5 5)) (else (- 8 5)))
 3
 Thtcl> (case (* 2 3) ((2 3 5 7) (quote prime)) ((1 4 6 8 9) (quote composite)))
 composite
