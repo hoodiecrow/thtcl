@@ -27,16 +27,16 @@ nested if constructs.
 `or` evaluates a series of expressions in order, stopping if one is true. Expands to
 nested if constructs.
 
-`for` evaluates a body once for every member in a sequence. Expands to a series of
-begin constructs, joined by a begin.
+`for` iterates over a sequence, evaluating a body as it goes. Expands to a series of
+let constructs, joined by a begin.
 
 `for/list`: like `for`, but collects the results of the iteration in a list.
 
 `for/and` iterates over a sequence, stopping when the body evaluates to #f. Expands to
-a series of begin constructs, joined by the and macro.
+a series of let constructs, joined by a and construct.
 
 `for/or` iterates over a sequence, stopping when the body evaluates to #t. Expands to
-a series of begin constructs, joined by the or macro.
+a series of let constructs, joined by a or construct.
 MD)
 
 CB
@@ -141,7 +141,7 @@ proc expand-macro {n1 n2 env} {
             }
             set res {}
             foreach v $seq {
-                lappend res [list begin [list define $id $v] {*}$body]
+                lappend res [list let [list [list $id $v]] {*}$body]
             }
             lappend res [list quote {}]
             set args [lassign [list begin {*}$res] op]
@@ -158,7 +158,7 @@ proc expand-macro {n1 n2 env} {
             }
             set res {}
             foreach v $seq {
-                lappend res [list begin [list define $id $v] [list set! res [list append res [list begin {*}$body]]]]
+                lappend res [list let [list [list $id $v]] [list set! res [list append res [list begin {*}$body]]]]
             }
             lappend res res
             set args [lassign [list begin [list define res {}] {*}$res] op]
@@ -175,7 +175,7 @@ proc expand-macro {n1 n2 env} {
             }
             set res {}
             foreach v $seq {
-                lappend res [list begin [list define $id $v] [list begin {*}$body]]
+                lappend res [list let [list [list $id $v]] {*}$body]
             }
             set args [lassign [list and {*}$res] op]
         }
@@ -191,7 +191,7 @@ proc expand-macro {n1 n2 env} {
             }
             set res {}
             foreach v $seq {
-                lappend res [list begin [list define $id $v] [list begin {*}$body]]
+                lappend res [list let [list [list $id $v]] {*}$body]
             }
             set args [lassign [list or {*}$res] op]
         }
@@ -327,7 +327,7 @@ TT(
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
     expand-macro op args ::global_env
     printable [list $op {*}$args]
-} -result "(begin (begin (define i 1) (display i)) (begin (define i 2) (display i)) (begin (define i 3) (display i)) (quote ()))"
+} -result "(begin (let ((i 1)) (display i)) (let ((i 2)) (display i)) (let ((i 3)) (display i)) (quote ()))"
 
 ::tcltest::test macro-4.1 {for macro} -body {
     pep "(for ((i (quote (1 2 3)))) (display i))"
@@ -340,7 +340,7 @@ TT(
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
     expand-macro op args ::global_env
     printable [list $op {*}$args]
-} -result "(begin (begin (define i 0) (display i)) (begin (define i 1) (display i)) (begin (define i 2) (display i)) (begin (define i 3) (display i)) (quote ()))"
+} -result "(begin (let ((i 0)) (display i)) (let ((i 1)) (display i)) (let ((i 2)) (display i)) (let ((i 3)) (display i)) (quote ()))"
 
 ::tcltest::test macro-4.3 {for macro} -body {
     pep "(for ((i 4)) (display i))"
@@ -356,7 +356,7 @@ TT(
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
     expand-macro op args ::global_env
     printable [list $op {*}$args]
-} -result "(begin (define res ()) (begin (define i 1) (set! res (append res (begin (* i i))))) (begin (define i 2) (set! res (append res (begin (* i i))))) (begin (define i 3) (set! res (append res (begin (* i i))))) res)"
+} -result "(begin (define res ()) (let ((i 1)) (set! res (append res (begin (* i i))))) (let ((i 2)) (set! res (append res (begin (* i i))))) (let ((i 3)) (set! res (append res (begin (* i i))))) res)"
 
 ::tcltest::test macro-5.1 {for/list macro} -body {
     pep {(for/list ([i (quote (1 2 3))]) (* i i))}
@@ -369,7 +369,7 @@ TT(
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
     expand-macro op args ::global_env
     printable [list $op {*}$args]
-} -result "(begin (define res ()) (begin (define i 1) (set! res (append res (begin (* i i))))) (begin (define i 2) (set! res (append res (begin (* i i))))) (begin (define i 3) (set! res (append res (begin (* i i))))) res)"
+} -result "(begin (define res ()) (let ((i 1)) (set! res (append res (begin (* i i))))) (let ((i 2)) (set! res (append res (begin (* i i))))) (let ((i 3)) (set! res (append res (begin (* i i))))) res)"
 
 ::tcltest::test macro-5.2 {for/list macro} -body {
     pep {(for/list ([i (in-range 1 4)]) (* i i))}
@@ -382,7 +382,7 @@ TT(
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
     expand-macro op args ::global_env
     printable [list $op {*}$args]
-} -result "(and (begin (define chapter 1) (begin (equal? chapter 1))) (begin (define chapter 2) (begin (equal? chapter 1))) (begin (define chapter 3) (begin (equal? chapter 1))))"
+} -result "(and (let ((chapter 1)) (equal? chapter 1)) (let ((chapter 2)) (equal? chapter 1)) (let ((chapter 3)) (equal? chapter 1)))"
 
 ::tcltest::test macro-6.1 {for/and macro} -body {
     pep {(for/and ([chapter '(1 2 3)]) (equal? chapter 1))}
@@ -395,7 +395,7 @@ TT(
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
     expand-macro op args ::global_env
     printable [list $op {*}$args]
-} -result "(or (begin (define chapter 1) (begin (equal? chapter 1))) (begin (define chapter 2) (begin (equal? chapter 1))) (begin (define chapter 3) (begin (equal? chapter 1))))"
+} -result "(or (let ((chapter 1)) (equal? chapter 1)) (let ((chapter 2)) (equal? chapter 1)) (let ((chapter 3)) (equal? chapter 1)))"
 
 ::tcltest::test macro-6.3 {for/or macro} -body {
     pep {(for/or ([chapter '(1 2 3)]) (equal? chapter 1))}
@@ -404,7 +404,7 @@ TT(
 TT)
 
 TT(
-::tcltest::test macro-6.0 {and macro} -body {
+::tcltest::test macro-7.0 {and macro} -body {
     set exp [parse {(and)}]
     set args [lassign $exp op]
     # kludge to get around Tcl's list literal handling
@@ -413,7 +413,7 @@ TT(
     printable [list $op {*}$args]
 } -result "(quote #t)"
 
-::tcltest::test macro-6.2 {and macro} -body {
+::tcltest::test macro-7.2 {and macro} -body {
     set exp [parse {(and (> 3 2))}]
     set args [lassign $exp op]
     # kludge to get around Tcl's list literal handling
@@ -422,7 +422,7 @@ TT(
     printable [list $op {*}$args]
 } -result "(> 3 2)"
 
-::tcltest::test macro-6.4 {and macro} -body {
+::tcltest::test macro-7.4 {and macro} -body {
     set exp [parse {(and (> 3 2) (= 2 2))}]
     set args [lassign $exp op]
     # kludge to get around Tcl's list literal handling
@@ -434,7 +434,7 @@ TT(
 TT)
 
 TT(
-::tcltest::test macro-7.0 {or macro} -body {
+::tcltest::test macro-8.0 {or macro} -body {
     set exp [parse {(or #f #f (< 2 3))}]
     set args [lassign $exp op]
     # kludge to get around Tcl's list literal handling
@@ -444,7 +444,7 @@ TT(
     printable [list $op {*}$args]
 } -result "((lambda x (if x x (let ((x #f)) (if x x (let ((x (< 2 3))) (if x x #f)))))) #f)"
 
-::tcltest::test macro-7.1 {or macro} -body {
+::tcltest::test macro-8.1 {or macro} -body {
     pep {(or #f #f (< 2 3))}
 } -result "#t"
 

@@ -483,7 +483,7 @@ proc expand-macro {n1 n2 env} {
             }
             set res {}
             foreach v $seq {
-                lappend res [list begin [list define $id $v] {*}$body]
+                lappend res [list let [list [list $id $v]] {*}$body]
             }
             lappend res [list quote {}]
             set args [lassign [list begin {*}$res] op]
@@ -500,7 +500,7 @@ proc expand-macro {n1 n2 env} {
             }
             set res {}
             foreach v $seq {
-                lappend res [list begin [list define $id $v] [list set! res [list append res [list begin {*}$body]]]]
+                lappend res [list let [list [list $id $v]] [list set! res [list append res [list begin {*}$body]]]]
             }
             lappend res res
             set args [lassign [list begin [list define res {}] {*}$res] op]
@@ -517,7 +517,7 @@ proc expand-macro {n1 n2 env} {
             }
             set res {}
             foreach v $seq {
-                lappend res [list begin [list define $id $v] [list begin {*}$body]]
+                lappend res [list let [list [list $id $v]] {*}$body]
             }
             set args [lassign [list and {*}$res] op]
         }
@@ -533,7 +533,7 @@ proc expand-macro {n1 n2 env} {
             }
             set res {}
             foreach v $seq {
-                lappend res [list begin [list define $id $v] [list begin {*}$body]]
+                lappend res [list let [list [list $id $v]] {*}$body]
             }
             set args [lassign [list or {*}$res] op]
         }

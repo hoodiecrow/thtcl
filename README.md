@@ -805,16 +805,16 @@ nested if constructs.
 `or` evaluates a series of expressions in order, stopping if one is true. Expands to
 nested if constructs.
 
-`for` evaluates a body once for every member in a sequence. Expands to a series of
-begin constructs, joined by a begin.
+`for` iterates over a sequence, evaluating a body as it goes. Expands to a series of
+let constructs, joined by a begin.
 
 `for/list`: like `for`, but collects the results of the iteration in a list.
 
 `for/and` iterates over a sequence, stopping when the body evaluates to #f. Expands to
-a series of begin constructs, joined by the and macro.
+a series of let constructs, joined by a and construct.
 
 `for/or` iterates over a sequence, stopping when the body evaluates to #t. Expands to
-a series of begin constructs, joined by the or macro.
+a series of let constructs, joined by a or construct.
 
 ```
 proc do-cond {clauses} {
@@ -918,7 +918,7 @@ proc expand-macro {n1 n2 env} {
             }
             set res {}
             foreach v $seq {
-                lappend res [list begin [list define $id $v] {*}$body]
+                lappend res [list let [list [list $id $v]] {*}$body]
             }
             lappend res [list quote {}]
             set args [lassign [list begin {*}$res] op]
@@ -935,7 +935,7 @@ proc expand-macro {n1 n2 env} {
             }
             set res {}
             foreach v $seq {
-                lappend res [list begin [list define $id $v] [list set! res [list append res [list begin {*}$body]]]]
+                lappend res [list let [list [list $id $v]] [list set! res [list append res [list begin {*}$body]]]]
             }
             lappend res res
             set args [lassign [list begin [list define res {}] {*}$res] op]
@@ -952,7 +952,7 @@ proc expand-macro {n1 n2 env} {
             }
             set res {}
             foreach v $seq {
-                lappend res [list begin [list define $id $v] [list begin {*}$body]]
+                lappend res [list let [list [list $id $v]] {*}$body]
             }
             set args [lassign [list and {*}$res] op]
         }
@@ -968,7 +968,7 @@ proc expand-macro {n1 n2 env} {
             }
             set res {}
             foreach v $seq {
-                lappend res [list begin [list define $id $v] [list begin {*}$body]]
+                lappend res [list let [list [list $id $v]] {*}$body]
             }
             set args [lassign [list or {*}$res] op]
         }
