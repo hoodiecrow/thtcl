@@ -140,6 +140,25 @@ source thtcl-level-2.tcl
     pep "''foo"
 } "(quote foo)"
 
+::tcltest::test thtcl2-14.0 {Scheme cookbook, due to Jakub T. Jankiewicz} {
+    pep "(define every? (lambda (fn list)
+  (or (null? list)
+      (and (fn (car list)) (every? fn (cdr list))))))"
+    pep "(every? number? '(1 2 3 4))"
+} "#t"
+
+::tcltest::test thtcl2-14.1 {Scheme cookbook, due to Jakub T. Jankiewicz} {
+    pep "(define adjoin (lambda (x a)
+  (if (member x a)
+      a
+      (cons x a))))"
+    pep "(adjoin 'x '(a b c))"
+} "(x a b c)"
+
+::tcltest::test thtcl2-14.1 {Scheme cookbook, due to Nils M Holm} {
+    pep "(adjoin 'c '(a b c))"
+} "(a b c)"
+
 
 ::tcltest::test global_env-1.0 {check for a symbol} {
     lookup pi ::global_env
@@ -372,6 +391,34 @@ source thtcl-level-2.tcl
 ::tcltest::test macro-8.1 {or macro} -body {
     pep {(or #f #f (< 2 3))}
 } -result "#t"
+
+::tcltest::test macro-9.0 {a simple stack: Scheme code due to Jakub T. Jankiewicz} -body {
+    set exp [parse {(push! x 'foo)}]
+    set args [lassign $exp op]
+    # kludge to get around Tcl's list literal handling
+    if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
+    expand-macro op args ::global_env
+    printable [list $op {*}$args]
+} -result "(set! x (cons (quote foo) x))"
+
+::tcltest::test macro-9.1 {a simple stack} -body {
+    pep {(define x '())}
+    pep {(push! x 'foo)}
+    pep {(push! x 'bar)}
+} -result "(bar foo)"
+
+::tcltest::test macro-9.2 {or macro} -body {
+    set exp [parse {(pop! x)}]
+    set args [lassign $exp op]
+    # kludge to get around Tcl's list literal handling
+    if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
+    expand-macro op args ::global_env
+    printable [list $op {*}$args]
+} -result "(let ((top (car x))) (set! x (cdr x)) top)"
+
+::tcltest::test macro-9.3 {a simple stack} -body {
+    pep {(pop! x)}
+} -result "bar"
 
 
 

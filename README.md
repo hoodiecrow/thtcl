@@ -228,6 +228,9 @@ The following symbols make up the standard environment:
 | log10 | ::tcl::mathfunc::log10 | Returns the base 10 logarithm of _arg_. _Arg_ must be a positive value. |
 | map | ::thtcl::map | Takes an operator and a list, returns a list of results of applying the operator to each item in the list |
 | max | ::tcl::mathfunc::max | Takes one or more numbers, returns the number with the greatest value |
+| member | ::thtcl::member | Takes an _obj_ and a _list_ and returns false or the sublist of _list_ that starts with _obj_. |
+| memq | ::thtcl::memq | Takes an _obj_ and a _list_ and returns false or the sublist of _list_ that starts with _obj_. |
+| memv | ::thtcl::memv | Takes an _obj_ and a _list_ and returns false or the sublist of _list_ that starts with _obj_. |
 | min | ::tcl::mathfunc::min | Takes one or more numbers, returns the number with the smallest value |
 | negative? | ::thtcl::negative? | Returns true if _arg_ is < 0. |
 | not | ::thtcl::not | Takes an _obj_, returns true if _obj_ is false, and returns false otherwise. |
@@ -239,6 +242,7 @@ The following symbols make up the standard environment:
 | print | ::puts | Takes an object and outputs it |
 | rad->deg | ::thtcl::rad->deg | For a radian _arg_, returns the same angle in degrees. |
 | rand | ::tcl::mathfunc::rand | Returns a pseudo-random floating-point value in the range (0,1). |
+| random | ::thtcl::random | Takes an integer argument _a_ and returns a random number in the range 0..<a }
 | reverse | ::lreverse | Returns a list in opposite order. |
 | round | ::tcl::mathfunc::round | Takes an _arg_: if _arg_ is an integer value, returns _arg_, otherwise converts _arg_ to integer by rounding and returns the converted value. |
 | sin | ::tcl::mathfunc::sin | Returns the sine of _arg_, measured in radians. |
@@ -335,14 +339,25 @@ proc in-range {args} {
     return $res
 }
 
+proc random val { expr {int([::thtcl::rand)] * $val} }
+
+proc memq {obj list} { set i [lsearch -exact $list $obj] ; if {$i == -1} {return false} {lrange $list $i end}}
+
+proc memv {obj list} { set i [lsearch -exact $list $obj] ; if {$i == -1} {return false} {lrange $list $i end}}
+
+proc member {obj list} { set i [lsearch -exact $list $obj] ; if {$i == -1} {return false} {lrange $list $i end}}
+
 }
 
 foreach func {> < >= <= = apply atom? boolean? car cdr cons deg->rad eq? eqv? equal?
-    map not null? number? rad->deg symbol? zero? positive? negative? even? odd? display in-range} {
+    map not null? number? rad->deg symbol? zero? positive? negative? even? odd? display in-range
+    random memq memv member
+} {
     dict set standard_env $func ::thtcl::$func
 }
 
-foreach {func impl} {append concat length llength list list print puts reverse lreverse list-ref lindex} {
+foreach {func impl} {append concat length llength list list print puts reverse lreverse
+    list-ref lindex error error} {
     dict set standard_env $func ::$impl
 }
 ```
@@ -536,7 +551,7 @@ proc evaluate {exp {env ::global_env}} {
     set args [lassign $exp op]
     # kludge to get around Tcl's list literal handling
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
-    while {$op in {let cond case and or for for/list for/and for/or}} {
+    while {$op in {let cond case and or for for/list for/and for/or push! pop!}} {
         expand-macro op args $env
     }
     switch $op {
@@ -816,6 +831,11 @@ a series of `let` constructs, joined by an `and` construct.
 `for/or` iterates over a sequence, stopping when the body evaluates to true. Expands to
 a series of `let` constructs, joined by an `or` construct.
 
+`push!` and `pop!` implement a simple stack. `push` expands to `(set! var (cons obj var)))))`
+where _var_ is the stack variable and _obj_ the item to be pushed. `pop!` expands to
+`(let ((top (car var))) (set! var (cdr var)) top))))` where _var_ is the stack variable.
+
+
 ```
 proc do-cond {clauses} {
     if {[llength $clauses] == 1} {
@@ -971,6 +991,14 @@ proc expand-macro {n1 n2 env} {
                 lappend res [list let [list [list $id $v]] {*}$body]
             }
             set args [lassign [list or {*}$res] op]
+        }
+        push! {
+            lassign $args var obj
+            set args [lassign [list set! $var [list cons $obj $var]] op]
+        }
+        pop! {
+            lassign $args var
+            set args [lassign [list let [list [list top [list car $var]]] [list set! $var [list cdr $var]] top] op]
         }
     }
 }

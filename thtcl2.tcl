@@ -38,7 +38,7 @@ proc evaluate {exp {env ::global_env}} {
     set args [lassign $exp op]
     # kludge to get around Tcl's list literal handling
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
-    while {$op in {let cond case and or for for/list for/and for/or}} {
+    while {$op in {let cond case and or for for/list for/and for/or push! pop!}} {
         expand-macro op args $env
     }
     switch $op {
@@ -289,6 +289,25 @@ TT(
 ::tcltest::test thtcl2-13.0 {expandquotes} {
     pep "''foo"
 } "(quote foo)"
+
+::tcltest::test thtcl2-14.0 {Scheme cookbook, due to Jakub T. Jankiewicz} {
+    pep "(define every? (lambda (fn list)
+  (or (null? list)
+      (and (fn (car list)) (every? fn (cdr list))))))"
+    pep "(every? number? '(1 2 3 4))"
+} "#t"
+
+::tcltest::test thtcl2-14.1 {Scheme cookbook, due to Jakub T. Jankiewicz} {
+    pep "(define adjoin (lambda (x a)
+  (if (member x a)
+      a
+      (cons x a))))"
+    pep "(adjoin 'x '(a b c))"
+} "(x a b c)"
+
+::tcltest::test thtcl2-14.1 {Scheme cookbook, due to Nils M Holm} {
+    pep "(adjoin 'c '(a b c))"
+} "(a b c)"
 
 TT)
 

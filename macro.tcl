@@ -37,6 +37,11 @@ a series of `let` constructs, joined by an `and` construct.
 
 `for/or` iterates over a sequence, stopping when the body evaluates to true. Expands to
 a series of `let` constructs, joined by an `or` construct.
+
+`push!` and `pop!` implement a simple stack. `push` expands to `(set! var (cons obj var)))))`
+where _var_ is the stack variable and _obj_ the item to be pushed. `pop!` expands to
+`(let ((top (car var))) (set! var (cdr var)) top))))` where _var_ is the stack variable.
+
 MD)
 
 CB
@@ -194,6 +199,14 @@ proc expand-macro {n1 n2 env} {
                 lappend res [list let [list [list $id $v]] {*}$body]
             }
             set args [lassign [list or {*}$res] op]
+        }
+        push! {
+            lassign $args var obj
+            set args [lassign [list set! $var [list cons $obj $var]] op]
+        }
+        pop! {
+            lassign $args var
+            set args [lassign [list let [list [list top [list car $var]]] [list set! $var [list cdr $var]] top] op]
         }
     }
 }
@@ -447,5 +460,33 @@ TT(
 ::tcltest::test macro-8.1 {or macro} -body {
     pep {(or #f #f (< 2 3))}
 } -result "#t"
+
+::tcltest::test macro-9.0 {a simple stack: Scheme code due to Jakub T. Jankiewicz} -body {
+    set exp [parse {(push! x 'foo)}]
+    set args [lassign $exp op]
+    # kludge to get around Tcl's list literal handling
+    if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
+    expand-macro op args ::global_env
+    printable [list $op {*}$args]
+} -result "(set! x (cons (quote foo) x))"
+
+::tcltest::test macro-9.1 {a simple stack} -body {
+    pep {(define x '())}
+    pep {(push! x 'foo)}
+    pep {(push! x 'bar)}
+} -result "(bar foo)"
+
+::tcltest::test macro-9.2 {or macro} -body {
+    set exp [parse {(pop! x)}]
+    set args [lassign $exp op]
+    # kludge to get around Tcl's list literal handling
+    if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
+    expand-macro op args ::global_env
+    printable [list $op {*}$args]
+} -result "(let ((top (car x))) (set! x (cdr x)) top)"
+
+::tcltest::test macro-9.3 {a simple stack} -body {
+    pep {(pop! x)}
+} -result "bar"
 
 TT)

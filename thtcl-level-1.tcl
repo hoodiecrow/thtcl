@@ -150,14 +150,25 @@ proc in-range {args} {
     return $res
 }
 
+proc random val { expr {int([::thtcl::rand)] * $val} }
+
+proc memq {obj list} { set i [lsearch -exact $list $obj] ; if {$i == -1} {return false} {lrange $list $i end}}
+
+proc memv {obj list} { set i [lsearch -exact $list $obj] ; if {$i == -1} {return false} {lrange $list $i end}}
+
+proc member {obj list} { set i [lsearch -exact $list $obj] ; if {$i == -1} {return false} {lrange $list $i end}}
+
 }
 
 foreach func {> < >= <= = apply atom? boolean? car cdr cons deg->rad eq? eqv? equal?
-    map not null? number? rad->deg symbol? zero? positive? negative? even? odd? display in-range} {
+    map not null? number? rad->deg symbol? zero? positive? negative? even? odd? display in-range
+    random memq memv member
+} {
     dict set standard_env $func ::thtcl::$func
 }
 
-foreach {func impl} {append concat length llength list list print puts reverse lreverse list-ref lindex} {
+foreach {func impl} {append concat length llength list list print puts reverse lreverse
+    list-ref lindex error error} {
     dict set standard_env $func ::$impl
 }
 
