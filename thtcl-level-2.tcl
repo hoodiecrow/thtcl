@@ -13,7 +13,7 @@ proc evaluate {exp {env ::global_env}} {
     set args [lassign $exp op]
     # kludge to get around Tcl's list literal handling
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
-    while {$op in {let cond case and or for for/list for/and for/or push! pop!}} {
+    while {$op in {let rec cond case and or for for/list for/and for/or push! pop!}} {
         expand-macro op args $env
     }
     switch $op {
@@ -447,15 +447,34 @@ proc expand-macro {n1 n2 env} {
     upvar $n1 op $n2 args
     switch $op {
         let {
-            set body [lassign $args bindings]
-            set vars [dict create]
-            foreach binding $bindings {
-                lassign $binding var val
-                if {$var in [dict keys $vars]} {error "variable '$var' occurs more than once in let construct"}
-                dict set vars $var $val
+            if {[::thtcl::atom? [lindex $args 0]]} {
+                # named let
+                set body [lassign $args variable bindings]
+                set vars [dict create $variable false]
+                foreach binding $bindings {
+                    lassign $binding var val
+                    if {$var in [dict keys $vars]} {error "variable '$var' occurs more than once in let construct"}
+                    dict set vars $var $val
+                }
+                set op [list let [dict values [dict map {k v} $vars {list $k $v}]] [list set! $variable [list lambda [lrange [dict keys $vars] 1 end] {*}$body]] [list $variable {*}[lrange [dict keys $vars] 1 end]]]
+                set args {}
+            } else {
+                # regular let
+                set body [lassign $args bindings]
+                set vars [dict create]
+                foreach binding $bindings {
+                    lassign $binding var val
+                    if {$var in [dict keys $vars]} {error "variable '$var' occurs more than once in let construct"}
+                    dict set vars $var $val
+                }
+                set op [list lambda [dict keys $vars] {*}$body]
+                set args [dict values $vars]
             }
-            set op [list lambda [dict keys $vars] {*}$body]
-            set args [dict values $vars]
+        }
+        rec {
+                lassign $args name value
+                set op [list let { } [list define $name $value] $name]
+
         }
         cond {
             set args [lassign [do-cond $args] op]

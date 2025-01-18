@@ -155,7 +155,7 @@ source thtcl-level-2.tcl
     pep "(adjoin 'x '(a b c))"
 } "(x a b c)"
 
-::tcltest::test thtcl2-14.1 {Scheme cookbook, due to Nils M Holm} {
+::tcltest::test thtcl2-14.2 {Scheme cookbook, due to Nils M Holm} {
     pep "(adjoin 'c '(a b c))"
 } "(a b c)"
 
@@ -419,6 +419,49 @@ source thtcl-level-2.tcl
 ::tcltest::test macro-9.3 {a simple stack} -body {
     pep {(pop! x)}
 } -result "bar"
+
+::tcltest::test macro-10.0 {named let} -body {
+    set exp [parse {(let loop ((numbers '(3 -2 1 6 -5))
+           (nonneg '())
+           (neg '()))
+  (cond ((null? numbers) (list nonneg neg))
+        ((>= (car numbers) 0)
+         (loop (cdr numbers)
+               (cons (car numbers) nonneg)
+               neg))
+        ((< (car numbers) 0)
+         (loop (cdr numbers)
+               nonneg
+               (cons (car numbers) neg)))))}]
+    set args [lassign $exp op]
+    # kludge to get around Tcl's list literal handling
+    if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
+    expand-macro op args ::global_env
+    printable [list $op {*}$args]
+} -result "(let ((loop #f) (numbers (quote (3 -2 1 6 -5))) (nonneg (quote ())) (neg (quote ()))) (set! loop (lambda (numbers nonneg neg) (cond ((null? numbers) (list nonneg neg))
+        ((>= (car numbers) 0)
+         (loop (cdr numbers)
+               (cons (car numbers) nonneg)
+               neg))
+        ((< (car numbers) 0)
+         (loop (cdr numbers)
+               nonneg
+               (cons (car numbers) neg)))))) (loop numbers nonneg neg))"
+
+::tcltest::test macro-10.1 {named let} -constraints knownBug -body {
+    pep {(let loop ((numbers '(3 -2 1 6 -5))
+           (nonneg '())
+           (neg '()))
+  (cond ((null? numbers) (list nonneg neg))
+        ((>= (car numbers) 0)
+         (loop (cdr numbers)
+               (cons (car numbers) nonneg)
+               neg))
+        ((< (car numbers) 0)
+         (loop (cdr numbers)
+               nonneg
+               (cons (car numbers) neg)))))}
+} -result "((6 1 3) (-5 -2))"
 
 
 
