@@ -112,7 +112,7 @@ MD)
 
 CB
 proc _if {c t f} {
-    if {![string is false [uplevel $c]]} then {uplevel $t} else {uplevel $f}
+    if {[uplevel $c] ne false} then {uplevel $t} else {uplevel $f}
 }
 CB
 
@@ -126,13 +126,9 @@ proc conjunction {exps env} {
     set v true
     foreach exp $exps {
         set v [evaluate $exp $env]
-        if {[string is false $v]} {return false}
+        if {$v eq false} {break}
     }
-    if {[string is true $v]} {
-        return true
-    } else {
-        return $v
-    }
+    return $v
 }
 CB
 
@@ -146,13 +142,9 @@ proc disjunction {exps env} {
     set v false
     foreach exp $exps {
         set v [evaluate $exp $env]
-        if {![string is false $v]} {break}
+        if {$v ne false} {break}
     }
-    if {[string is true $v]} {
-        return true
-    } else {
-        return $v
-    }
+    return $v
 }
 CB
         
@@ -219,11 +211,11 @@ TT(
     pep "(define first car)"
     pep "(define rest cdr)"
     pep "(define truthtoint (lambda (val) (if val 1 0)))"
-    pep "(define count (lambda (item L) (if L (+ (truthtoint (equal? item (first L))) (count item (rest L))) 0)))"
+    pep "(define count (lambda (item L) (if (not (eqv? L '())) (+ (truthtoint (equal? item (first L))) (count item (rest L))) 0)))"
 } -result ""
 
 ::tcltest::test thtcl2-3.0 {count} -body {
-    pep "(count 9 (list 9 1 2 3 9 9))"
+    pep "(count 0 (list 0 1 2 3 0 0))"
 } -result 3
 
 ::tcltest::test thtcl2-3.1 {count} -body {

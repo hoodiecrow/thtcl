@@ -65,7 +65,7 @@ proc ebegin {exps env} {
 
 
 proc _if {c t f} {
-    if {![string is false [uplevel $c]]} then {uplevel $t} else {uplevel $f}
+    if {[uplevel $c] ne false} then {uplevel $t} else {uplevel $f}
 }
 
 
@@ -73,13 +73,9 @@ proc conjunction {exps env} {
     set v true
     foreach exp $exps {
         set v [evaluate $exp $env]
-        if {[string is false $v]} {return false}
+        if {$v eq false} {break}
     }
-    if {[string is true $v]} {
-        return true
-    } else {
-        return $v
-    }
+    return $v
 }
 
 
@@ -87,13 +83,9 @@ proc disjunction {exps env} {
     set v false
     foreach exp $exps {
         set v [evaluate $exp $env]
-        if {![string is false $v]} {break}
+        if {$v ne false} {break}
     }
-    if {[string is true $v]} {
-        return true
-    } else {
-        return $v
-    }
+    return $v
 }
         
 
@@ -150,7 +142,7 @@ proc apply {proc args} { invoke $proc $args }
 
 proc atom? {exp} { boolexpr {[string index [string trim $exp] 0] ne "\{" && " " ni [split [string trim $exp] {}]} }
 
-proc boolean? {val} { boolexpr {[string is boolean $val]} }
+proc boolean? {val} { boolexpr {$val in {true false}} }
 
 proc car {list} { if {$list eq {}} {error "PAIR expected (car '())"} ; lindex $list 0 }
 
@@ -176,7 +168,7 @@ proc number? {val} { boolexpr {[string is double $val]} }
 
 proc rad->deg {arg} { expr {$arg * 180 / 3.1415926535897931} }
 
-proc symbol? {exp} { boolexpr {[atom? $exp] && ![string is double $exp] && $exp ni {#t #f true false}} }
+proc symbol? {exp} { boolexpr {[atom? $exp] && ![string is double $exp] && $exp ni {true false}} }
 
 proc zero? {val} { if {![string is double $val]} {error "NUMBER expected (zero? [printable $val])"} ; boolexpr {$val == 0} }
 

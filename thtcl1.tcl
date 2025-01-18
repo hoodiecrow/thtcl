@@ -147,7 +147,7 @@ MD)
 
 CB
 proc _if {c t f} {
-    if {![string is false [uplevel $c]]} then {uplevel $t} else {uplevel $f}
+    if {[uplevel $c] ne false} then {uplevel $t} else {uplevel $f}
 }
 CB
 
