@@ -6,7 +6,7 @@ Here's some percentage of a macro facility: macros are defined, in Tcl, in switc
 `expand-macro`. The macros take a form by looking at `op` and `args` inside `evaluate`, and
 then rewriting those variables with a new derived form.
 
-Currently, the macros `let`, `cond`, `case`, `for`, `for/list`, `for/and`, and `for/or` are
+Currently, the macros `let`, `cond`, `case`, `and`, `or`, `for`, `for/list`, `for/and`, and `for/or` are
 defined.  They differ somewhat from the standard ones. The `for` macros are incomplete: for
 instance, they only take a single clause.
 
@@ -47,6 +47,22 @@ proc do-case {keyv clauses} {
     }
 }
 
+proc do-and {exps prev} {
+    if {[llength $exps] == 0} {
+        return $prev
+    } else {
+        return [list if [lindex $exps 0] [do-and [lrange $exps 1 end] [lindex $exps 0]] false]
+    }
+}
+
+proc do-or {exps} {
+    if {[llength $exps] == 0} {
+        return false
+    } else {
+        return [list let [list [list x [lindex $exps 0]]] [list if x x [do-or [lrange $exps 1 end]]]]
+    }
+}
+
 proc expand-macro {n1 n2 env} {
     upvar $n1 op $n2 args
     switch $op {
@@ -67,6 +83,24 @@ proc expand-macro {n1 n2 env} {
         case {
             set clauses [lassign $args key]
             set args [lassign [do-case [list quote [evaluate $key $env]] $clauses] op]
+        }
+        and {
+            if {[llength $args] == 0} {
+                set args [lassign [list quote true] op]
+            } elseif {[llength $args] == 1} {
+                set args [lassign $args op]
+            } else {
+                set args [lassign [do-and $args {}] op]
+            }
+        }
+        or {
+            if {[llength $args] == 0} {
+                set args [lassign [list quote false] op]
+            } elseif {[llength $args] == 1} {
+                set args [lassign $args op]
+            } else {
+                set args [lassign [do-or $args] op]
+            }
         }
         for {
             #single-clause
@@ -288,7 +322,6 @@ TT(
 TT)
 
 TT(
-
 ::tcltest::test macro-5.0 {for/list macro} -body {
     set exp [parse {(for/list ([i (quote (1 2 3))]) (* i i))}]
     set args [lassign $exp op]
@@ -343,3 +376,49 @@ TT(
 
 TT)
 
+TT(
+::tcltest::test macro-6.0 {and macro} -body {
+    set exp [parse {(and)}]
+    set args [lassign $exp op]
+    # kludge to get around Tcl's list literal handling
+    if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
+    expand-macro op args ::global_env
+    printable [list $op {*}$args]
+} -result "(quote #t)"
+
+::tcltest::test macro-6.2 {and macro} -body {
+    set exp [parse {(and (> 3 2))}]
+    set args [lassign $exp op]
+    # kludge to get around Tcl's list literal handling
+    if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
+    expand-macro op args ::global_env
+    printable [list $op {*}$args]
+} -result "(> 3 2)"
+
+::tcltest::test macro-6.4 {and macro} -body {
+    set exp [parse {(and (> 3 2) (= 2 2))}]
+    set args [lassign $exp op]
+    # kludge to get around Tcl's list literal handling
+    if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
+    expand-macro op args ::global_env
+    printable [list $op {*}$args]
+} -result "(if (> 3 2) (if (= 2 2) (= 2 2) #f) #f)"
+
+TT)
+
+TT(
+::tcltest::test macro-7.0 {or macro} -body {
+    set exp [parse {(or #f #f (< 2 3))}]
+    set args [lassign $exp op]
+    # kludge to get around Tcl's list literal handling
+    if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
+    expand-macro op args ::global_env
+    expand-macro op args ::global_env
+    printable [list $op {*}$args]
+} -result "((lambda x (if x x (let ((x #f)) (if x x (let ((x (< 2 3))) (if x x #f)))))) #f)"
+
+::tcltest::test macro-7.1 {or macro} -body {
+    pep {(or #f #f (< 2 3))}
+} -result "#t"
+
+TT)

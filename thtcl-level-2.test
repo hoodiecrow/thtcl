@@ -278,7 +278,6 @@ source thtcl-level-2.tcl
 } -result "" -output 0123
 
 
-
 ::tcltest::test macro-5.0 {for/list macro} -body {
     set exp [parse {(for/list ([i (quote (1 2 3))]) (* i i))}]
     set args [lassign $exp op]
@@ -329,6 +328,49 @@ source thtcl-level-2.tcl
 
 ::tcltest::test macro-6.3 {for/or macro} -body {
     pep {(for/or ([chapter '(1 2 3)]) (equal? chapter 1))}
+} -result "#t"
+
+
+::tcltest::test macro-6.0 {and macro} -body {
+    set exp [parse {(and)}]
+    set args [lassign $exp op]
+    # kludge to get around Tcl's list literal handling
+    if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
+    expand-macro op args ::global_env
+    printable [list $op {*}$args]
+} -result "(quote #t)"
+
+::tcltest::test macro-6.2 {and macro} -body {
+    set exp [parse {(and (> 3 2))}]
+    set args [lassign $exp op]
+    # kludge to get around Tcl's list literal handling
+    if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
+    expand-macro op args ::global_env
+    printable [list $op {*}$args]
+} -result "(> 3 2)"
+
+::tcltest::test macro-6.4 {and macro} -body {
+    set exp [parse {(and (> 3 2) (= 2 2))}]
+    set args [lassign $exp op]
+    # kludge to get around Tcl's list literal handling
+    if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
+    expand-macro op args ::global_env
+    printable [list $op {*}$args]
+} -result "(if (> 3 2) (if (= 2 2) (= 2 2) #f) #f)"
+
+
+::tcltest::test macro-7.0 {or macro} -body {
+    set exp [parse {(or #f #f (< 2 3))}]
+    set args [lassign $exp op]
+    # kludge to get around Tcl's list literal handling
+    if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
+    expand-macro op args ::global_env
+    expand-macro op args ::global_env
+    printable [list $op {*}$args]
+} -result "((lambda x (if x x (let ((x #f)) (if x x (let ((x (< 2 3))) (if x x #f)))))) #f)"
+
+::tcltest::test macro-7.1 {or macro} -body {
+    pep {(or #f #f (< 2 3))}
 } -result "#t"
 
 

@@ -13,7 +13,9 @@ proc evaluate {exp {env ::global_env}} {
     set args [lassign $exp op]
     # kludge to get around Tcl's list literal handling
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
-    expand-macro op args $env
+    while {$op in {let cond case and or for for/list for/and for/or}} {
+        expand-macro op args $env
+    }
     switch $op {
         quote { # quotation
             return [lindex $args 0]
@@ -24,12 +26,6 @@ proc evaluate {exp {env ::global_env}} {
         if { # conditional
             lassign $args cond conseq alt
             return [_if {evaluate $cond $env} {evaluate $conseq $env} {evaluate $alt $env}]
-        }
-        and { # conjunction
-            return [conjunction $args $env]
-        }
-        or { # disjunction
-            return [disjunction $args $env]
         }
         define { # definition
             lassign $args id expr
@@ -68,26 +64,6 @@ proc _if {c t f} {
     if {[uplevel $c] ne false} then {uplevel $t} else {uplevel $f}
 }
 
-
-proc conjunction {exps env} {
-    set v true
-    foreach exp $exps {
-        set v [evaluate $exp $env]
-        if {$v eq false} {break}
-    }
-    set v
-}
-
-
-proc disjunction {exps env} {
-    set v false
-    foreach exp $exps {
-        set v [evaluate $exp $env]
-        if {$v ne false} {break}
-    }
-    set v
-}
-        
 
 proc edefine {id expr env} {
     $env set [idcheck $id] $expr
@@ -440,6 +416,22 @@ proc do-case {keyv clauses} {
     }
 }
 
+proc do-and {exps prev} {
+    if {[llength $exps] == 0} {
+        return $prev
+    } else {
+        return [list if [lindex $exps 0] [do-and [lrange $exps 1 end] [lindex $exps 0]] false]
+    }
+}
+
+proc do-or {exps} {
+    if {[llength $exps] == 0} {
+        return false
+    } else {
+        return [list let [list [list x [lindex $exps 0]]] [list if x x [do-or [lrange $exps 1 end]]]]
+    }
+}
+
 proc expand-macro {n1 n2 env} {
     upvar $n1 op $n2 args
     switch $op {
@@ -460,6 +452,24 @@ proc expand-macro {n1 n2 env} {
         case {
             set clauses [lassign $args key]
             set args [lassign [do-case [list quote [evaluate $key $env]] $clauses] op]
+        }
+        and {
+            if {[llength $args] == 0} {
+                set args [lassign [list quote true] op]
+            } elseif {[llength $args] == 1} {
+                set args [lassign $args op]
+            } else {
+                set args [lassign [do-and $args {}] op]
+            }
+        }
+        or {
+            if {[llength $args] == 0} {
+                set args [lassign [list quote false] op]
+            } elseif {[llength $args] == 1} {
+                set args [lassign $args op]
+            } else {
+                set args [lassign [do-or $args] op]
+            }
         }
         for {
             #single-clause
@@ -529,6 +539,7 @@ proc expand-macro {n1 n2 env} {
         }
     }
 }
+
 
 
 
