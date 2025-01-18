@@ -15,28 +15,28 @@ clauses. Expands to a `lambda` call.
 
 `cond` tests a series of predicates and evaluates the corresponding body if a predicate is
 true. Expands to a nested `if` construct with one level per clause, with the clause's
-predicate as condition and the clause's body as consequent, and the next if construct as
+predicate as condition and the clause's body as consequent, and the next `if` construct as
 alternate.
 
 `case` compares a key value to members of lists, evaluating the corresponding body if a 
 match is found. Expands to a similar construct as `cond`.
 
 `and` evaluates a series of expressions in order, stopping if one is false. Expands to
-nested if constructs.
+nested `if` constructs.
 
 `or` evaluates a series of expressions in order, stopping if one is true. Expands to
-nested if constructs.
+nested `if` constructs.
 
 `for` iterates over a sequence, evaluating a body as it goes. Expands to a series of
-let constructs, joined by a begin.
+`let` constructs, joined by a `begin`.
 
 `for/list`: like `for`, but collects the results of the iteration in a list.
 
-`for/and` iterates over a sequence, stopping when the body evaluates to #f. Expands to
-a series of let constructs, joined by a and construct.
+`for/and` iterates over a sequence, stopping when the body evaluates to false. Expands to
+a series of `let` constructs, joined by an `and` construct.
 
-`for/or` iterates over a sequence, stopping when the body evaluates to #t. Expands to
-a series of let constructs, joined by a or construct.
+`for/or` iterates over a sequence, stopping when the body evaluates to true. Expands to
+a series of `let` constructs, joined by an `or` construct.
 MD)
 
 CB
