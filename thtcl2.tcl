@@ -38,7 +38,7 @@ proc evaluate {exp {env ::global_env}} {
     set args [lassign $exp op]
     # kludge to get around Tcl's list literal handling
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
-    while {$op in {let cond case and or for for/list for/and for/or push! pop!}} {
+    while {$op in {let rec cond case and or for for/list for/and for/or push! pop!}} {
         expand-macro op args $env
     }
     switch $op {
@@ -305,7 +305,7 @@ TT(
     pep "(adjoin 'x '(a b c))"
 } "(x a b c)"
 
-::tcltest::test thtcl2-14.1 {Scheme cookbook, due to Nils M Holm} {
+::tcltest::test thtcl2-14.2 {Scheme cookbook, due to Nils M Holm} {
     pep "(adjoin 'c '(a b c))"
 } "(a b c)"
 
