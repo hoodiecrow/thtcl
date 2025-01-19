@@ -38,7 +38,7 @@ proc evaluate {exp {env ::global_env}} {
     set args [lassign $exp op]
     # kludge to get around Tcl's list literal handling
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
-    while {$op in {let cond case and or for for/list for/and for/or push! pop!}} {
+    while {$op in {let cond case and or for for/list for/and for/or push! pop!} || [regexp {^c[ad]{2,4}r$} $op]} {
         expand-macro op args $env
     }
     switch $op {

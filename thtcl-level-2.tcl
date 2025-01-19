@@ -13,7 +13,7 @@ proc evaluate {exp {env ::global_env}} {
     set args [lassign $exp op]
     # kludge to get around Tcl's list literal handling
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
-    while {$op in {let cond case and or for for/list for/and for/or push! pop!}} {
+    while {$op in {let cond case and or for for/list for/and for/or push! pop!} || [regexp {^c[ad]{2,4}r$} $op]} {
         expand-macro op args $env
     }
     switch $op {
@@ -449,7 +449,7 @@ proc do-or {exps} {
 
 proc expand-macro {n1 n2 env} {
     upvar $n1 op $n2 args
-    switch $op {
+    switch -regexp $op {
         let {
             if {[::thtcl::atom? [lindex $args 0]]} {
                 # named let
@@ -482,7 +482,22 @@ proc expand-macro {n1 n2 env} {
             set clauses [lassign $args key]
             set args [lassign [do-case [list quote [evaluate $key $env]] $clauses] op]
         }
-        and {
+        {^c[ad]{2,4}r$} {
+            set obj [evaluate $args $env]
+            regexp {c([ad]+)r} $op -> ads
+            foreach ad [lreverse [split $ads {}]] {
+                switch $ad {
+                    a {
+                        set obj [::thtcl::car $obj]
+                    }
+                    d {
+                        set obj [::thtcl::cdr $obj]
+                    }
+                }
+            }
+            set args [lassign [list quote $obj] op]
+        }
+        {^and$} {
             if {[llength $args] == 0} {
                 set args [lassign [list quote true] op]
             } elseif {[llength $args] == 1} {
@@ -491,7 +506,7 @@ proc expand-macro {n1 n2 env} {
                 set args [lassign [do-and $args {}] op]
             }
         }
-        or {
+        {^or$} {
             if {[llength $args] == 0} {
                 set args [lassign [list quote false] op]
             } elseif {[llength $args] == 1} {
@@ -500,24 +515,7 @@ proc expand-macro {n1 n2 env} {
                 set args [lassign [do-or $args] op]
             }
         }
-        for {
-            #single-clause
-            set body [lassign $args clauses]
-            lassign $clauses clause
-            lassign $clause id seq
-            if {[::thtcl::number? $seq]} {
-                set seq [::thtcl::in-range $seq]
-            } else {
-                set seq [evaluate $seq $env]
-            }
-            set res {}
-            foreach v $seq {
-                lappend res [list let [list [list $id $v]] {*}$body]
-            }
-            lappend res [list quote {}]
-            set args [lassign [list begin {*}$res] op]
-        }
-        for/list {
+        for\\/list {
             #single-clause
             set body [lassign $args clauses]
             lassign $clauses clause
@@ -534,7 +532,7 @@ proc expand-macro {n1 n2 env} {
             lappend res res
             set args [lassign [list begin [list define res {}] {*}$res] op]
         }
-        for/and {
+        for\\/and {
             #single-clause
             set body [lassign $args clauses]
             lassign $clauses clause
@@ -550,7 +548,7 @@ proc expand-macro {n1 n2 env} {
             }
             set args [lassign [list and {*}$res] op]
         }
-        for/or {
+        for\\/or {
             #single-clause
             set body [lassign $args clauses]
             lassign $clauses clause
@@ -565,6 +563,23 @@ proc expand-macro {n1 n2 env} {
                 lappend res [list let [list [list $id $v]] {*}$body]
             }
             set args [lassign [list or {*}$res] op]
+        }
+        {^for$} {
+            #single-clause
+            set body [lassign $args clauses]
+            lassign $clauses clause
+            lassign $clause id seq
+            if {[::thtcl::number? $seq]} {
+                set seq [::thtcl::in-range $seq]
+            } else {
+                set seq [evaluate $seq $env]
+            }
+            set res {}
+            foreach v $seq {
+                lappend res [list let [list [list $id $v]] {*}$body]
+            }
+            lappend res [list quote {}]
+            set args [lassign [list begin {*}$res] op]
         }
         push! {
             lassign $args var obj

@@ -10,6 +10,15 @@ compare this code to the Python one I'm all ears (plewerin x gmail com).
 evaluate [parse "(define fact (lambda (n) (if (<= n 1) 1 (* n (fact (- n 1))))))"]
 time {evaluate [parse "(fact 100)"]} 10
 ```
+
+#### Judgement
+
+Thtcl does not aim for compactness of code. I have added features, like macros, which take up
+a lot of horizontal space, at last count 621 lines of code. At the end of the day, however,
+it is a pointless effort since Tcl can't distinguish between a list of one item and an atom,
+making it impossible to compute a large number of programs, simple and sophisticated. It's
+fun to work with anyway, and I've learned a lot about Lisp interpreters.
+
 MD)
 
 MD(

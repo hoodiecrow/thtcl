@@ -537,6 +537,22 @@ source thtcl-level-2.tcl
                (cons (car numbers) neg)))))}
 } -result "((6 1 3) (-5 -2))"
 
+::tcltest::test macro-11.0 {c[ad]+r} -body {
+    pep "(cadr '(a b c d e f))"
+} -result "b"
+
+::tcltest::test macro-11.1 {c[ad]+r} -body {
+    pep "(caddr '(a b c d e f))"
+} -result "c"
+
+::tcltest::test macro-11.2 {c[ad]+r} -body {
+    pep "(cadddr '(a b c d e f))"
+} -result "d"
+
+::tcltest::test macro-11.3 {c[ad]+r} -body {
+    pep "(cddddr '(a b c d e f))"
+} -result "(e f)"
+
 
 
 ::tcltest::cleanupTests

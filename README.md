@@ -26,6 +26,15 @@ evaluate [parse "(define fact (lambda (n) (if (<= n 1) 1 (* n (fact (- n 1))))))
 time {evaluate [parse "(fact 100)"]} 10
 ```
 
+#### Judgement
+
+Thtcl does not aim for compactness of code. I have added features, like macros, which take up
+a lot of horizontal space, at last count 621 lines of code. At the end of the day, however,
+it is a pointless effort since Tcl can't distinguish between a list of one item and an atom,
+making it impossible to compute a large number of programs, simple and sophisticated. It's
+fun to work with anyway, and I've learned a lot about Lisp interpreters.
+
+
 ## Level 1 Thtcl Calculator
 
 The first level of the interpreter has a reduced set of syntactic forms and a single
@@ -556,7 +565,7 @@ proc evaluate {exp {env ::global_env}} {
     set args [lassign $exp op]
     # kludge to get around Tcl's list literal handling
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
-    while {$op in {let cond case and or for for/list for/and for/or push! pop!}} {
+    while {$op in {let cond case and or for for/list for/and for/or push! pop!} || [regexp {^c[ad]{2,4}r$} $op]} {
         expand-macro op args $env
     }
     switch $op {
@@ -804,9 +813,10 @@ Here's some percentage of a macro facility: macros are defined, in Tcl, in switc
 `expand-macro`. The macros take a form by looking at `op` and `args` inside `evaluate`, and
 then rewriting those variables with a new derived form.
 
-Currently, the macros `let`, `cond`, `case`, `and`, `or`, `for`, `for/list`, `for/and`, `for/or`, `push!`, and `pop!` are
-defined.  They differ somewhat from the standard ones. The `for` macros are incomplete: for
-instance, they only take a single clause.
+Currently, the macros `let`, `cond`, `case`, `and`, `or`, `caaaar` and friends, `for`, 
+`for/list`, `for/and`, `for/or`, `push!`, and `pop!` are defined.  They differ somewhat from
+the standard ones. The `for` macros are incomplete: for instance, they only take a single
+clause.
 
 `let` evaluates its body in an environment enriched by the symbols and values in the
 clauses. Expands to a `lambda` call.
@@ -824,6 +834,8 @@ nested `if` constructs.
 
 `or` evaluates a series of expressions in order, stopping if one is true. Expands to
 nested `if` constructs.
+
+`caar` to `cddddr` chop up a list object and expand to the result under `quote`.
 
 `for` iterates over a sequence, evaluating a body as it goes. Expands to a series of
 `let` constructs, joined by a `begin`.
@@ -894,7 +906,7 @@ proc do-or {exps} {
 
 proc expand-macro {n1 n2 env} {
     upvar $n1 op $n2 args
-    switch $op {
+    switch -regexp $op {
         let {
             if {[::thtcl::atom? [lindex $args 0]]} {
                 # named let
@@ -927,7 +939,22 @@ proc expand-macro {n1 n2 env} {
             set clauses [lassign $args key]
             set args [lassign [do-case [list quote [evaluate $key $env]] $clauses] op]
         }
-        and {
+        {^c[ad]{2,4}r$} {
+            set obj [evaluate $args $env]
+            regexp {c([ad]+)r} $op -> ads
+            foreach ad [lreverse [split $ads {}]] {
+                switch $ad {
+                    a {
+                        set obj [::thtcl::car $obj]
+                    }
+                    d {
+                        set obj [::thtcl::cdr $obj]
+                    }
+                }
+            }
+            set args [lassign [list quote $obj] op]
+        }
+        {^and$} {
             if {[llength $args] == 0} {
                 set args [lassign [list quote true] op]
             } elseif {[llength $args] == 1} {
@@ -936,7 +963,7 @@ proc expand-macro {n1 n2 env} {
                 set args [lassign [do-and $args {}] op]
             }
         }
-        or {
+        {^or$} {
             if {[llength $args] == 0} {
                 set args [lassign [list quote false] op]
             } elseif {[llength $args] == 1} {
@@ -945,24 +972,7 @@ proc expand-macro {n1 n2 env} {
                 set args [lassign [do-or $args] op]
             }
         }
-        for {
-            #single-clause
-            set body [lassign $args clauses]
-            lassign $clauses clause
-            lassign $clause id seq
-            if {[::thtcl::number? $seq]} {
-                set seq [::thtcl::in-range $seq]
-            } else {
-                set seq [evaluate $seq $env]
-            }
-            set res {}
-            foreach v $seq {
-                lappend res [list let [list [list $id $v]] {*}$body]
-            }
-            lappend res [list quote {}]
-            set args [lassign [list begin {*}$res] op]
-        }
-        for/list {
+        for\\/list {
             #single-clause
             set body [lassign $args clauses]
             lassign $clauses clause
@@ -979,7 +989,7 @@ proc expand-macro {n1 n2 env} {
             lappend res res
             set args [lassign [list begin [list define res {}] {*}$res] op]
         }
-        for/and {
+        for\\/and {
             #single-clause
             set body [lassign $args clauses]
             lassign $clauses clause
@@ -995,7 +1005,7 @@ proc expand-macro {n1 n2 env} {
             }
             set args [lassign [list and {*}$res] op]
         }
-        for/or {
+        for\\/or {
             #single-clause
             set body [lassign $args clauses]
             lassign $clauses clause
@@ -1010,6 +1020,23 @@ proc expand-macro {n1 n2 env} {
                 lappend res [list let [list [list $id $v]] {*}$body]
             }
             set args [lassign [list or {*}$res] op]
+        }
+        {^for$} {
+            #single-clause
+            set body [lassign $args clauses]
+            lassign $clauses clause
+            lassign $clause id seq
+            if {[::thtcl::number? $seq]} {
+                set seq [::thtcl::in-range $seq]
+            } else {
+                set seq [evaluate $seq $env]
+            }
+            set res {}
+            foreach v $seq {
+                lappend res [list let [list [list $id $v]] {*}$body]
+            }
+            lappend res [list quote {}]
+            set args [lassign [list begin {*}$res] op]
         }
         push! {
             lassign $args var obj
