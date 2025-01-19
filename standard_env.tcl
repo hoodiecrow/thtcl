@@ -70,6 +70,7 @@ The following symbols make up the standard environment:
 | null? | ::thtcl::null? | Takes an _obj_, returns true if _obj_ is the empty list, otherwise returns false. |
 | number? | ::thtcl::number? | Takes an _obj_, returns true if _obj_ is a valid number, otherwise returns false. |
 | odd? | ::thtcl::odd? | Returns true if _arg_ is odd. |
+| pair? | ::thtcl::pair? | Takes an _obj_, returns true if _obj_ is a list, and returns false otherwise. |
 | pi | 3.1415926535897931 |  |
 | positive? | ::thtcl::positive? | Returns true if _arg_ is > 0. |
 | print | ::puts | Takes an object and outputs it |
@@ -181,11 +182,15 @@ proc memv {obj list} { set i [lsearch -exact $list $obj] ; if {$i == -1} {return
 
 proc member {obj list} { set i [lsearch -exact $list $obj] ; if {$i == -1} {return false} {lrange $list $i end}}
 
+proc pair? {obj} { boolexpr {![atom? $obj]} }
+
+proc cadr {obj} { ::thtcl::car [::thtcl::cdr $obj] }
+
 }
 
 foreach func {> < >= <= = apply atom? boolean? car cdr cons deg->rad eq? eqv? equal?
     map not null? number? rad->deg symbol? zero? positive? negative? even? odd? display in-range
-    random memq memv member
+    random memq memv member pair? cadr
 } {
     dict set standard_env $func ::thtcl::$func
 }

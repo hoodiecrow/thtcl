@@ -237,6 +237,7 @@ The following symbols make up the standard environment:
 | null? | ::thtcl::null? | Takes an _obj_, returns true if _obj_ is the empty list, otherwise returns false. |
 | number? | ::thtcl::number? | Takes an _obj_, returns true if _obj_ is a valid number, otherwise returns false. |
 | odd? | ::thtcl::odd? | Returns true if _arg_ is odd. |
+| pair? | ::thtcl::pair? | Takes an _obj_, returns true if _obj_ is a list, and returns false otherwise. |
 | pi | 3.1415926535897931 |  |
 | positive? | ::thtcl::positive? | Returns true if _arg_ is > 0. |
 | print | ::puts | Takes an object and outputs it |
@@ -347,11 +348,15 @@ proc memv {obj list} { set i [lsearch -exact $list $obj] ; if {$i == -1} {return
 
 proc member {obj list} { set i [lsearch -exact $list $obj] ; if {$i == -1} {return false} {lrange $list $i end}}
 
+proc pair? {obj} { boolexpr {![atom? $obj]} }
+
+proc cadr {obj} { ::thtcl::car [::thtcl::cdr $obj] }
+
 }
 
 foreach func {> < >= <= = apply atom? boolean? car cdr cons deg->rad eq? eqv? equal?
     map not null? number? rad->deg symbol? zero? positive? negative? even? odd? display in-range
-    random memq memv member
+    random memq memv member pair? cadr
 } {
     dict set standard_env $func ::thtcl::$func
 }
@@ -551,7 +556,7 @@ proc evaluate {exp {env ::global_env}} {
     set args [lassign $exp op]
     # kludge to get around Tcl's list literal handling
     if {"\{$op\}" eq $exp} {set args [lassign [lindex $exp 0] op]}
-    while {$op in {let rec cond case and or for for/list for/and for/or push! pop!}} {
+    while {$op in {let cond case and or for for/list for/and for/or push! pop!}} {
         expand-macro op args $env
     }
     switch $op {
@@ -900,8 +905,8 @@ proc expand-macro {n1 n2 env} {
                     if {$var in [dict keys $vars]} {error "variable '$var' occurs more than once in let construct"}
                     dict set vars $var $val
                 }
-                set op [list let [dict values [dict map {k v} $vars {list $k $v}]] [list set! $variable [list lambda [lrange [dict keys $vars] 1 end] {*}$body]] [list $variable {*}[lrange [dict keys $vars] 1 end]]]
-                set args {}
+                set op let
+                set args [list [dict values [dict map {k v} $vars {list $k $v}]] [list set! $variable [list lambda [lrange [dict keys $vars] 1 end] {*}$body]] [list $variable {*}[lrange [dict keys $vars] 1 end]]]
             } else {
                 # regular let
                 set body [lassign $args bindings]
@@ -914,11 +919,6 @@ proc expand-macro {n1 n2 env} {
                 set op [list lambda [dict keys $vars] {*}$body]
                 set args [dict values $vars]
             }
-        }
-        rec {
-                lassign $args name value
-                set op [list let { } [list define $name $value] $name]
-
         }
         cond {
             set args [lassign [do-cond $args] op]

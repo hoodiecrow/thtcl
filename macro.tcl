@@ -108,8 +108,8 @@ proc expand-macro {n1 n2 env} {
                     if {$var in [dict keys $vars]} {error "variable '$var' occurs more than once in let construct"}
                     dict set vars $var $val
                 }
-                set op [list let [dict values [dict map {k v} $vars {list $k $v}]] [list set! $variable [list lambda [lrange [dict keys $vars] 1 end] {*}$body]] [list $variable {*}[lrange [dict keys $vars] 1 end]]]
-                set args {}
+                set op let
+                set args [list [dict values [dict map {k v} $vars {list $k $v}]] [list set! $variable [list lambda [lrange [dict keys $vars] 1 end] {*}$body]] [list $variable {*}[lrange [dict keys $vars] 1 end]]]
             } else {
                 # regular let
                 set body [lassign $args bindings]
@@ -122,11 +122,6 @@ proc expand-macro {n1 n2 env} {
                 set op [list lambda [dict keys $vars] {*}$body]
                 set args [dict values $vars]
             }
-        }
-        rec {
-                lassign $args name value
-                set op [list let { } [list define $name $value] $name]
-
         }
         cond {
             set args [lassign [do-cond $args] op]
@@ -536,7 +531,7 @@ TT(
                nonneg
                (cons (car numbers) neg)))))) (loop numbers nonneg neg))"
 
-::tcltest::test macro-10.1 {named let} -constraints knownBug -body {
+::tcltest::test macro-10.1 {named let} -body {
     pep {(let loop ((numbers '(3 -2 1 6 -5))
            (nonneg '())
            (neg '()))

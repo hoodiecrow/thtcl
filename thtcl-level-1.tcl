@@ -158,11 +158,15 @@ proc memv {obj list} { set i [lsearch -exact $list $obj] ; if {$i == -1} {return
 
 proc member {obj list} { set i [lsearch -exact $list $obj] ; if {$i == -1} {return false} {lrange $list $i end}}
 
+proc pair? {obj} { boolexpr {![atom? $obj]} }
+
+proc cadr {obj} { ::thtcl::car [::thtcl::cdr $obj] }
+
 }
 
 foreach func {> < >= <= = apply atom? boolean? car cdr cons deg->rad eq? eqv? equal?
     map not null? number? rad->deg symbol? zero? positive? negative? even? odd? display in-range
-    random memq memv member
+    random memq memv member pair? cadr
 } {
     dict set standard_env $func ::thtcl::$func
 }
